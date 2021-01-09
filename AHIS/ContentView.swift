@@ -60,7 +60,7 @@ struct BackgroundView2: View {
         static let skyGradientI = Gradient(colors: [blueI, blueO])
         static let earthGradient = Gradient(colors: [brownO, brownI])
         static let earthGradientO = Gradient(colors: [brownI, brownO])
-        static let fov: CGFloat = 90
+        static let fov: CGFloat = 120
         static let degreeToPixel = height / fov
         static func pitchToPixel(_ pitch: CGFloat) -> CGFloat {
             height / 2.0 + pitch * degreeToPixel
@@ -252,5 +252,14 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView(sim: true)
+            .preferredColorScheme(.dark)
+        ContentView(sim: true)
+            .preferredColorScheme(.light)
+        ContentView(sim: true)
+            .previewDevice("iPhone 8")
+            .preferredColorScheme(.light)
+        ContentView(sim: true)
+            .previewDevice("iPad Pro (12.9-inch) (4th generation)")
+            .preferredColorScheme(.light)
     }
 }
