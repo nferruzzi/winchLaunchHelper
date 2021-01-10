@@ -29,6 +29,8 @@ public class AHService: AHProtocol {
 
     private var referenceAttitude: CMAttitude?
     private var latestAttitude: CMAttitude?
+    private var rotate: Double = 10
+    private var prevHeading: Double = 0
     
     public var deviceMotion: AnyPublisher<CMDeviceMotion?, Never> {
         $deviceMotionSubject.removeDuplicates().eraseToAnyPublisher()
@@ -48,22 +50,29 @@ public class AHService: AHProtocol {
         Constants.manager.stopDeviceMotionUpdates()
         Constants.manager.startDeviceMotionUpdates(using: reference, to: Constants.queue) { [weak self](motion: CMDeviceMotion?, error: Error?) in
             guard let motion = motion else { return }
-
-            if (motion.heading < 90) && (self?.headingSubject ?? 0).truncatingRemainder(dividingBy: 360) >= 270 {
-                self?.headingSubject = motion.heading + 360.0
-            } else {
-                self?.headingSubject = motion.heading
+            guard let self = self else { return }
+            
+            let heading = motion.heading
+            
+            if heading > 270 && self.prevHeading <= 90 {
+                self.rotate -= 1
+//                debugPrint("bug da 0 a 360 \(motion.heading) \(self.rotate)")
             }
+            else
+            if motion.heading < 90 && self.prevHeading > 270 {
+                self.rotate += 1
+//                debugPrint("bug da 360 a 0 \(motion.heading) \(self.rotate)")
+            }
+
+            self.prevHeading = motion.heading
+            self.headingSubject = heading + self.rotate * 360
             
-//            debugPrint(self!.headingSubject)
+            self.latestAttitude = motion.attitude.copy() as? CMAttitude
             
-            self?.headingSubject = motion.heading
-            self?.latestAttitude = motion.attitude.copy() as? CMAttitude
-            
-            if let ra = self?.referenceAttitude {
+            if let ra = self.referenceAttitude {
                 motion.attitude.multiply(byInverseOf: ra)
             }
-            self?.deviceMotionSubject = motion
+            self.deviceMotionSubject = motion
         }
     }
     

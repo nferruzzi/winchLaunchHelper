@@ -8,6 +8,15 @@
 import SwiftUI
 
 
+private extension Double {
+    /// The conversion formula found online expects the module operator to work like the python one for negative numbers
+    /// AKA: mod = a - math.floor(a/b) * base
+    func pythonMod(by val: Double) -> Double {
+        self - floor(self / val) * val
+    }
+}
+
+
 struct HeadingIndicatorPath: Shape {
     func path(in rect: CGRect) -> Path {
         Path { path in
@@ -59,19 +68,19 @@ struct HeadingIndicatorInnerView: View {
     
     
     var n: some View {
-        Text("N").font(Constants.textFont).rotationEffect(.degrees(180)).offset(x: 0, y: -60)
-    }
-
-    var s: some View {
-        Text("S").font(Constants.textFont).rotationEffect(.degrees(180)).offset(x: 0, y: -60)
+        pin(0, Text("N").font(Constants.textFont).rotationEffect(.degrees(180)).offset(x: 0, y: -60))
     }
 
     var e: some View {
-        Text("E").font(Constants.textFont).rotationEffect(.degrees(180)).offset(x: 0, y: -60)
+        pin(90, Text("E").font(Constants.textFont).rotationEffect(.degrees(180)).offset(x: 0, y: -60))
+    }
+
+    var s: some View {
+        pin(180, Text("S").font(Constants.textFont).rotationEffect(.degrees(180)).offset(x: 0, y: -60))
     }
 
     var w: some View {
-        Text("W").font(Constants.textFont).rotationEffect(.degrees(180)).offset(x: 0, y: -60)
+        pin(270, Text("W").font(Constants.textFont).rotationEffect(.degrees(180)).offset(x: 0, y: -60))
     }
     
     func angleText(_ angle: CGFloat) -> some View {
@@ -86,10 +95,10 @@ struct HeadingIndicatorInnerView: View {
                 .foregroundColor(.black)
 
             HeadingIndicatorPath().foregroundColor(.white)
-                .overlay(pin(0, n))
-                .overlay(pin(180, s))
-                .overlay(pin(90, e))
-                .overlay(pin(270, w))
+                .overlay(n)
+                .overlay(s)
+                .overlay(w)
+                .overlay(e)
                 .overlay(angleText(30))
                 .overlay(angleText(60))
                 .overlay(angleText(120))
@@ -99,6 +108,10 @@ struct HeadingIndicatorInnerView: View {
                 .overlay(angleText(210))
                 .overlay(angleText(300))
                 .overlay(angleText(330))
+//                .rotation3DEffect(
+//                    .degrees(-angle),
+//                    axis: (x: 0.0, y: 0.0, z: 1.0)
+//                    )
                 .rotationEffect(.degrees(-angle))
 
             Circle()
@@ -111,14 +124,19 @@ struct HeadingIndicatorInnerView: View {
 
 struct HeadingIndicatorView: View {
     let sim: Bool
+
     @State var heading: Double = 0
     @StateObject var model = AHServiceViewModel()
+    
+    var anglePassed: Double {
+        (sim ? heading : model.heading) //.pythonMod(by: 360) - 360
+    }
 
     var body: some View {
         VStack {
             ZStack {
                 GeometryReader { geometry in
-                    HeadingIndicatorInnerView(size: min(geometry.size.width, geometry.size.height), angle: model.heading)
+                    HeadingIndicatorInnerView(size: min(geometry.size.width, geometry.size.height), angle: anglePassed)
                         .animation(.linear)
                 }
                 Image("Airplane")
@@ -129,8 +147,9 @@ struct HeadingIndicatorView: View {
                     .shadow(color: Color(.sRGBLinear, white: 1, opacity: 0.8), radius: 5)
             }
             .aspectRatio(CGSize(width: 1, height: 1), contentMode: .fit)
-            if false && sim {
-                Slider(value: $heading, in: 0...360)
+            if sim {
+                Text("\(anglePassed)")
+                Slider(value: $heading, in: -720...720)
             }
         }
         .padding()

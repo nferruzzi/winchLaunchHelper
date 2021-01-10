@@ -248,6 +248,9 @@ struct AttitudeIndicatorView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                         .shadow(color: Color(.sRGBLinear, white: 1, opacity: 0.7), radius: 5)
                 }
+                .overlay(Button("Align") {
+                    model.reset()
+                }, alignment: .bottomTrailing)
                 .padding()
             }
             if false && sim {
@@ -264,10 +267,6 @@ struct AttitudeIndicatorView: View {
                         Slider(value:$yaw, in: -180...180, label: { Text("Yaw") })
                             .frame(width: 200)
                     }
-                }
-            } else {
-                Button("Reset") {
-                    model.reset()
                 }
             }
         }
