@@ -250,7 +250,7 @@ struct AttitudeIndicatorView: View {
                 }
                 .padding()
             }
-            if sim {
+            if false && sim {
                 VStack {
     //                Text("Roll \(model.roll)")
                     Text("Pitch \(sim ? Int(pitch) : model.pitch)")
@@ -276,13 +276,13 @@ struct AttitudeIndicatorView: View {
 
 
 struct ContentView: View {
+    @StateObject var model = AHServiceViewModel()
     let sim: Bool
-    
     
     var body: some View {
         VStack {
-            AttitudeIndicatorView(sim: sim)
-            AttitudeIndicatorView(sim: sim)
+            AttitudeIndicatorView(sim: sim, model: model)
+            HeadingIndicatorView(sim: sim, model: model)
         }
     }
     

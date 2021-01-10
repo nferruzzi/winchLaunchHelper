@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8A6BE19E25AA2B0800D3C2D9 /* HeadingIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A6BE19D25AA2B0800D3C2D9 /* HeadingIndicatorView.swift */; };
 		8AFE553F25A75D6C00EC5329 /* AHISApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFE553E25A75D6C00EC5329 /* AHISApp.swift */; };
 		8AFE554125A75D6C00EC5329 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFE554025A75D6C00EC5329 /* ContentView.swift */; };
 		8AFE554325A75D6C00EC5329 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8AFE554225A75D6C00EC5329 /* Assets.xcassets */; };
@@ -16,6 +17,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		8A6BE19D25AA2B0800D3C2D9 /* HeadingIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadingIndicatorView.swift; sourceTree = "<group>"; };
 		8AFE553B25A75D6C00EC5329 /* AHIS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AHIS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8AFE553E25A75D6C00EC5329 /* AHISApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AHISApp.swift; sourceTree = "<group>"; };
 		8AFE554025A75D6C00EC5329 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -63,6 +65,7 @@
 				8AFE554425A75D6C00EC5329 /* Preview Content */,
 				8AFE554E25A7A2C600EC5329 /* SceneKit Scene.scn */,
 				8AFE555925A86E5400EC5329 /* AHService.swift */,
+				8A6BE19D25AA2B0800D3C2D9 /* HeadingIndicatorView.swift */,
 			);
 			path = AHIS;
 			sourceTree = "<group>";
@@ -146,6 +149,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8AFE554125A75D6C00EC5329 /* ContentView.swift in Sources */,
+				8A6BE19E25AA2B0800D3C2D9 /* HeadingIndicatorView.swift in Sources */,
 				8AFE555A25A86E5400EC5329 /* AHService.swift in Sources */,
 				8AFE553F25A75D6C00EC5329 /* AHISApp.swift in Sources */,
 			);
