@@ -13,7 +13,7 @@
 		8AFE554325A75D6C00EC5329 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8AFE554225A75D6C00EC5329 /* Assets.xcassets */; };
 		8AFE554625A75D6C00EC5329 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8AFE554525A75D6C00EC5329 /* Preview Assets.xcassets */; };
 		8AFE554F25A7A2C600EC5329 /* SceneKit Scene.scn in Resources */ = {isa = PBXBuildFile; fileRef = 8AFE554E25A7A2C600EC5329 /* SceneKit Scene.scn */; };
-		8AFE555A25A86E5400EC5329 /* AHService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFE555925A86E5400EC5329 /* AHService.swift */; };
+		8AFE555A25A86E5400EC5329 /* DeviceMotionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFE555925A86E5400EC5329 /* DeviceMotionService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,7 +25,7 @@
 		8AFE554525A75D6C00EC5329 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		8AFE554725A75D6C00EC5329 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8AFE554E25A7A2C600EC5329 /* SceneKit Scene.scn */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = "SceneKit Scene.scn"; sourceTree = "<group>"; };
-		8AFE555925A86E5400EC5329 /* AHService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AHService.swift; sourceTree = "<group>"; };
+		8AFE555925A86E5400EC5329 /* DeviceMotionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMotionService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,7 +64,7 @@
 				8AFE554725A75D6C00EC5329 /* Info.plist */,
 				8AFE554425A75D6C00EC5329 /* Preview Content */,
 				8AFE554E25A7A2C600EC5329 /* SceneKit Scene.scn */,
-				8AFE555925A86E5400EC5329 /* AHService.swift */,
+				8AFE555925A86E5400EC5329 /* DeviceMotionService.swift */,
 				8A6BE19D25AA2B0800D3C2D9 /* HeadingIndicatorView.swift */,
 			);
 			path = AHIS;
@@ -150,7 +150,7 @@
 			files = (
 				8AFE554125A75D6C00EC5329 /* ContentView.swift in Sources */,
 				8A6BE19E25AA2B0800D3C2D9 /* HeadingIndicatorView.swift in Sources */,
-				8AFE555A25A86E5400EC5329 /* AHService.swift in Sources */,
+				8AFE555A25A86E5400EC5329 /* DeviceMotionService.swift in Sources */,
 				8AFE553F25A75D6C00EC5329 /* AHISApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

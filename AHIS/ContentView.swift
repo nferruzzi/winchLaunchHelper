@@ -155,7 +155,7 @@ struct BackgroundView2: View {
         .overlay(pin(-30, Rectangle().frame(width: 5, height: 33).offset(x: 0, y: -2).foregroundColor(.white)))
         .overlay(pin(60, Rectangle().frame(width: 5, height: 33).offset(x: 0, y: -5).foregroundColor(.white)))
         .overlay(pin(-60, Rectangle().frame(width: 5, height: 33).offset(x: 0, y: -5).foregroundColor(.white)))
-        .rotationEffect(Angle(degrees: Double(yaw)), anchor: .center)
+        .rotationEffect(Angle(degrees: Double(roll)), anchor: .center)
         .drawingGroup()
     }
     
@@ -163,7 +163,7 @@ struct BackgroundView2: View {
     let height: CGFloat
     let pitch: CGFloat
     let roll: CGFloat
-    let yaw: CGFloat
+//    let yaw: CGFloat
     let outer: Bool
     
     var degreeToPixel: CGFloat {
@@ -194,7 +194,7 @@ struct AttitudeIndicatorView: View {
     
     @StateObject var model = AHServiceViewModel()
     @State var pitch: CGFloat = 0
-    @State var yaw: CGFloat = 0
+    @State var roll: CGFloat = 0
 
     var plane: some View {
         Path { path in
@@ -228,8 +228,7 @@ struct AttitudeIndicatorView: View {
                     BackgroundView2(width: geometry.size.width,
                                     height: geometry.size.height,
                                     pitch: sim ? pitch : CGFloat(model.pitch),
-                                    roll: CGFloat(model.roll),
-                                    yaw: sim ? yaw : CGFloat(model.yaw),
+                                    roll: sim ? roll : CGFloat(model.roll),
                                     outer: false)
                         .animation(.linear)
                         .mask(Circle())
@@ -240,8 +239,7 @@ struct AttitudeIndicatorView: View {
                     BackgroundView2(width: geometry.size.width,
                                     height: geometry.size.height,
                                     pitch: sim ? pitch : CGFloat(model.pitch),
-                                    roll: CGFloat(model.roll),
-                                    yaw: sim ? yaw : CGFloat(model.yaw),
+                                    roll: sim ? roll : CGFloat(model.roll),
                                     outer: true)
                         .animation(.linear)
                         .mask(Circle().strokeBorder(style: StrokeStyle.init(lineWidth: 40, lineCap: .round, lineJoin: .round)))
@@ -257,14 +255,14 @@ struct AttitudeIndicatorView: View {
                 VStack {
     //                Text("Roll \(model.roll)")
                     Text("Pitch \(sim ? Int(pitch) : model.pitch)")
-                    Text("Yaw \(sim ? Int(yaw) : model.yaw)")
+                    Text("Roll \(sim ? Int(roll) : model.roll)")
                     Button("Reset") {
                         model.reset()
                     }
                     if sim {
                         Slider(value:$pitch, in: -180...180, label: { Text("Pitch") })
                             .frame(width: 200)
-                        Slider(value:$yaw, in: -180...180, label: { Text("Yaw") })
+                        Slider(value:$roll, in: -180...180, label: { Text("Yaw") })
                             .frame(width: 200)
                     }
                 }
@@ -275,29 +273,41 @@ struct AttitudeIndicatorView: View {
 
 
 struct ContentView: View {
+    @State private var isPortrait = true
     @StateObject var model = AHServiceViewModel()
     let sim: Bool
     
     var body: some View {
-        VStack {
-            AttitudeIndicatorView(sim: sim, model: model)
-            HeadingIndicatorView(sim: sim, model: model)
+        Group {
+            if isPortrait {
+                VStack {
+                    AttitudeIndicatorView(sim: sim, model: model)
+                    HeadingIndicatorView(sim: sim, model: model)
+                }
+            } else {
+                HStack {
+                    AttitudeIndicatorView(sim: sim, model: model)
+                    HeadingIndicatorView(sim: sim, model: model)
+                }
+            }
+        }.onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+            guard let scene = UIApplication.shared.windows.first?.windowScene else { return }
+            self.isPortrait = scene.interfaceOrientation.isPortrait
         }
     }
-    
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView(sim: true)
             .preferredColorScheme(.dark)
-        ContentView(sim: true)
-            .preferredColorScheme(.light)
-        ContentView(sim: true)
-            .previewDevice("iPhone 8")
-            .preferredColorScheme(.light)
-        ContentView(sim: true)
-            .previewDevice("iPad Pro (12.9-inch) (4th generation)")
-            .preferredColorScheme(.light)
+//        ContentView(sim: true)
+//            .preferredColorScheme(.light)
+//        ContentView(sim: true)
+//            .previewDevice("iPhone 8")
+//            .preferredColorScheme(.light)
+//        ContentView(sim: true)
+//            .previewDevice("iPad Pro (12.9-inch) (4th generation)")
+//            .preferredColorScheme(.light)
     }
 }
