@@ -1,27 +1,14 @@
 //
-//  ContentView.swift
+//  AttitudeIndicatorView.swift
 //  AHIS
 //
-//  Created by nferruzzi on 07/01/21.
+//  Created by Nicola Ferruzzi on 01/08/23.
 //
 
 import SwiftUI
 
 
-struct TriangleShape: Shape {
-    let offset: CGFloat
-    
-    func path(in rect: CGRect) -> Path {
-        Path { path in
-            path.move(to: CGPoint(x: rect.size.width/2.0, y: 0))
-            path.addLine(to: CGPoint(x: rect.size.width, y: rect.size.height - offset))
-            path.addLine(to: CGPoint(x: 0, y: rect.size.height - offset))
-        }
-    }
-}
-
-
-struct BackgroundView: View {
+fileprivate struct BackgroundView: View {
     enum Constants {
         static let blueI = Color(red: 0.47, green: 0.66, blue: 0.82)
         static let blueO = Color(red: 0.04, green: 0.35, blue: 0.53)
@@ -33,45 +20,6 @@ struct BackgroundView: View {
         static let earthGradientO = Gradient(colors: [brownI, brownO])
         static let fov: CGFloat = 120
     }
-
-    struct SkyShape: Shape {
-        let size: CGFloat
-        var horizont: CGFloat
-
-        func path(in rect: CGRect) -> Path {
-            Path { path in
-                path.move(to: CGPoint(x: 0, y: 0))
-                path.addLine(to: CGPoint(x: size, y: 0))
-                path.addLine(to: CGPoint(x: size, y: horizont))
-                path.addLine(to: CGPoint(x: 0, y: horizont))
-            }
-        }
-        
-        var animatableData: CGFloat {
-            get { horizont }
-            set { horizont = newValue }
-        }
-    }
-    
-    struct EarthShape: Shape {
-        let size: CGFloat
-        var horizont: CGFloat
-
-        func path(in rect: CGRect) -> Path {
-            Path { path in
-                path.move(to: CGPoint(x: 0, y: horizont))
-                path.addLine(to: CGPoint(x: size, y: horizont))
-                path.addLine(to: CGPoint(x: size, y: size))
-                path.addLine(to: CGPoint(x: 0, y: size))
-            }
-        }
-        
-        var animatableData: CGFloat {
-            get { horizont }
-            set { horizont = newValue }
-        }
-    }
-    
 
 
     func line(_ offset: CGFloat, _ value: String, _ width: CGFloat) -> some View {
@@ -157,11 +105,6 @@ struct BackgroundView: View {
     }
 }
 
-extension Double {
-    var degree: Double {
-        (self * 180.0) / Double.pi
-    }
-}
 
 struct AttitudeIndicatorView: View {
     @ObservedObject var model: AHServiceViewModel
@@ -171,23 +114,16 @@ struct AttitudeIndicatorView: View {
             path.move(to: CGPoint(x: 45, y: 0))
             path.addLine(to: CGPoint(x: 90, y: 20))
             path.addLine(to: CGPoint(x: 0, y: 20))
-        }.foregroundColor(.yellow)
-        .frame(width: 90, height: 1, alignment: .center)
+        }
+            .foregroundColor(.yellow)
+            .frame(width: 90, height: 1, alignment: .center)
     }
     
     var virata: some View {
         TriangleShape(offset: 0)
-        .foregroundColor(.yellow)
-        .frame(width: 30, height: 14, alignment: .top)
-        .offset(x: 0, y: 42)
-    }
-    
-    struct Ring: Shape {
-        func path(in rect: CGRect) -> Path {
-            Path { path in
-                path.move(to: CGPoint(x: 0, y: 0))
-            }
-        }
+            .foregroundColor(.yellow)
+            .frame(width: 30, height: 14, alignment: .top)
+            .offset(x: 0, y: 42)
     }
     
     @ViewBuilder
@@ -226,41 +162,8 @@ struct AttitudeIndicatorView: View {
 }
 
 
-struct ContentView: View {
-    @State private var isPortrait = true
-    @StateObject var model = AHServiceViewModel()
-    
-    var body: some View {
-        Group {
-            if isPortrait {
-                VStack {
-                    AttitudeIndicatorView(model: model)
-                    HeadingIndicatorView(model: model)
-                }
-            } else {
-                HStack {
-                    AttitudeIndicatorView(model: model)
-                    HeadingIndicatorView(model: model)
-                }
-            }
-        }.onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
-            guard let scene = UIApplication.shared.windows.first?.windowScene else { return }
-            self.isPortrait = scene.interfaceOrientation.isPortrait
-        }
-    }
-}
-
-struct ContentView_Previews: PreviewProvider {
+struct AttitudeIndicatorView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
-            .preferredColorScheme(.dark)
-//        ContentView(sim: true)
-//            .preferredColorScheme(.light)
-//        ContentView(sim: true)
-//            .previewDevice("iPhone 8")
-//            .preferredColorScheme(.light)
-//        ContentView(sim: true)
-//            .previewDevice("iPad Pro (12.9-inch) (4th generation)")
-//            .preferredColorScheme(.light)
+        AttitudeIndicatorView(model: AHServiceViewModel())
     }
 }

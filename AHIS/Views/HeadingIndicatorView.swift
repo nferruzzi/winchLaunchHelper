@@ -8,15 +8,6 @@
 import SwiftUI
 
 
-private extension Double {
-    /// The conversion formula found online expects the module operator to work like the python one for negative numbers
-    /// AKA: mod = a - math.floor(a/b) * base
-    func pythonMod(by val: Double) -> Double {
-        self - floor(self / val) * val
-    }
-}
-
-
 struct HeadingIndicatorPath: Shape {
     func path(in rect: CGRect) -> Path {
         Path { path in
