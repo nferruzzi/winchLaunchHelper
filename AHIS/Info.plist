@@ -41,6 +41,14 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>To read the GPS speed, it is necessary to authorize the app.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>To read the GPS speed, it is necessary to authorize the app.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>To read the GPS speed, it is necessary to authorize the app.</string>
+	<key>NSLocationUsageDescription</key>
+	<string>To read the GPS speed, it is necessary to authorize the app.</string>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -48,5 +56,10 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+    <key>NSLocationTemporaryUsageDescriptionDictionary</key>
+    <dict>
+    <key>AccurateSpeed</key>
+    <string>To read an accurate GPS speed, it is necessary to authorize the app.</string>
+    </dict>
 </dict>
 </plist>
