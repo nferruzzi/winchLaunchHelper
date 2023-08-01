@@ -7,32 +7,6 @@
 
 import SwiftUI
 
-struct BackgroundView: View {
-    enum Constants {
-        static let aspectRatio: CGFloat = 1
-        static let height: CGFloat = 1024 * aspectRatio
-        static let width: CGFloat = 1024 * aspectRatio
-    }
-    
-    var background: some View {
-        Image("Texture")
-            .resizable()
-            .aspectRatio(contentMode: .fill)
-            .frame(width: Constants.width, height: Constants.height, alignment: .center)
-            .transformEffect(.init(translationX: 0, y: pitch * (Constants.height / 360)))
-            .rotationEffect(Angle(degrees: Double(yaw)), anchor: .center)
-            .drawingGroup()
-    }
-    
-    let pitch: CGFloat
-    let roll: CGFloat
-    let yaw: CGFloat
-
-    var body: some View {
-        background
-    }
-}
-
 
 struct TriangleShape: Shape {
     let offset: CGFloat
@@ -47,7 +21,7 @@ struct TriangleShape: Shape {
 }
 
 
-struct BackgroundView2: View {
+struct BackgroundView: View {
     enum Constants {
         static let blueI = Color(red: 0.47, green: 0.66, blue: 0.82)
         static let blueO = Color(red: 0.04, green: 0.35, blue: 0.53)
@@ -190,11 +164,7 @@ extension Double {
 }
 
 struct AttitudeIndicatorView: View {
-    let sim: Bool
-    
-    @StateObject var model = AHServiceViewModel()
-    @State var pitch: CGFloat = 0
-    @State var roll: CGFloat = 0
+    @ObservedObject var model: AHServiceViewModel
 
     var plane: some View {
         Path { path in
@@ -225,22 +195,22 @@ struct AttitudeIndicatorView: View {
         VStack {
             ZStack {
                 GeometryReader { geometry in
-                    BackgroundView2(width: geometry.size.width,
-                                    height: geometry.size.height,
-                                    pitch: sim ? pitch : CGFloat(model.pitch),
-                                    roll: sim ? roll : CGFloat(model.roll),
-                                    outer: false)
+                    BackgroundView(width: geometry.size.width,
+                                   height: geometry.size.height,
+                                   pitch: CGFloat(model.pitch),
+                                   roll: CGFloat(model.roll),
+                                   outer: false)
                         .animation(.linear)
                         .mask(Circle())
                         .overlay(plane.shadow(radius: 5), alignment: .center)
                         .overlay(virata.shadow(radius: 5), alignment: .top)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                     
-                    BackgroundView2(width: geometry.size.width,
-                                    height: geometry.size.height,
-                                    pitch: sim ? pitch : CGFloat(model.pitch),
-                                    roll: sim ? roll : CGFloat(model.roll),
-                                    outer: true)
+                    BackgroundView(width: geometry.size.width,
+                                   height: geometry.size.height,
+                                   pitch: CGFloat(model.pitch),
+                                   roll: CGFloat(model.roll),
+                                   outer: true)
                         .animation(.linear)
                         .mask(Circle().strokeBorder(style: StrokeStyle.init(lineWidth: 40, lineCap: .round, lineJoin: .round)))
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
@@ -251,22 +221,6 @@ struct AttitudeIndicatorView: View {
                 }, alignment: .bottomTrailing)
                 .padding()
             }
-            if false && sim {
-                VStack {
-    //                Text("Roll \(model.roll)")
-                    Text("Pitch \(sim ? Int(pitch) : model.pitch)")
-                    Text("Roll \(sim ? Int(roll) : model.roll)")
-                    Button("Reset") {
-                        model.reset()
-                    }
-                    if sim {
-                        Slider(value:$pitch, in: -180...180, label: { Text("Pitch") })
-                            .frame(width: 200)
-                        Slider(value:$roll, in: -180...180, label: { Text("Yaw") })
-                            .frame(width: 200)
-                    }
-                }
-            }
         }
     }
 }
@@ -275,19 +229,18 @@ struct AttitudeIndicatorView: View {
 struct ContentView: View {
     @State private var isPortrait = true
     @StateObject var model = AHServiceViewModel()
-    let sim: Bool
     
     var body: some View {
         Group {
             if isPortrait {
                 VStack {
-                    AttitudeIndicatorView(sim: sim, model: model)
-                    HeadingIndicatorView(sim: sim, model: model)
+                    AttitudeIndicatorView(model: model)
+                    HeadingIndicatorView(model: model)
                 }
             } else {
                 HStack {
-                    AttitudeIndicatorView(sim: sim, model: model)
-                    HeadingIndicatorView(sim: sim, model: model)
+                    AttitudeIndicatorView(model: model)
+                    HeadingIndicatorView(model: model)
                 }
             }
         }.onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
@@ -299,7 +252,7 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(sim: true)
+        ContentView()
             .preferredColorScheme(.dark)
 //        ContentView(sim: true)
 //            .preferredColorScheme(.light)

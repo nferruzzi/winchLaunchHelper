@@ -11,7 +11,7 @@ import SwiftUI
 struct AHISApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView(sim: false)
+            ContentView()
         }
     }
 }

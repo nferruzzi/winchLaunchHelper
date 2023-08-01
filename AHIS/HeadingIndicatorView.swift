@@ -123,13 +123,11 @@ struct HeadingIndicatorInnerView: View {
 }
 
 struct HeadingIndicatorView: View {
-    let sim: Bool
-
     @State var heading: Double = 0
-    @StateObject var model = AHServiceViewModel()
+    @ObservedObject var model: AHServiceViewModel
     
     var anglePassed: Double {
-        (sim ? heading : model.heading) //.pythonMod(by: 360) - 360
+        model.heading //.pythonMod(by: 360) - 360
     }
 
     var body: some View {
@@ -147,10 +145,6 @@ struct HeadingIndicatorView: View {
                     .shadow(color: Color(.sRGBLinear, white: 1, opacity: 0.8), radius: 5)
             }
             .aspectRatio(CGSize(width: 1, height: 1), contentMode: .fit)
-            if sim {
-                Text("\(anglePassed)")
-                Slider(value: $heading, in: -720...720)
-            }
         }
         .padding()
     }
@@ -158,7 +152,7 @@ struct HeadingIndicatorView: View {
 
 struct HeadingIndicatorView_Previews: PreviewProvider {
     static var previews: some View {
-        HeadingIndicatorView(sim: true)
+        HeadingIndicatorView(model: AHServiceViewModel())
             .preferredColorScheme(.dark)
     }
 }
