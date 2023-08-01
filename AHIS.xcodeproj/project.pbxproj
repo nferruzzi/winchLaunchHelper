@@ -39,6 +39,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8AFCD6A92A796947009F97FA /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				8A6BE19D25AA2B0800D3C2D9 /* HeadingIndicatorView.swift */,
+				8AFE554025A75D6C00EC5329 /* ContentView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		8AFCD6AA2A79695C009F97FA /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				8AFE555925A86E5400EC5329 /* DeviceMotionService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
 		8AFE553225A75D6C00EC5329 = {
 			isa = PBXGroup;
 			children = (
@@ -58,14 +75,13 @@
 		8AFE553D25A75D6C00EC5329 /* AHIS */ = {
 			isa = PBXGroup;
 			children = (
+				8AFCD6AA2A79695C009F97FA /* Services */,
+				8AFCD6A92A796947009F97FA /* Views */,
 				8AFE553E25A75D6C00EC5329 /* AHISApp.swift */,
-				8AFE554025A75D6C00EC5329 /* ContentView.swift */,
 				8AFE554225A75D6C00EC5329 /* Assets.xcassets */,
 				8AFE554725A75D6C00EC5329 /* Info.plist */,
 				8AFE554425A75D6C00EC5329 /* Preview Content */,
 				8AFE554E25A7A2C600EC5329 /* SceneKit Scene.scn */,
-				8AFE555925A86E5400EC5329 /* DeviceMotionService.swift */,
-				8A6BE19D25AA2B0800D3C2D9 /* HeadingIndicatorView.swift */,
 			);
 			path = AHIS;
 			sourceTree = "<group>";
