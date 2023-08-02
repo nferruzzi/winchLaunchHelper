@@ -28,6 +28,7 @@ public final class DeviceMotionService: NSObject {
         static let manager = CMMotionManager()
         static let locationManager = CLLocationManager()
         static let queue = OperationQueue()
+        static let userSettingsRA = "Reference Attitude"
     }
 
     @Published private var deviceMotionSubject: CMDeviceMotion?
@@ -53,6 +54,12 @@ public final class DeviceMotionService: NSObject {
         Constants.locationManager.activityType = .airborne
         Constants.locationManager.pausesLocationUpdatesAutomatically = false
         Constants.locationManager.delegate = self
+        
+        if let dataReferenceAttitude = UserDefaults.standard.data(forKey: Constants.userSettingsRA) {
+            if let loadedObject = try? NSKeyedUnarchiver.unarchivedObject(ofClass: CMAttitude.self, from: dataReferenceAttitude) {
+                referenceAttitude = loadedObject
+            }
+        }
         
         NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)
             .compactMap { _ in
@@ -120,6 +127,10 @@ public final class DeviceMotionService: NSObject {
             
             if let ra = self.referenceAttitude {
                 motion.attitude.multiply(byInverseOf: ra)
+                
+                if let data = try? NSKeyedArchiver.archivedData(withRootObject: ra, requiringSecureCoding: true) {
+                    UserDefaults.standard.set(data, forKey: Constants.userSettingsRA)
+                }
             }
 
             self.deviceMotionSubject = motion
