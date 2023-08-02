@@ -17,11 +17,12 @@ struct ContentView: View {
             if isPortrait {
                 VStack {
                     AttitudeIndicatorView(model: model)
-                    HeadingIndicatorView(model: model)
+                    WinchLaunchView(model: model)
                 }
             } else {
                 HStack {
                     AttitudeIndicatorView(model: model)
+                    WinchLaunchView(model: model)
                     HeadingIndicatorView(model: model)
                 }
             }
