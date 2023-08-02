@@ -10,7 +10,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var isPortrait = true
-    @StateObject var model = AHServiceViewModel()
+    var model: AHServiceViewModel
     
     var body: some View {
         Group {
@@ -34,15 +34,7 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        ContentView(model: AHServiceViewModel())
             .preferredColorScheme(.dark)
-//        ContentView(sim: true)
-//            .preferredColorScheme(.light)
-//        ContentView(sim: true)
-//            .previewDevice("iPhone 8")
-//            .preferredColorScheme(.light)
-//        ContentView(sim: true)
-//            .previewDevice("iPad Pro (12.9-inch) (4th generation)")
-//            .preferredColorScheme(.light)
     }
 }

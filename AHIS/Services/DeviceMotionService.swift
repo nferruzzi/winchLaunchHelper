@@ -22,7 +22,7 @@ public protocol DeviceMotionProtocol {
 }
 
 
-public class DeviceMotionService: NSObject {
+public final class DeviceMotionService: NSObject {
     
     enum Constants {
         static let manager = CMMotionManager()
@@ -35,7 +35,7 @@ public class DeviceMotionService: NSObject {
     @Published private var rollSubject: Double = 0
     @Published private var pitchSubject: Double = 0
     @Published private var interfaceOrientation: UIInterfaceOrientation = .portrait
-    @Published private var speedSubject: Double = 0
+    @Published private var speedSubject: (Date, Double) = (Date.distantPast, 0)
 
     private var subscriptions = Set<AnyCancellable>()
     private var referenceAttitude: CMAttitude?
@@ -161,12 +161,13 @@ extension DeviceMotionService: DeviceMotionProtocol {
         $pitchSubject.removeDuplicates().eraseToAnyPublisher()
     }
 
-    public var speed: AnyPublisher<Double, Never> {
-        $speedSubject.removeDuplicates().eraseToAnyPublisher()
+    public var speed: AnyPublisher<(Date, CLLocationSpeed), Never> {
+        $speedSubject.eraseToAnyPublisher()
     }
     
     public func reset() {
         referenceAttitude = latestAttitude?.copy() as? CMAttitude
+        say("Pronto")
     }
 }
 
@@ -193,7 +194,7 @@ extension DeviceMotionService: CLLocationManagerDelegate {
     
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let last = locations.last(where: { $0.speedAccuracy > 0 }) else { return }
-        speedSubject = last.speed
+        speedSubject = (last.timestamp, last.speed)
     }
     
     public func locationManagerShouldDisplayHeadingCalibration(_ manager: CLLocationManager) -> Bool {
