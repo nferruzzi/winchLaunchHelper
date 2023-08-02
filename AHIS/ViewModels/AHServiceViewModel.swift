@@ -14,8 +14,9 @@ import AVFoundation
 final class AHServiceViewModel: ObservableObject {
     enum Constants {
         static let synthesizer = AVSpeechSynthesizer()
+        /// ask13 
         static let minSpeed = Measurement<UnitSpeed>(value: 70, unit: .kilometersPerHour)
-        static let maxSpeed = Measurement<UnitSpeed>(value: 90, unit: .kilometersPerHour)
+        static let maxSpeed = Measurement<UnitSpeed>(value: 110, unit: .kilometersPerHour)
     }
     
     private var subscriptions = Set<AnyCancellable>()
@@ -82,12 +83,12 @@ final class AHServiceViewModel: ObservableObject {
             .store(in: &subscriptions)
         
         if let machineStateService = machineStateService {
-            Publishers.CombineLatest(machineStateService.machineState,
-                                     machineStateService.speed)
+            Publishers.CombineLatest(machineStateService.machineState.removeDuplicates(),
+                                     machineStateService.speed.removeDuplicates())
             .receive(on: DispatchQueue.main)
             .sink { [unowned self] (state, speed) in
                 let currentSpeed = Measurement<UnitSpeed>(value: speed, unit: .metersPerSecond)
-                
+
                 if state == .acceleration {
                     self.lastSayMinDeceleration = nil
                     
@@ -125,5 +126,6 @@ final class AHServiceViewModel: ObservableObject {
         speechUtterance.voice = AVSpeechSynthesisVoice()
         Constants.synthesizer.speak(speechUtterance)
         lasSayString = string
+        print("Say \(string)")
     }
 }

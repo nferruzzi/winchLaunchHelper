@@ -50,7 +50,7 @@ public final class DeviceMotionService: NSObject {
         Constants.manager.showsDeviceMovementDisplay = true
         Constants.manager.deviceMotionUpdateInterval = TimeInterval(1.0/100.0)
 
-        Constants.locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+        Constants.locationManager.desiredAccuracy = kCLLocationAccuracyBest
         Constants.locationManager.activityType = .airborne
         Constants.locationManager.pausesLocationUpdatesAutomatically = false
         Constants.locationManager.delegate = self
