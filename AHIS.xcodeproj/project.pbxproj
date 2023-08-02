@@ -13,6 +13,7 @@
 		8AFCD6B12A796A39009F97FA /* TriangleShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6B02A796A39009F97FA /* TriangleShape.swift */; };
 		8AFCD6B32A796AAC009F97FA /* EarthShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6B22A796AAC009F97FA /* EarthShape.swift */; };
 		8AFCD6B52A796AB3009F97FA /* SkyShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6B42A796AB3009F97FA /* SkyShape.swift */; };
+		8AFCD6B72A7A4B22009F97FA /* SmoothedStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6B62A7A4B22009F97FA /* SmoothedStateMachine.swift */; };
 		8AFE553F25A75D6C00EC5329 /* AHISApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFE553E25A75D6C00EC5329 /* AHISApp.swift */; };
 		8AFE554125A75D6C00EC5329 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFE554025A75D6C00EC5329 /* ContentView.swift */; };
 		8AFE554325A75D6C00EC5329 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8AFE554225A75D6C00EC5329 /* Assets.xcassets */; };
@@ -27,6 +28,7 @@
 		8AFCD6B02A796A39009F97FA /* TriangleShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriangleShape.swift; sourceTree = "<group>"; };
 		8AFCD6B22A796AAC009F97FA /* EarthShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EarthShape.swift; sourceTree = "<group>"; };
 		8AFCD6B42A796AB3009F97FA /* SkyShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkyShape.swift; sourceTree = "<group>"; };
+		8AFCD6B62A7A4B22009F97FA /* SmoothedStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmoothedStateMachine.swift; sourceTree = "<group>"; };
 		8AFE553B25A75D6C00EC5329 /* AHIS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AHIS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8AFE553E25A75D6C00EC5329 /* AHISApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AHISApp.swift; sourceTree = "<group>"; };
 		8AFE554025A75D6C00EC5329 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -63,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				8AFE555925A86E5400EC5329 /* DeviceMotionService.swift */,
+				8AFCD6B62A7A4B22009F97FA /* SmoothedStateMachine.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -190,6 +193,7 @@
 				8AFE555A25A86E5400EC5329 /* DeviceMotionService.swift in Sources */,
 				8AFCD6AC2A79699C009F97FA /* AttitudeIndicatorView.swift in Sources */,
 				8AFCD6B12A796A39009F97FA /* TriangleShape.swift in Sources */,
+				8AFCD6B72A7A4B22009F97FA /* SmoothedStateMachine.swift in Sources */,
 				8AFCD6B52A796AB3009F97FA /* SkyShape.swift in Sources */,
 				8AFCD6AF2A7969F9009F97FA /* Double+math.swift in Sources */,
 				8AFE553F25A75D6C00EC5329 /* AHISApp.swift in Sources */,
