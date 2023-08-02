@@ -18,7 +18,7 @@ public protocol DeviceMotionProtocol {
     var roll: AnyPublisher<Double, Never> { get }
     var pitch: AnyPublisher<Double, Never> { get }
     var heading: AnyPublisher<Double, Never> { get }
-    var speed: AnyPublisher<CLLocationSpeed, Never> { get }
+    var speed: AnyPublisher<(Date, CLLocationSpeed), Never> { get }
 }
 
 
@@ -167,7 +167,6 @@ extension DeviceMotionService: DeviceMotionProtocol {
     
     public func reset() {
         referenceAttitude = latestAttitude?.copy() as? CMAttitude
-        say("Pronto")
     }
 }
 

@@ -10,15 +10,15 @@ import SwiftUI
 
 struct WinchLaunchView: View {
     @ObservedObject var model: AHServiceViewModel
-
-    var speed: Measurement<UnitSpeed> {
-        Measurement(value: model.speed, unit: UnitSpeed.metersPerSecond)
-    }
     
     @ViewBuilder
     var content: some View {
-        Text(speed.converted(to: .kilometersPerHour).formatted())
-            .font(.system(size: 80, weight: .bold, design: .monospaced))
+        VStack {
+            Text(model.speed.converted(to: .kilometersPerHour).formatted())
+                .font(.system(size: 80, weight: .bold, design: .monospaced))
+            Text(model.lasSayString)
+                .font(.system(size: 40, weight: .bold, design: .monospaced))
+        }
     }
     
     var body: some View {
