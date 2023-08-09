@@ -16,6 +16,7 @@
 		8AFCD6B72A7A4B22009F97FA /* SmoothedStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6B62A7A4B22009F97FA /* SmoothedStateMachine.swift */; };
 		8AFCD6BA2A7A830F009F97FA /* AHServiceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6B92A7A830F009F97FA /* AHServiceViewModel.swift */; };
 		8AFCD6BC2A7A8BB9009F97FA /* WinchLaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6BB2A7A8BB9009F97FA /* WinchLaunchView.swift */; };
+		8AFCD6BE2A844E8E009F97FA /* CMAttitude+math.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6BD2A844E8E009F97FA /* CMAttitude+math.swift */; };
 		8AFE553F25A75D6C00EC5329 /* AHISApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFE553E25A75D6C00EC5329 /* AHISApp.swift */; };
 		8AFE554125A75D6C00EC5329 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFE554025A75D6C00EC5329 /* ContentView.swift */; };
 		8AFE554325A75D6C00EC5329 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8AFE554225A75D6C00EC5329 /* Assets.xcassets */; };
@@ -33,6 +34,7 @@
 		8AFCD6B62A7A4B22009F97FA /* SmoothedStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmoothedStateMachine.swift; sourceTree = "<group>"; };
 		8AFCD6B92A7A830F009F97FA /* AHServiceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AHServiceViewModel.swift; sourceTree = "<group>"; };
 		8AFCD6BB2A7A8BB9009F97FA /* WinchLaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinchLaunchView.swift; sourceTree = "<group>"; };
+		8AFCD6BD2A844E8E009F97FA /* CMAttitude+math.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CMAttitude+math.swift"; sourceTree = "<group>"; };
 		8AFE553B25A75D6C00EC5329 /* AHIS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AHIS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8AFE553E25A75D6C00EC5329 /* AHISApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AHISApp.swift; sourceTree = "<group>"; };
 		8AFE554025A75D6C00EC5329 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -79,6 +81,7 @@
 			isa = PBXGroup;
 			children = (
 				8AFCD6AE2A7969F9009F97FA /* Double+math.swift */,
+				8AFCD6BD2A844E8E009F97FA /* CMAttitude+math.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -206,6 +209,7 @@
 				8A6BE19E25AA2B0800D3C2D9 /* HeadingIndicatorView.swift in Sources */,
 				8AFE555A25A86E5400EC5329 /* DeviceMotionService.swift in Sources */,
 				8AFCD6AC2A79699C009F97FA /* AttitudeIndicatorView.swift in Sources */,
+				8AFCD6BE2A844E8E009F97FA /* CMAttitude+math.swift in Sources */,
 				8AFCD6B12A796A39009F97FA /* TriangleShape.swift in Sources */,
 				8AFCD6BA2A7A830F009F97FA /* AHServiceViewModel.swift in Sources */,
 				8AFCD6B72A7A4B22009F97FA /* SmoothedStateMachine.swift in Sources */,

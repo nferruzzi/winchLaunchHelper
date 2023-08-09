@@ -10,7 +10,7 @@ import Combine
 import CoreMotion
 import UIKit
 import CoreLocation
-
+import simd
 
 public protocol DeviceMotionProtocol {
     func reset()
@@ -28,22 +28,24 @@ public final class DeviceMotionService: NSObject {
         static let manager = CMMotionManager()
         static let locationManager = CLLocationManager()
         static let queue = OperationQueue()
-        static let userSettingsRA = "Reference Attitude"
+        static let userSettingsPitch = "Pitch Zero"
+        static let userSettingsRoll = "Roll Zero"
     }
 
     @Published private var deviceMotionSubject: CMDeviceMotion?
+    @Published private var deviceMotionQuaternionSubject: CMQuaternion?
     @Published private var headingSubject: Double = 0
     @Published private var rollSubject: Double = 0
     @Published private var pitchSubject: Double = 0
-    @Published private var interfaceOrientation: UIInterfaceOrientation = .portrait
     @Published private var speedSubject: (Date, Double) = (Date.distantPast, 0)
 
     private var subscriptions = Set<AnyCancellable>()
-    private var referenceAttitude: CMAttitude?
     private var latestAttitude: CMAttitude?
     private var rotate: Double = 10
     private var prevHeading: Double = 0
-    
+
+    private var pitchZero: Double?
+    private var rollZero: Double?
     
     public override init() {
         super.init()
@@ -55,49 +57,20 @@ public final class DeviceMotionService: NSObject {
         Constants.locationManager.pausesLocationUpdatesAutomatically = false
         Constants.locationManager.delegate = self
         
-        if let dataReferenceAttitude = UserDefaults.standard.data(forKey: Constants.userSettingsRA) {
-            if let loadedObject = try? NSKeyedUnarchiver.unarchivedObject(ofClass: CMAttitude.self, from: dataReferenceAttitude) {
-                referenceAttitude = loadedObject
-            }
-        }
+        pitchZero = UserDefaults.standard.double(forKey: Constants.userSettingsPitch)
+        rollZero = UserDefaults.standard.double(forKey: Constants.userSettingsRoll)
         
-        NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)
-            .compactMap { _ in
-                UIApplication.shared.windows.first?.windowScene?.interfaceOrientation
-            }
-            .assign(to: \.interfaceOrientation, on: self)
-            .store(in: &subscriptions)
-
         start(reference: .xMagneticNorthZVertical)
         
         if Constants.locationManager.authorizationStatus == .notDetermined {
             Constants.locationManager.requestWhenInUseAuthorization()
         }
         
-        Publishers.CombineLatest($interfaceOrientation.removeDuplicates(),
-                                 $deviceMotionSubject.compactMap { $0?.attitude } )
-            .sink { [weak self] orientation, attitude in
-                switch orientation {
-                case .portrait:
-                    self?.rollSubject = attitude.yaw
-                    self?.pitchSubject = attitude.pitch
-
-                case .portraitUpsideDown:
-                    debugPrint("Portrait UP not tested")
-                    self?.rollSubject = attitude.yaw
-                    self?.pitchSubject = -attitude.pitch
-
-                case .landscapeLeft:
-                    self?.rollSubject = attitude.yaw
-                    self?.pitchSubject = attitude.roll
-
-                case .landscapeRight:
-                    self?.rollSubject = attitude.yaw
-                    self?.pitchSubject = -attitude.roll
-
-                default:
-                    debugPrint("Unknown")
-                }
+        $deviceMotionQuaternionSubject
+            .sink { [unowned self] attitude in
+                guard let attitude = attitude else { return }
+                self.pitchSubject = attitude.simdQuatd.pitch - (self.pitchZero ?? 0)
+                self.rollSubject = attitude.simdQuatd.roll - (self.rollZero ?? 0)
             }
             .store(in: &subscriptions)
     }
@@ -122,18 +95,8 @@ public final class DeviceMotionService: NSObject {
 
             self.prevHeading = motion.heading
             self.headingSubject = heading + self.rotate * 360
-            
             self.latestAttitude = motion.attitude.copy() as? CMAttitude
-            
-            if let ra = self.referenceAttitude {
-                motion.attitude.multiply(byInverseOf: ra)
-                
-                if let data = try? NSKeyedArchiver.archivedData(withRootObject: ra, requiringSecureCoding: true) {
-                    UserDefaults.standard.set(data, forKey: Constants.userSettingsRA)
-                }
-            }
-
-            self.deviceMotionSubject = motion
+            self.deviceMotionQuaternionSubject = motion.attitude.quaternion
         }
     }
 }
@@ -141,27 +104,7 @@ public final class DeviceMotionService: NSObject {
 
 extension DeviceMotionService: DeviceMotionProtocol {
     public var heading: AnyPublisher<Double, Never> {
-        Publishers.CombineLatest($interfaceOrientation.removeDuplicates(),
-                                 $headingSubject.removeDuplicates() )
-            .map { orientation, heading in
-                switch orientation {
-                case .portrait:
-                    return heading
-
-                case .portraitUpsideDown:
-                    return heading
-
-                case .landscapeLeft:
-                    return heading - 90
-
-                case .landscapeRight:
-                    return heading + 90
-
-                default:
-                    return heading
-                }
-            }
-            .eraseToAnyPublisher()
+        $headingSubject.removeDuplicates().eraseToAnyPublisher()
     }
 
     public var roll: AnyPublisher<Double, Never> {
@@ -180,7 +123,20 @@ extension DeviceMotionService: DeviceMotionProtocol {
     }
     
     public func reset() {
-        referenceAttitude = latestAttitude?.copy() as? CMAttitude
+        defer {
+            UserDefaults.standard.set(pitchZero, forKey: Constants.userSettingsPitch)
+            UserDefaults.standard.set(rollZero, forKey: Constants.userSettingsRoll)
+            UserDefaults.standard.synchronize()
+        }
+        
+        guard let latestAttitude = latestAttitude else {
+            pitchZero = nil
+            rollZero = nil
+            return
+        }
+        
+        pitchZero = latestAttitude.quaternion.simdQuatd.pitch
+        rollZero = latestAttitude.quaternion.simdQuatd.roll
     }
 }
 

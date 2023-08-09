@@ -20,6 +20,19 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>To read the GPS speed, it is necessary to authorize the app.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>To read the GPS speed, it is necessary to authorize the app.</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>AccurateSpeed</key>
+		<string>To read an accurate GPS speed, it is necessary to authorize the app.</string>
+	</dict>
+	<key>NSLocationUsageDescription</key>
+	<string>To read the GPS speed, it is necessary to authorize the app.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>To read the GPS speed, it is necessary to authorize the app.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>AH required</string>
 	<key>UIApplicationSceneManifest</key>
@@ -38,28 +51,6 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
 	</array>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>To read the GPS speed, it is necessary to authorize the app.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>To read the GPS speed, it is necessary to authorize the app.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>To read the GPS speed, it is necessary to authorize the app.</string>
-	<key>NSLocationUsageDescription</key>
-	<string>To read the GPS speed, it is necessary to authorize the app.</string>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-    <key>NSLocationTemporaryUsageDescriptionDictionary</key>
-    <dict>
-    <key>AccurateSpeed</key>
-    <string>To read an accurate GPS speed, it is necessary to authorize the app.</string>
-    </dict>
 </dict>
 </plist>
