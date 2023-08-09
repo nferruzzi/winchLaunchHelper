@@ -18,15 +18,15 @@ fileprivate struct BackgroundView: View {
         static let skyGradientI = Gradient(colors: [blueI, blueO])
         static let earthGradient = Gradient(colors: [brownO, brownI])
         static let earthGradientO = Gradient(colors: [brownI, brownO])
-        static let fov: CGFloat = 120
+        static let fov: CGFloat = 90
     }
 
 
-    func line(_ offset: CGFloat, _ value: String, _ width: CGFloat) -> some View {
+    func line(_ offset: CGFloat, _ value: String, _ width: CGFloat, _ height: CGFloat = 1) -> some View {
         HStack {
             Text(value)
             Rectangle()
-                .frame(width: width, height: 1)
+                .frame(width: width, height: height)
             Text(value)
         }
         .font(.system(size: 10))
@@ -48,20 +48,39 @@ fileprivate struct BackgroundView: View {
             SkyShape(size: size, horizont: outer ? pitchToPixel(0) : pitchToPixel(pitch))
                 .fill(LinearGradient(gradient: Constants.skyGradient, startPoint: .top, endPoint: .bottom))
                 .frame(width: size, height: size)
+            
+            Rectangle()
+                .frame(width: size, height: size)
+                .foregroundColor(Color(red: 1.0, green: 0, blue: 0, opacity: pitchToOpacity(pitch)))
+
 
             EarthShape(size: size, horizont: outer ? pitchToPixel(0) : pitchToPixel(pitch))
                 .fill(LinearGradient(gradient: Constants.earthGradient, startPoint: .bottom, endPoint: .top))
                 .frame(width: size, height: size)
 
             if !outer {
-                line(20, "20", 100)
-                line(15, "", 50)
-                line(10, "10", 75)
-                line(5, "", 50)
-                line(-20, "20", 100)
-                line(-15, "", 50)
-                line(-10, "10", 75)
-                line(-5, "", 50)
+                Group {
+                    line(45, "", 50)
+                    line(40, "40", 150, 2)
+                    line(35, "", 50)
+                    line(30, "30", 125)
+                    line(25, "", 50)
+                    line(20, "20", 100)
+                    line(15, "", 50)
+                    line(10, "10", 75)
+                    line(5, "", 50)
+                }
+                Group {
+                    line(-5, "", 50)
+                    line(-10, "10", 75)
+                    line(-15, "", 50)
+                    line(-20, "20", 100)
+                    line(-25, "", 50)
+                    line(-30, "30", 125)
+                    line(-35, "", 50)
+                    line(-40, "40", 150, 2)
+                    line(-45, "", 50)
+                }
             }
         }
         .aspectRatio(CGSize(width: 1, height: 1), contentMode: .fill)
@@ -94,6 +113,11 @@ fileprivate struct BackgroundView: View {
 
     func pitchToPixel(_ pitch: CGFloat) -> CGFloat {
         size / 2.0 + pitch * degreeToPixel
+    }
+    
+    func pitchToOpacity(_ pitch: CGFloat, _ maxAngle: CGFloat = 50, _ offset: CGFloat = 30) -> CGFloat {
+        let clamped = min(max(pitch - offset, 0), maxAngle - offset) / (maxAngle - offset)
+        return clamped
     }
 
     var size: CGFloat {
