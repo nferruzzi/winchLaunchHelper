@@ -49,9 +49,11 @@ fileprivate struct BackgroundView: View {
                 .fill(LinearGradient(gradient: Constants.skyGradient, startPoint: .top, endPoint: .bottom))
                 .frame(width: size, height: size)
             
-            Rectangle()
-                .frame(width: size, height: size)
-                .foregroundColor(Color(red: 1.0, green: 0, blue: 0, opacity: pitchToOpacity(pitch)))
+            if !outer {
+                Rectangle()
+                    .frame(width: size, height: size)
+                    .foregroundColor(Color(red: 1.0, green: 0, blue: 0, opacity: pitchToOpacity(pitch)))
+            }
 
 
             EarthShape(size: size, horizont: outer ? pitchToPixel(0) : pitchToPixel(pitch))

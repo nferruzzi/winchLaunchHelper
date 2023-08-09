@@ -173,7 +173,10 @@ extension DeviceMotionService: DeviceMotionProtocol {
     }
 
     public var speed: AnyPublisher<(Date, CLLocationSpeed), Never> {
-        $speedSubject.eraseToAnyPublisher()
+        $speedSubject.removeDuplicates { lhs, rhs in
+            lhs.0 == rhs.0
+        }
+        .eraseToAnyPublisher()
     }
     
     public func reset() {

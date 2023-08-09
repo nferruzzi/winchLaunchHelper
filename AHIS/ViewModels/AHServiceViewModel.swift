@@ -30,7 +30,7 @@ final class AHServiceViewModel: ObservableObject {
     
     @Published private(set) var speed = Measurement<UnitSpeed>(value: 0, unit: .metersPerSecond)
     @Published private(set) var acceleration = Measurement<UnitAcceleration>(value: 0, unit: .metersPerSecondSquared)
-    @Published private(set) var state: MachineState = .constantSpeed
+    @Published private(set) var state: MachineState = .waiting
     @Published private(set) var lasSayString: String = ""
     
     private var lastSayMinAcceleration: Date?
