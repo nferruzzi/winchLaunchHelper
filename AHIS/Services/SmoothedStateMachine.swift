@@ -18,8 +18,8 @@ enum MachineState: String {
 
 
 protocol MachineStateProtocol {
-    var speed: AnyPublisher<CLLocationSpeed, Never> { get }
-    var acceleration: AnyPublisher<CLLocationSpeed, Never> { get }
+    var speed: AnyPublisher<Measurement<UnitSpeed>, Never> { get }
+    var acceleration: AnyPublisher<Measurement<UnitAcceleration>, Never> { get }
     var machineState: AnyPublisher<MachineState, Never> { get }
 }
 
@@ -93,12 +93,16 @@ final class SpeedProcessor {
 
 
 extension SpeedProcessor: MachineStateProtocol {
-    var speed: AnyPublisher<CLLocationSpeed, Never> {
-        smoothedSpeedPublisher.eraseToAnyPublisher()
+    var speed: AnyPublisher<Measurement<UnitSpeed>, Never> {
+        smoothedSpeedPublisher
+            .map { .init(value: $0, unit: .metersPerSecond) }
+            .eraseToAnyPublisher()
     }
 
-    var acceleration: AnyPublisher<CLLocationSpeed, Never> {
-        accelerationPublisher.eraseToAnyPublisher()
+    var acceleration: AnyPublisher<Measurement<UnitAcceleration>, Never> {
+        accelerationPublisher
+            .map { .init(value: $0, unit: .metersPerSecondSquared) }
+            .eraseToAnyPublisher()
     }
 
     var machineState: AnyPublisher<MachineState, Never> {
