@@ -41,28 +41,27 @@ final class MachineStateService {
     var speedPublisher: AnyPublisher<DataPointSpeed, Never>
 
     private var lastPublishedTime: Date?
-    private var speeds: [CLLocationSpeed] = []
+    private var speeds: [DataPointSpeed] = []
     private var notStoppedTime: Date?
     
     /// Data from core location are too sparse, a moving average would simply add too much delay
     lazy var smoothedSpeedPublisher: some Publisher<DataPointSpeed, Never> = {
         interpolatedSpeedPublisher
-//            .map { [unowned self] (timestamp, speed) -> (Date, Double) in
+//            .map { [unowned self] speed -> DataPointSpeed in
 //                self.speeds.append(speed)
 //                if self.speeds.count > Constants.windowSize {
 //                    self.speeds.removeFirst()
 //                }
 //
-//                return (timestamp, calculateMovingAverage())
+//                return .init(date: speed.date, value: .init(value: calculateMovingAverage(), unit: .metersPerSecond))
 //            }
-//            .filter { [unowned self] timestamp, _ in
-//                if let lastPublishedTime = self.lastPublishedTime, timestamp.timeIntervalSince(lastPublishedTime) < 0.1 {
+//            .filter { [unowned self] speed in
+//                if let lastPublishedTime = self.lastPublishedTime, speed.date.timeIntervalSince(lastPublishedTime) < 0.1 {
 //                    return false
 //                }
-//                self.lastPublishedTime = timestamp
+//                self.lastPublishedTime = speed.date
 //                return true
 //            }
-//            .map(\.1)
             .share()
     }()
 
@@ -124,7 +123,7 @@ final class MachineStateService {
     }
         
     private func calculateMovingAverage() -> CLLocationSpeed {
-        speeds.reduce(0, +) / CLLocationSpeed(speeds.count)
+        speeds.reduce(0, { $0 + $1.value.value }) / CLLocationSpeed(speeds.count)
     }
 }
 
