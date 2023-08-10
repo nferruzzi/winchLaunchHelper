@@ -32,10 +32,13 @@ final class AHServiceViewModel: ObservableObject {
     @Published private(set) var acceleration: DataPointAcceleration.ValueType = .init(value: 0, unit: .metersPerSecondSquared)
     @Published private(set) var state: MachineState = .waiting
     @Published private(set) var lasSayString: String = ""
+    @Published private(set) var altitude: [Double] = []
     
     private var lastSayMinAcceleration: Date?
     private var lastSayMaxAcceleration: Date?
     private var lastSayMinDeceleration: Date?
+
+    private var zeroAltitude: Double?
     
     init(ahService: DeviceMotionProtocol? = nil,
          machineStateService: MachineStateProtocol? = nil) {
@@ -43,50 +46,53 @@ final class AHServiceViewModel: ObservableObject {
         self.ahService = ahService
         self.machineStateService = machineStateService
         
-        ahService?
+        guard let machineStateService = machineStateService,
+              let ahService = ahService else { return }
+
+        ahService
             .roll
             .map { Int($0.value.converted(to: .degrees).value) }
             .receive(on: DispatchQueue.main)
             .assign(to: \.roll, on: self)
             .store(in: &subscriptions)
         
-        ahService?
+        ahService
             .pitch
             .map { Int($0.value.converted(to: .degrees).value) }
             .receive(on: DispatchQueue.main)
             .assign(to: \.pitch, on: self)
             .store(in: &subscriptions)
         
-        ahService?.heading
+        ahService.heading
             .map { $0.value.converted(to: .degrees).value }
             .receive(on: DispatchQueue.main)
             .assign(to: \.heading, on: self)
             .store(in: &subscriptions)
         
-        machineStateService?
+        machineStateService
             .speed
             .map { $0.value.converted(to: .metersPerSecond) }
             .receive(on: DispatchQueue.main)
             .assign(to: \.speed, on: self)
             .store(in: &subscriptions)
         
-        machineStateService?
+        machineStateService
             .acceleration
             .map { $0.value.converted(to: .metersPerSecondSquared) }
             .receive(on: DispatchQueue.main)
             .assign(to: \.acceleration, on: self)
             .store(in: &subscriptions)
         
-        machineStateService?
+        machineStateService
             .machineState
             .map { $0.value }
             .receive(on: DispatchQueue.main)
             .assign(to: \.state, on: self)
             .store(in: &subscriptions)
         
-        if let machineStateService = machineStateService {
-            Publishers.CombineLatest(machineStateService.machineState.removeDuplicates(),
-                                     machineStateService.speed.removeDuplicates())
+        
+        Publishers.CombineLatest(machineStateService.machineState.removeDuplicates(),
+                                 machineStateService.speed.removeDuplicates())
             .receive(on: DispatchQueue.main)
             .sink { [unowned self] (state, speed) in
                 if state.value == .acceleration {
@@ -113,10 +119,34 @@ final class AHServiceViewModel: ObservableObject {
                 }
             }
             .store(in: &subscriptions)
-        }
+
+        Publishers.CombineLatest(machineStateService.machineState.removeDuplicates(),
+                                 ahService.altitude.removeDuplicates())
+            .receive(on: DispatchQueue.main)
+            .sink { [unowned self] (state, altitude) in
+                guard state.value != .completed else { return }
+                
+                if state.value == .waiting {
+                    self.zeroAltitude = altitude.value.value - 2
+                } else {
+                    self.zeroAltitude = self.zeroAltitude ?? (altitude.value.value - 2)
+                }
+            
+                switch state.value {
+                case .waiting:
+                    self.altitude.append(max(0, altitude.value.value - (self.zeroAltitude ?? 0)))
+                    self.altitude = self.altitude.suffix(30)
+                
+                default:
+                    self.altitude.append(max(0, altitude.value.value - (self.zeroAltitude ?? 0)))
+                    self.altitude = self.altitude.suffix(1024)
+                }
+            }
+            .store(in: &subscriptions)
     }
     
     func reset() {
+        zeroAltitude = nil
         ahService?.reset()
     }
     

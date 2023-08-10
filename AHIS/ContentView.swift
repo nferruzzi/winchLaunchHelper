@@ -15,9 +15,14 @@ struct ContentView: View {
     var body: some View {
         Group {
             if isPortrait {
-                VStack {
+                VStack(spacing: 0) {
                     AttitudeIndicatorView(model: model)
+                    
+                    LaunchProfileView(model: model)
+                        .frame(height: 200)
+                    
                     WinchLaunchView(model: model)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             } else {
                 HStack {

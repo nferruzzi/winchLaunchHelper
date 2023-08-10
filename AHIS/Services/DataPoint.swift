@@ -40,6 +40,12 @@ extension DataPoint where Value == Measurement<UnitAngle> {
     }
 }
 
+extension DataPoint where Value == Measurement<UnitPressure> {
+    static var zero: Self {
+        .init(date: Date.distantPast, value: .init(value: 0, unit: .hectopascals))
+    }
+}
+
 extension CMQuaternion: Equatable {
     public static func == (lhs: CMQuaternion, rhs: CMQuaternion) -> Bool {
         lhs.simdQuatd == rhs.simdQuatd
@@ -51,3 +57,4 @@ public typealias DataPointAngle = DataPoint<Measurement<UnitAngle>>
 public typealias DataPointAltitude = DataPoint<Measurement<UnitLength>>
 public typealias DataPointAcceleration = DataPoint<Measurement<UnitAcceleration>>
 public typealias DataPointCMQuaternion = DataPoint<CMQuaternion>
+public typealias DataPointPressure = DataPoint<Measurement<UnitPressure>>

@@ -20,6 +20,7 @@ public protocol DeviceMotionProtocol {
     var pitch: AnyPublisher<DataPointAngle, Never> { get }
     var heading: AnyPublisher<DataPointAngle, Never> { get }
     var speed: AnyPublisher<DataPointSpeed, Never> { get }
+    var altitude: AnyPublisher<DataPointAltitude, Never> { get }
 }
 
 
@@ -122,6 +123,10 @@ extension DeviceMotionService: DeviceMotionProtocol {
 
     public var speed: AnyPublisher<DataPointSpeed, Never> {
         $speedSubject.removeDuplicates().eraseToAnyPublisher()
+    }
+    
+    public var altitude: AnyPublisher<DataPointAltitude, Never> {
+        $altitudeSubject.removeDuplicates().eraseToAnyPublisher()
     }
     
     public func reset() {
