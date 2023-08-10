@@ -28,8 +28,8 @@ final class AHServiceViewModel: ObservableObject {
     @Published private(set) var pitch: Int = 0
     @Published private(set) var heading: Double = 0
     
-    @Published private(set) var speed = Measurement<UnitSpeed>(value: 0, unit: .metersPerSecond)
-    @Published private(set) var acceleration = Measurement<UnitAcceleration>(value: 0, unit: .metersPerSecondSquared)
+    @Published private(set) var speed: DataPointSpeed.ValueType = .init(value: 0, unit: .metersPerSecond)
+    @Published private(set) var acceleration: DataPointAcceleration.ValueType = .init(value: 0, unit: .metersPerSecondSquared)
     @Published private(set) var state: MachineState = .waiting
     @Published private(set) var lasSayString: String = ""
     
@@ -45,19 +45,20 @@ final class AHServiceViewModel: ObservableObject {
         
         ahService?
             .roll
-            .map { Int($0.degree) }
+            .map { Int($0.value.converted(to: .degrees).value) }
             .receive(on: DispatchQueue.main)
             .assign(to: \.roll, on: self)
             .store(in: &subscriptions)
         
         ahService?
             .pitch
-            .map { Int($0.degree) }
+            .map { Int($0.value.converted(to: .degrees).value) }
             .receive(on: DispatchQueue.main)
             .assign(to: \.pitch, on: self)
             .store(in: &subscriptions)
         
         ahService?.heading
+            .map { $0.value.converted(to: .degrees).value }
             .receive(on: DispatchQueue.main)
             .assign(to: \.heading, on: self)
             .store(in: &subscriptions)
