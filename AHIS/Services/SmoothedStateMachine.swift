@@ -36,14 +36,14 @@ final class SpeedProcessor {
         static let throttleSeconds: Double = 0.1
     }
     
-    var speedPublisher: AnyPublisher<(Date, CLLocationSpeed), Never>
+    var speedPublisher: AnyPublisher<DataPointSpeed, Never>
 
     private var lastPublishedTime: Date?
     private var speeds: [CLLocationSpeed] = []
     private var notStoppedTime: Date?
     
     /// Data from core location are too sparse, a moving average would simply add too much delay
-    lazy var smoothedSpeedPublisher: some Publisher<(Date, CLLocationSpeed), Never> = {
+    lazy var smoothedSpeedPublisher: some Publisher<DataPointSpeed, Never> = {
         interpolatedSpeedPublisher
 //            .map { [unowned self] (timestamp, speed) -> (Date, Double) in
 //                self.speeds.append(speed)
@@ -68,8 +68,8 @@ final class SpeedProcessor {
         smoothedSpeedPublisher
             .zip(smoothedSpeedPublisher.dropFirst())
             .map { prev, current in
-                precondition(prev.0.timeIntervalSince1970 <= current.0.timeIntervalSince1970)
-                return (current.1 - prev.1) / Constants.throttleSeconds
+                precondition(prev.date.timeIntervalSince1970 <= current.date.timeIntervalSince1970)
+                return (current.value.value - prev.value.value) / Constants.throttleSeconds
             }
             .share()
     }()
@@ -95,27 +95,27 @@ final class SpeedProcessor {
             .share()
     }()
     
-    lazy var interpolatedSpeedPublisher: some Publisher<(Date, CLLocationSpeed), Never> = {
+    lazy var interpolatedSpeedPublisher: some Publisher<DataPointSpeed, Never> = {
         Publishers.CombineLatest(
             Timer.publish(every: Constants.throttleSeconds, on: RunLoop.main, in: .default).autoconnect(),
             speedPublisher.zip(speedPublisher.dropFirst())
         )
-        .map { timer, speeds -> (Date, CLLocationSpeed) in
+        .map { timer, speeds -> DataPointSpeed in
             let prev = speeds.0
             let current = speeds.1
             
-            let interpolate = Double.interpolate(t1: prev.0.timeIntervalSince1970,
-                                                 v1: prev.1,
-                                                 t2: current.0.timeIntervalSince1970,
-                                                 v2: current.1,
+            let interpolate = Double.interpolate(t1: prev.date.timeIntervalSince1970,
+                                                 v1: prev.value.value,
+                                                 t2: current.date.timeIntervalSince1970,
+                                                 v2: current.value.value,
                                                  t: timer.timeIntervalSince1970)
 
-            return (timer, interpolate)
+            return .init(date: timer, value: .init(value: interpolate, unit: .metersPerSecond))
         }
         .share()
     }()
         
-    init<SpeedPublisher: Publisher<(Date, CLLocationSpeed), Never>>(speedPublisher: SpeedPublisher) {
+    init<SpeedPublisher: Publisher<DataPointSpeed, Never>>(speedPublisher: SpeedPublisher) {
         self.speedPublisher = speedPublisher
             .eraseToAnyPublisher()
     }
@@ -129,7 +129,7 @@ final class SpeedProcessor {
 extension SpeedProcessor: MachineStateProtocol {
     var speed: AnyPublisher<Measurement<UnitSpeed>, Never> {
         smoothedSpeedPublisher
-            .map { .init(value: max(0, $0.1), unit: .metersPerSecond) }
+            .map { $0.value }
             .eraseToAnyPublisher()
     }
 

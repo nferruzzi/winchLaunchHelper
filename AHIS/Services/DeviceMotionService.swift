@@ -12,13 +12,20 @@ import UIKit
 import CoreLocation
 import simd
 
+public struct DataPoint<Value: Equatable>: Equatable {
+    public let date:  Date
+    public let value: Value
+}
+
+public typealias DataPointSpeed = DataPoint<Measurement<UnitSpeed>>
+
 public protocol DeviceMotionProtocol {
     func reset()
     
     var roll: AnyPublisher<Double, Never> { get }
     var pitch: AnyPublisher<Double, Never> { get }
     var heading: AnyPublisher<Double, Never> { get }
-    var speed: AnyPublisher<(Date, CLLocationSpeed), Never> { get }
+    var speed: AnyPublisher<DataPointSpeed, Never> { get }
 }
 
 
@@ -37,7 +44,8 @@ public final class DeviceMotionService: NSObject {
     @Published private var headingSubject: Double = 0
     @Published private var rollSubject: Double = 0
     @Published private var pitchSubject: Double = 0
-    @Published private var speedSubject: (Date, Double) = (Date.distantPast, 0)
+    @Published private var speedSubject: DataPointSpeed = .init(date: Date.distantPast, value: .init(value: 0, unit: .kilometersPerHour))
+    @Published private var altitudeSubject: (Date, Double) = (Date.distantPast, 0)
 
     private var subscriptions = Set<AnyCancellable>()
     private var latestAttitude: CMAttitude?
@@ -115,11 +123,8 @@ extension DeviceMotionService: DeviceMotionProtocol {
         $pitchSubject.removeDuplicates().eraseToAnyPublisher()
     }
 
-    public var speed: AnyPublisher<(Date, CLLocationSpeed), Never> {
-        $speedSubject.removeDuplicates { lhs, rhs in
-            lhs.0 == rhs.0
-        }
-        .eraseToAnyPublisher()
+    public var speed: AnyPublisher<DataPointSpeed, Never> {
+        $speedSubject.removeDuplicates().eraseToAnyPublisher()
     }
     
     public func reset() {
@@ -163,7 +168,8 @@ extension DeviceMotionService: CLLocationManagerDelegate {
     
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let last = locations.last(where: { $0.speedAccuracy > 0 }) else { return }
-        speedSubject = (last.timestamp, last.speed)
+        speedSubject = .init(date: last.timestamp, value: .init(value: last.speed, unit: .metersPerSecond))
+        altitudeSubject = (last.timestamp, last.altitude)
     }
     
     public func locationManagerShouldDisplayHeadingCalibration(_ manager: CLLocationManager) -> Bool {
