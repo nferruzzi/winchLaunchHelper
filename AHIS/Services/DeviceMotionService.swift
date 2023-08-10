@@ -12,25 +12,6 @@ import UIKit
 import CoreLocation
 import simd
 
-public struct DataPoint<Value: Equatable>: Equatable {
-    typealias ValueType = Value
-    
-    public let date:  Date
-    public let value: Value
-}
-
-extension CMQuaternion: Equatable {
-    public static func == (lhs: CMQuaternion, rhs: CMQuaternion) -> Bool {
-        lhs.simdQuatd == rhs.simdQuatd
-    }
-}
-
-public typealias DataPointSpeed = DataPoint<Measurement<UnitSpeed>>
-public typealias DataPointAngle = DataPoint<Measurement<UnitAngle>>
-public typealias DataPointAltitude = DataPoint<Measurement<UnitLength>>
-public typealias DataPointAcceleration = DataPoint<Measurement<UnitAcceleration>>
-public typealias DataPointCMQuaternion = DataPoint<CMQuaternion>
-
 
 public protocol DeviceMotionProtocol {
     func reset()
@@ -55,11 +36,11 @@ public final class DeviceMotionService: NSObject {
     @Published private var deviceMotionSubject: CMDeviceMotion?
 
     @Published private var deviceMotionQuaternionSubject: DataPointCMQuaternion?
-    @Published private var headingSubject: DataPointAngle = .init(date: .distantPast, value: .init(value: 0, unit: .radians))
-    @Published private var rollSubject: DataPointAngle = .init(date: .distantPast, value: .init(value: 0, unit: .radians))
-    @Published private var pitchSubject: DataPointAngle = .init(date: .distantPast, value: .init(value: 0, unit: .radians))
-    @Published private var speedSubject: DataPointSpeed = .init(date: .distantPast, value: .init(value: 0, unit: .kilometersPerHour))
-    @Published private var altitudeSubject: DataPointAltitude = .init(date: .distantPast, value: .init(value: 0, unit: .meters))
+    @Published private var headingSubject: DataPointAngle = .zero
+    @Published private var rollSubject: DataPointAngle = .zero
+    @Published private var pitchSubject: DataPointAngle = .zero
+    @Published private var speedSubject: DataPointSpeed = .zero
+    @Published private var altitudeSubject: DataPointAltitude = .zero
 
     private var subscriptions = Set<AnyCancellable>()
     private var latestAttitude: CMAttitude?

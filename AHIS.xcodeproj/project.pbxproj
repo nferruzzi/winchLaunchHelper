@@ -18,6 +18,7 @@
 		8AFCD6BC2A7A8BB9009F97FA /* WinchLaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6BB2A7A8BB9009F97FA /* WinchLaunchView.swift */; };
 		8AFCD6BE2A844E8E009F97FA /* CMAttitude+math.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6BD2A844E8E009F97FA /* CMAttitude+math.swift */; };
 		8AFCD6C02A84D3EA009F97FA /* CMLogItem+date.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6BF2A84D3EA009F97FA /* CMLogItem+date.swift */; };
+		8AFCD6C22A84E716009F97FA /* DataPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6C12A84E716009F97FA /* DataPoint.swift */; };
 		8AFE553F25A75D6C00EC5329 /* AHISApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFE553E25A75D6C00EC5329 /* AHISApp.swift */; };
 		8AFE554125A75D6C00EC5329 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFE554025A75D6C00EC5329 /* ContentView.swift */; };
 		8AFE554325A75D6C00EC5329 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8AFE554225A75D6C00EC5329 /* Assets.xcassets */; };
@@ -37,6 +38,7 @@
 		8AFCD6BB2A7A8BB9009F97FA /* WinchLaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinchLaunchView.swift; sourceTree = "<group>"; };
 		8AFCD6BD2A844E8E009F97FA /* CMAttitude+math.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CMAttitude+math.swift"; sourceTree = "<group>"; };
 		8AFCD6BF2A84D3EA009F97FA /* CMLogItem+date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CMLogItem+date.swift"; sourceTree = "<group>"; };
+		8AFCD6C12A84E716009F97FA /* DataPoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataPoint.swift; sourceTree = "<group>"; };
 		8AFE553B25A75D6C00EC5329 /* AHIS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AHIS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8AFE553E25A75D6C00EC5329 /* AHISApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AHISApp.swift; sourceTree = "<group>"; };
 		8AFE554025A75D6C00EC5329 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -75,6 +77,7 @@
 			children = (
 				8AFE555925A86E5400EC5329 /* DeviceMotionService.swift */,
 				8AFCD6B62A7A4B22009F97FA /* SmoothedStateMachine.swift */,
+				8AFCD6C12A84E716009F97FA /* DataPoint.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -219,6 +222,7 @@
 				8AFCD6B52A796AB3009F97FA /* SkyShape.swift in Sources */,
 				8AFCD6AF2A7969F9009F97FA /* Double+math.swift in Sources */,
 				8AFE553F25A75D6C00EC5329 /* AHISApp.swift in Sources */,
+				8AFCD6C22A84E716009F97FA /* DataPoint.swift in Sources */,
 				8AFCD6BC2A7A8BB9009F97FA /* WinchLaunchView.swift in Sources */,
 				8AFCD6C02A84D3EA009F97FA /* CMLogItem+date.swift in Sources */,
 			);
