@@ -11,7 +11,7 @@ import SwiftUI
 struct AHISApp: App {
     enum Constants {
         static let ahService: DeviceMotionProtocol = DeviceMotionService()
-        static let msService: MachineStateProtocol = SpeedProcessor(speedPublisher: ahService.speed)
+        static let msService: MachineStateProtocol = MachineStateService(speedPublisher: ahService.speed)
     }
     
     var body: some Scene {

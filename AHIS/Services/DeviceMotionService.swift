@@ -12,13 +12,14 @@ import UIKit
 import CoreLocation
 import simd
 
+
 public protocol DeviceMotionProtocol {
     func reset()
     
-    var roll: AnyPublisher<Double, Never> { get }
-    var pitch: AnyPublisher<Double, Never> { get }
-    var heading: AnyPublisher<Double, Never> { get }
-    var speed: AnyPublisher<(Date, CLLocationSpeed), Never> { get }
+    var roll: AnyPublisher<DataPointAngle, Never> { get }
+    var pitch: AnyPublisher<DataPointAngle, Never> { get }
+    var heading: AnyPublisher<DataPointAngle, Never> { get }
+    var speed: AnyPublisher<DataPointSpeed, Never> { get }
 }
 
 
@@ -33,11 +34,13 @@ public final class DeviceMotionService: NSObject {
     }
 
     @Published private var deviceMotionSubject: CMDeviceMotion?
-    @Published private var deviceMotionQuaternionSubject: CMQuaternion?
-    @Published private var headingSubject: Double = 0
-    @Published private var rollSubject: Double = 0
-    @Published private var pitchSubject: Double = 0
-    @Published private var speedSubject: (Date, Double) = (Date.distantPast, 0)
+
+    @Published private var deviceMotionQuaternionSubject: DataPointCMQuaternion?
+    @Published private var headingSubject: DataPointAngle = .zero
+    @Published private var rollSubject: DataPointAngle = .zero
+    @Published private var pitchSubject: DataPointAngle = .zero
+    @Published private var speedSubject: DataPointSpeed = .zero
+    @Published private var altitudeSubject: DataPointAltitude = .zero
 
     private var subscriptions = Set<AnyCancellable>()
     private var latestAttitude: CMAttitude?
@@ -69,8 +72,10 @@ public final class DeviceMotionService: NSObject {
         $deviceMotionQuaternionSubject
             .sink { [unowned self] attitude in
                 guard let attitude = attitude else { return }
-                self.pitchSubject = attitude.simdQuatd.pitch - (self.pitchZero ?? 0)
-                self.rollSubject = attitude.simdQuatd.roll - (self.rollZero ?? 0)
+                let pitch = attitude.value.simdQuatd.pitch - (self.pitchZero ?? 0)
+                let roll = attitude.value.simdQuatd.roll - (self.rollZero ?? 0)
+                self.pitchSubject = .init(date: attitude.date, value: .init(value: pitch, unit: .radians))
+                self.rollSubject = .init(date: attitude.date, value: .init(value: roll, unit: .radians))
             }
             .store(in: &subscriptions)
     }
@@ -94,32 +99,29 @@ public final class DeviceMotionService: NSObject {
             }
 
             self.prevHeading = motion.heading
-            self.headingSubject = heading + self.rotate * 360
+            self.headingSubject = .init(date: motion.date, value: .init(value: heading + self.rotate * 360, unit: .degrees))
             self.latestAttitude = motion.attitude.copy() as? CMAttitude
-            self.deviceMotionQuaternionSubject = motion.attitude.quaternion
+            self.deviceMotionQuaternionSubject = .init(date: motion.date, value: motion.attitude.quaternion)
         }
     }
 }
 
 
 extension DeviceMotionService: DeviceMotionProtocol {
-    public var heading: AnyPublisher<Double, Never> {
+    public var heading: AnyPublisher<DataPointAngle, Never> {
         $headingSubject.removeDuplicates().eraseToAnyPublisher()
     }
 
-    public var roll: AnyPublisher<Double, Never> {
+    public var roll: AnyPublisher<DataPointAngle, Never> {
         $rollSubject.removeDuplicates().eraseToAnyPublisher()
     }
 
-    public var pitch: AnyPublisher<Double, Never> {
+    public var pitch: AnyPublisher<DataPointAngle, Never> {
         $pitchSubject.removeDuplicates().eraseToAnyPublisher()
     }
 
-    public var speed: AnyPublisher<(Date, CLLocationSpeed), Never> {
-        $speedSubject.removeDuplicates { lhs, rhs in
-            lhs.0 == rhs.0
-        }
-        .eraseToAnyPublisher()
+    public var speed: AnyPublisher<DataPointSpeed, Never> {
+        $speedSubject.removeDuplicates().eraseToAnyPublisher()
     }
     
     public func reset() {
@@ -163,7 +165,8 @@ extension DeviceMotionService: CLLocationManagerDelegate {
     
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let last = locations.last(where: { $0.speedAccuracy > 0 }) else { return }
-        speedSubject = (last.timestamp, last.speed)
+        speedSubject = .init(date: last.timestamp, value: .init(value: last.speed, unit: .metersPerSecond))
+        altitudeSubject = .init(date: last.timestamp, value: .init(value: last.altitude, unit: .meters))
     }
     
     public func locationManagerShouldDisplayHeadingCalibration(_ manager: CLLocationManager) -> Bool {
