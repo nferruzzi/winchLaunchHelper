@@ -13,7 +13,7 @@
 		8AFCD6B12A796A39009F97FA /* TriangleShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6B02A796A39009F97FA /* TriangleShape.swift */; };
 		8AFCD6B32A796AAC009F97FA /* EarthShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6B22A796AAC009F97FA /* EarthShape.swift */; };
 		8AFCD6B52A796AB3009F97FA /* SkyShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6B42A796AB3009F97FA /* SkyShape.swift */; };
-		8AFCD6B72A7A4B22009F97FA /* SmoothedStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6B62A7A4B22009F97FA /* SmoothedStateMachine.swift */; };
+		8AFCD6B72A7A4B22009F97FA /* MachineStateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6B62A7A4B22009F97FA /* MachineStateService.swift */; };
 		8AFCD6BA2A7A830F009F97FA /* AHServiceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6B92A7A830F009F97FA /* AHServiceViewModel.swift */; };
 		8AFCD6BC2A7A8BB9009F97FA /* WinchLaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6BB2A7A8BB9009F97FA /* WinchLaunchView.swift */; };
 		8AFCD6BE2A844E8E009F97FA /* CMAttitude+math.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6BD2A844E8E009F97FA /* CMAttitude+math.swift */; };
@@ -33,7 +33,7 @@
 		8AFCD6B02A796A39009F97FA /* TriangleShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriangleShape.swift; sourceTree = "<group>"; };
 		8AFCD6B22A796AAC009F97FA /* EarthShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EarthShape.swift; sourceTree = "<group>"; };
 		8AFCD6B42A796AB3009F97FA /* SkyShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkyShape.swift; sourceTree = "<group>"; };
-		8AFCD6B62A7A4B22009F97FA /* SmoothedStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmoothedStateMachine.swift; sourceTree = "<group>"; };
+		8AFCD6B62A7A4B22009F97FA /* MachineStateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MachineStateService.swift; sourceTree = "<group>"; };
 		8AFCD6B92A7A830F009F97FA /* AHServiceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AHServiceViewModel.swift; sourceTree = "<group>"; };
 		8AFCD6BB2A7A8BB9009F97FA /* WinchLaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinchLaunchView.swift; sourceTree = "<group>"; };
 		8AFCD6BD2A844E8E009F97FA /* CMAttitude+math.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CMAttitude+math.swift"; sourceTree = "<group>"; };
@@ -76,7 +76,7 @@
 			isa = PBXGroup;
 			children = (
 				8AFE555925A86E5400EC5329 /* DeviceMotionService.swift */,
-				8AFCD6B62A7A4B22009F97FA /* SmoothedStateMachine.swift */,
+				8AFCD6B62A7A4B22009F97FA /* MachineStateService.swift */,
 				8AFCD6C12A84E716009F97FA /* DataPoint.swift */,
 			);
 			path = Services;
@@ -218,7 +218,7 @@
 				8AFCD6BE2A844E8E009F97FA /* CMAttitude+math.swift in Sources */,
 				8AFCD6B12A796A39009F97FA /* TriangleShape.swift in Sources */,
 				8AFCD6BA2A7A830F009F97FA /* AHServiceViewModel.swift in Sources */,
-				8AFCD6B72A7A4B22009F97FA /* SmoothedStateMachine.swift in Sources */,
+				8AFCD6B72A7A4B22009F97FA /* MachineStateService.swift in Sources */,
 				8AFCD6B52A796AB3009F97FA /* SkyShape.swift in Sources */,
 				8AFCD6AF2A7969F9009F97FA /* Double+math.swift in Sources */,
 				8AFE553F25A75D6C00EC5329 /* AHISApp.swift in Sources */,

@@ -1,5 +1,5 @@
 //
-//  SmoothedStateMachine.swift
+//  MachineStateService.swift
 //  AHIS
 //
 //  Created by Nicola Ferruzzi on 02/08/23.
@@ -28,7 +28,7 @@ protocol MachineStateProtocol {
 }
 
 
-final class SpeedProcessor {
+final class MachineStateService {
     enum Constants {
         static let windowSize: Int = 10
         static let accelerationThreshold = Measurement<UnitAcceleration>(value: 0.5, unit: .metersPerSecondSquared)
@@ -129,7 +129,7 @@ final class SpeedProcessor {
 }
 
 
-extension SpeedProcessor: MachineStateProtocol {
+extension MachineStateService: MachineStateProtocol {
     var speed: AnyPublisher<DataPointSpeed, Never> {
         smoothedSpeedPublisher
             .eraseToAnyPublisher()
