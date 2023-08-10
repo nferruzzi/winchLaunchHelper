@@ -19,10 +19,12 @@ enum MachineState: String {
 }
 
 
+typealias DataPointMachineState = DataPoint<MachineState>
+
 protocol MachineStateProtocol {
-    var speed: AnyPublisher<Measurement<UnitSpeed>, Never> { get }
-    var acceleration: AnyPublisher<Measurement<UnitAcceleration>, Never> { get }
-    var machineState: AnyPublisher<MachineState, Never> { get }
+    var speed: AnyPublisher<DataPointSpeed, Never> { get }
+    var acceleration: AnyPublisher<DataPointAcceleration, Never> { get }
+    var machineState: AnyPublisher<DataPointMachineState, Never> { get }
 }
 
 
@@ -64,32 +66,33 @@ final class SpeedProcessor {
             .share()
     }()
 
-    lazy var accelerationPublisher: some Publisher<CLLocationSpeed, Never> = {
+    lazy var accelerationPublisher: some Publisher<DataPointAcceleration, Never> = {
         smoothedSpeedPublisher
             .zip(smoothedSpeedPublisher.dropFirst())
             .map { prev, current in
                 precondition(prev.date.timeIntervalSince1970 <= current.date.timeIntervalSince1970)
-                return (current.value.value - prev.value.value) / Constants.throttleSeconds
+                let acceleration = (current.value.value - prev.value.value) / Constants.throttleSeconds
+                return .init(date: current.date, value: .init(value: acceleration, unit: .metersPerSecondSquared))
             }
             .share()
     }()
     
-    lazy var statePublisher: some Publisher<MachineState, Never> = {
+    lazy var statePublisher: some Publisher<DataPointMachineState, Never> = {
         Publishers.CombineLatest(
             speed,
             acceleration
         )
             .map { speed, acceleration in
-                guard speed > Constants.speedThreshold else {
-                    return .waiting
+                guard speed.value > Constants.speedThreshold else {
+                    return .init(date: speed.date, value: .waiting)
                 }
                 
-                if acceleration > Constants.accelerationThreshold {
-                    return .acceleration
-                } else if acceleration < Constants.accelerationThreshold * -1.0 {
-                    return .deceleration
+                if acceleration.value > Constants.accelerationThreshold {
+                    return .init(date: speed.date, value: .acceleration)
+                } else if acceleration.value < Constants.accelerationThreshold * -1.0 {
+                    return .init(date: speed.date, value: .deceleration)
                 } else {
-                    return .constantSpeed
+                    return .init(date: speed.date, value: .constantSpeed)
                 }
             }
             .share()
@@ -127,19 +130,17 @@ final class SpeedProcessor {
 
 
 extension SpeedProcessor: MachineStateProtocol {
-    var speed: AnyPublisher<Measurement<UnitSpeed>, Never> {
+    var speed: AnyPublisher<DataPointSpeed, Never> {
         smoothedSpeedPublisher
-            .map { $0.value }
             .eraseToAnyPublisher()
     }
 
-    var acceleration: AnyPublisher<Measurement<UnitAcceleration>, Never> {
+    var acceleration: AnyPublisher<DataPointAcceleration, Never> {
         accelerationPublisher
-            .map { .init(value: $0, unit: .metersPerSecondSquared) }
             .eraseToAnyPublisher()
     }
 
-    var machineState: AnyPublisher<MachineState, Never> {
+    var machineState: AnyPublisher<DataPointMachineState, Never> {
         statePublisher.eraseToAnyPublisher()
     }
 }

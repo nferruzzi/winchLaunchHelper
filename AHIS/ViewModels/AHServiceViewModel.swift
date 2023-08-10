@@ -65,18 +65,21 @@ final class AHServiceViewModel: ObservableObject {
         
         machineStateService?
             .speed
+            .map { $0.value.converted(to: .metersPerSecond) }
             .receive(on: DispatchQueue.main)
             .assign(to: \.speed, on: self)
             .store(in: &subscriptions)
         
         machineStateService?
             .acceleration
+            .map { $0.value.converted(to: .metersPerSecondSquared) }
             .receive(on: DispatchQueue.main)
             .assign(to: \.acceleration, on: self)
             .store(in: &subscriptions)
         
         machineStateService?
             .machineState
+            .map { $0.value }
             .receive(on: DispatchQueue.main)
             .assign(to: \.state, on: self)
             .store(in: &subscriptions)
@@ -86,24 +89,24 @@ final class AHServiceViewModel: ObservableObject {
                                      machineStateService.speed.removeDuplicates())
             .receive(on: DispatchQueue.main)
             .sink { [unowned self] (state, speed) in
-                if state == .acceleration {
+                if state.value == .acceleration {
                     self.lastSayMinDeceleration = nil
                     
-                    if speed > Constants.minSpeed, self.lastSayMinAcceleration == nil {
+                    if speed.value > Constants.minSpeed, self.lastSayMinAcceleration == nil {
                         self.lastSayMinAcceleration = Date()
                         self.say("+\(Int(Constants.minSpeed.value))")
                     }
-                    if speed > Constants.maxSpeed, self.lastSayMaxAcceleration == nil {
+                    if speed.value > Constants.maxSpeed, self.lastSayMaxAcceleration == nil {
                         self.lastSayMaxAcceleration = Date()
                         self.say("+\(Int(Constants.maxSpeed.value))")
                     }
                 }
                 
-                if state == .deceleration {
+                if state.value == .deceleration {
                     self.lastSayMinAcceleration = nil
                     self.lastSayMaxAcceleration = nil
                     
-                    if speed < Constants.minSpeed, self.lastSayMinDeceleration == nil {
+                    if speed.value < Constants.minSpeed, self.lastSayMinDeceleration == nil {
                         self.lastSayMinDeceleration = Date()
                         self.say("-\(Int(Constants.minSpeed.value))")
                     }
