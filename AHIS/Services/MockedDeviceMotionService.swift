@@ -19,7 +19,7 @@ fileprivate struct Point {
 public final class MockedDeviceMotionService: DeviceMotionProtocol {
     enum Constants {
         fileprivate static let test: [CGPoint] = [
-            .init(x: 0, y: 0), .init(x: 4, y: 70), .init(x: 15, y: 110), .init(x: 60, y: 115), /// catmull-roll
+            .init(x: 0, y: 0), .init(x: 4, y: 70), .init(x: 15, y: 110), .init(x: 60, y: 115),
         ]
     }
     
@@ -72,7 +72,6 @@ public final class MockedDeviceMotionService: DeviceMotionProtocol {
         for point in points {
             let intX = Int(point.x.rounded())
 
-            // Controlla se la x attuale è diversa dalla x precedente e se è abbastanza vicina a un valore intero.
             if intX != previousIntX && abs(point.x - CGFloat(intX)) <= 0.1 {
                 filteredPoints.append(.init(x: CGFloat(intX), y: CGFloat(point.y.rounded())))
                 previousIntX = intX
