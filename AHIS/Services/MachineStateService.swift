@@ -69,9 +69,9 @@ final class MachineStateService {
         smoothedSpeedPublisher
             .zip(smoothedSpeedPublisher.dropFirst())
             .map { prev, current in
-                precondition(prev.date.timeIntervalSince1970 <= current.date.timeIntervalSince1970)
+                precondition(prev.timestamp <= current.timestamp)
                 let acceleration = (current.value.value - prev.value.value) / Constants.throttleSeconds
-                return .init(date: current.date, value: .init(value: acceleration, unit: .metersPerSecondSquared))
+                return .init(timestamp: current.timestamp, value: .init(value: acceleration, unit: .metersPerSecondSquared))
             }
             .share()
     }()
@@ -83,15 +83,15 @@ final class MachineStateService {
         )
             .map { speed, acceleration in
                 guard speed.value > Constants.speedThreshold else {
-                    return .init(date: speed.date, value: .waiting)
+                    return .init(timestamp: speed.timestamp, value: .waiting)
                 }
                 
                 if acceleration.value > Constants.accelerationThreshold {
-                    return .init(date: speed.date, value: .acceleration)
+                    return .init(timestamp: speed.timestamp, value: .acceleration)
                 } else if acceleration.value < Constants.accelerationThreshold * -1.0 {
-                    return .init(date: speed.date, value: .deceleration)
+                    return .init(timestamp: speed.timestamp, value: .deceleration)
                 } else {
-                    return .init(date: speed.date, value: .constantSpeed)
+                    return .init(timestamp: speed.timestamp, value: .constantSpeed)
                 }
             }
             .share()
@@ -106,13 +106,15 @@ final class MachineStateService {
             let prev = speeds.0
             let current = speeds.1
             
-            let interpolate = Double.interpolate(t1: prev.date.timeIntervalSince1970,
+            let t = prev.timestamp + timer.timeIntervalSinceBootTime.truncatingRemainder(dividingBy: 1.0)
+            let interpolate = Double.interpolate(t1: prev.timestamp,
                                                  v1: prev.value.value,
-                                                 t2: current.date.timeIntervalSince1970,
+                                                 t2: current.timestamp,
                                                  v2: current.value.value,
-                                                 t: timer.timeIntervalSince1970)
+                                                 t: t)
 
-            return .init(date: timer, value: .init(value: interpolate, unit: .metersPerSecond))
+            return .init(timestamp: timer.timeIntervalSinceBootTime,
+                         value: .init(value: interpolate, unit: .metersPerSecond))
         }
         .share()
     }()

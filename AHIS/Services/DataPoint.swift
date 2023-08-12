@@ -12,37 +12,37 @@ import CoreMotion
 public struct DataPoint<Value: Equatable>: Equatable {
     typealias ValueType = Value
     
-    public let date:  Date
+    public let timestamp: TimeInterval
     public let value: Value
 }
 
 extension DataPoint where Value == Measurement<UnitSpeed> {
     static var zero: Self {
-        .init(date: Date.distantPast, value: .init(value: 0, unit: .metersPerSecond))
+        .init(timestamp: 0, value: .init(value: 0, unit: .metersPerSecond))
     }
 }
 
 extension DataPoint where Value == Measurement<UnitAcceleration> {
     static var zero: Self {
-        .init(date: Date.distantPast, value: .init(value: 0, unit: .metersPerSecondSquared))
+        .init(timestamp: 0, value: .init(value: 0, unit: .metersPerSecondSquared))
     }
 }
 
 extension DataPoint where Value == Measurement<UnitLength> {
     static var zero: Self {
-        .init(date: Date.distantPast, value: .init(value: 0, unit: .meters))
+        .init(timestamp: 0, value: .init(value: 0, unit: .meters))
     }
 }
 
 extension DataPoint where Value == Measurement<UnitAngle> {
     static var zero: Self {
-        .init(date: Date.distantPast, value: .init(value: 0, unit: .radians))
+        .init(timestamp: 0, value: .init(value: 0, unit: .radians))
     }
 }
 
 extension DataPoint where Value == Measurement<UnitPressure> {
     static var zero: Self {
-        .init(date: Date.distantPast, value: .init(value: 0, unit: .hectopascals))
+        .init(timestamp: 0, value: .init(value: 0, unit: .hectopascals))
     }
 }
 

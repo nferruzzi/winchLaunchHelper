@@ -92,8 +92,8 @@ public final class MockedDeviceMotionService: DeviceMotionProtocol {
         return indexedValues
     }
 
-    @Published private var speedSubject: DataPointSpeed = .init(date: Date.distantPast, value: .init(value: 2, unit: .kilometersPerHour))
-    @Published private var altitudeSubject: DataPointAltitude = .init(date: Date.distantPast, value: .init(value: 2, unit: .meters))
+    @Published private var speedSubject: DataPointSpeed?
+    @Published private var altitudeSubject: DataPointAltitude?
 
     public var roll: AnyPublisher<DataPointAngle, Never> {
         Just(.zero).eraseToAnyPublisher()
@@ -108,11 +108,11 @@ public final class MockedDeviceMotionService: DeviceMotionProtocol {
     }
     
     public var speed: AnyPublisher<DataPointSpeed, Never> {
-        $speedSubject.eraseToAnyPublisher()
+        $speedSubject.compactMap { $0 }.eraseToAnyPublisher()
     }
     
     public var altitude: AnyPublisher<DataPointAltitude, Never> {
-        $altitudeSubject.eraseToAnyPublisher()
+        $altitudeSubject.compactMap { $0 }.eraseToAnyPublisher()
     }
     
     public func reset() {}
@@ -124,16 +124,18 @@ public final class MockedDeviceMotionService: DeviceMotionProtocol {
     public init() {
         let filtered = filterClosestToIntX(points: interpolatePoints(points: Constants.test))
         let indexed = indexYValuesForIntX(points: filtered)
-        print(indexed)
-        
+
+        /// Data are generated with the same CM frequency (1hz)
         Timer.publish(every: 1.0, on: RunLoop.main, in: .default)
             .autoconnect()
             .sink { [unowned self] timer in
                 self.start = self.start ?? timer
-                let diff = timer.timeIntervalSince(self.start!)
-                let speed = indexed[Int(diff.rounded())] ?? filtered.last!.y
-                self.speedSubject = .init(date: timer, value: .init(value: speed, unit: .kilometersPerHour).converted(to: .metersPerSecond))
-                self.altitudeSubject = .init(date: timer, value: .init(value: self.altitudeSubject.value.value * 1.1, unit: .meters))
+                let timestamp = timer.timeIntervalSince(self.start!)
+                let diff = Int(timestamp.rounded())
+                let speed = indexed[diff] ?? filtered.last!.y
+//                print(timestamp, diff, speed)
+                self.speedSubject = .init(timestamp: timestamp, value: .init(value: speed, unit: .kilometersPerHour).converted(to: .metersPerSecond))
+//                self.altitudeSubject = .init(timestamp: timestamp, value: .init(value: self.altitudeSubject.value.value * 1.1, unit: .meters))
             }
             .store(in: &subscription)
     }

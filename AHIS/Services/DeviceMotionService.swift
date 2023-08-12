@@ -37,11 +37,11 @@ public final class DeviceMotionService: NSObject {
     @Published private var deviceMotionSubject: CMDeviceMotion?
 
     @Published private var deviceMotionQuaternionSubject: DataPointCMQuaternion?
-    @Published private var headingSubject: DataPointAngle = .zero
-    @Published private var rollSubject: DataPointAngle = .zero
-    @Published private var pitchSubject: DataPointAngle = .zero
-    @Published private var speedSubject: DataPointSpeed = .zero
-    @Published private var altitudeSubject: DataPointAltitude = .zero
+    @Published private var headingSubject: DataPointAngle? = .zero
+    @Published private var rollSubject: DataPointAngle? = .zero
+    @Published private var pitchSubject: DataPointAngle? = .zero
+    @Published private var speedSubject: DataPointSpeed? = .zero
+    @Published private var altitudeSubject: DataPointAltitude? = .zero
 
     private var subscriptions = Set<AnyCancellable>()
     private var latestAttitude: CMAttitude?
@@ -75,8 +75,8 @@ public final class DeviceMotionService: NSObject {
                 guard let attitude = attitude else { return }
                 let pitch = attitude.value.simdQuatd.pitch - (self.pitchZero ?? 0)
                 let roll = attitude.value.simdQuatd.roll - (self.rollZero ?? 0)
-                self.pitchSubject = .init(date: attitude.date, value: .init(value: pitch, unit: .radians))
-                self.rollSubject = .init(date: attitude.date, value: .init(value: roll, unit: .radians))
+                self.pitchSubject = .init(timestamp: attitude.timestamp, value: .init(value: pitch, unit: .radians))
+                self.rollSubject = .init(timestamp: attitude.timestamp, value: .init(value: roll, unit: .radians))
             }
             .store(in: &subscriptions)
     }
@@ -100,9 +100,9 @@ public final class DeviceMotionService: NSObject {
             }
 
             self.prevHeading = motion.heading
-            self.headingSubject = .init(date: motion.date, value: .init(value: heading + self.rotate * 360, unit: .degrees))
+            self.headingSubject = .init(timestamp: motion.date.timeIntervalSinceBootTime, value: .init(value: heading + self.rotate * 360, unit: .degrees))
             self.latestAttitude = motion.attitude.copy() as? CMAttitude
-            self.deviceMotionQuaternionSubject = .init(date: motion.date, value: motion.attitude.quaternion)
+            self.deviceMotionQuaternionSubject = .init(timestamp: motion.date.timeIntervalSinceBootTime, value: motion.attitude.quaternion)
         }
     }
 }
@@ -110,23 +110,23 @@ public final class DeviceMotionService: NSObject {
 
 extension DeviceMotionService: DeviceMotionProtocol {
     public var heading: AnyPublisher<DataPointAngle, Never> {
-        $headingSubject.removeDuplicates().eraseToAnyPublisher()
+        $headingSubject.compactMap { $0 }.removeDuplicates().eraseToAnyPublisher()
     }
 
     public var roll: AnyPublisher<DataPointAngle, Never> {
-        $rollSubject.removeDuplicates().eraseToAnyPublisher()
+        $rollSubject.compactMap { $0 }.removeDuplicates().eraseToAnyPublisher()
     }
 
     public var pitch: AnyPublisher<DataPointAngle, Never> {
-        $pitchSubject.removeDuplicates().eraseToAnyPublisher()
+        $pitchSubject.compactMap { $0 }.removeDuplicates().eraseToAnyPublisher()
     }
 
     public var speed: AnyPublisher<DataPointSpeed, Never> {
-        $speedSubject.removeDuplicates().eraseToAnyPublisher()
+        $speedSubject.compactMap { $0 }.removeDuplicates().eraseToAnyPublisher()
     }
     
     public var altitude: AnyPublisher<DataPointAltitude, Never> {
-        $altitudeSubject.removeDuplicates().eraseToAnyPublisher()
+        $altitudeSubject.compactMap { $0 }.removeDuplicates().eraseToAnyPublisher()
     }
     
     public func reset() {
@@ -170,8 +170,8 @@ extension DeviceMotionService: CLLocationManagerDelegate {
     
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let last = locations.last(where: { $0.speedAccuracy > 0 }) else { return }
-        speedSubject = .init(date: last.timestamp, value: .init(value: last.speed, unit: .metersPerSecond))
-        altitudeSubject = .init(date: last.timestamp, value: .init(value: last.altitude, unit: .meters))
+        speedSubject = .init(timestamp: last.timestamp.timeIntervalSinceBootTime, value: .init(value: last.speed, unit: .metersPerSecond))
+        altitudeSubject = .init(timestamp: last.timestamp.timeIntervalSinceBootTime, value: .init(value: last.altitude, unit: .meters))
     }
     
     public func locationManagerShouldDisplayHeadingCalibration(_ manager: CLLocationManager) -> Bool {

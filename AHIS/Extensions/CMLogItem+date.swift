@@ -10,9 +10,15 @@ import CoreMotion
 
 
 extension CMLogItem {
-    static let bootTime = Date(timeIntervalSinceNow: -ProcessInfo.processInfo.systemUptime)
+    static var bootTime = Date(timeIntervalSinceNow: -ProcessInfo.processInfo.systemUptime)
 
     var date: Date {
         CMLogItem.bootTime.addingTimeInterval(timestamp)
+    }
+}
+
+extension Date {
+    var timeIntervalSinceBootTime: TimeInterval {
+        timeIntervalSince(CMLogItem.bootTime)
     }
 }
