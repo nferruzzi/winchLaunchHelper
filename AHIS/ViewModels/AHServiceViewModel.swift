@@ -85,7 +85,7 @@ final class AHServiceViewModel: ObservableObject {
         
         machineStateService
             .machineState
-            .map { $0.value }
+            .map { $0.value.state }
             .receive(on: DispatchQueue.main)
             .assign(to: \.state, on: self)
             .store(in: &subscriptions)
@@ -94,8 +94,8 @@ final class AHServiceViewModel: ObservableObject {
         Publishers.CombineLatest(machineStateService.machineState.removeDuplicates(),
                                  machineStateService.speed.removeDuplicates())
             .receive(on: DispatchQueue.main)
-            .sink { [unowned self] (state, speed) in
-                if state.value == .acceleration {
+            .sink { [unowned self] (info, speed) in
+                if info.value.state == .acceleration {
                     self.lastSayMinDeceleration = nil
                     
                     if speed.value > Constants.minSpeed, self.lastSayMinAcceleration == nil {
@@ -108,7 +108,7 @@ final class AHServiceViewModel: ObservableObject {
                     }
                 }
                 
-                if state.value == .deceleration {
+                if info.value.state == .deceleration {
                     self.lastSayMinAcceleration = nil
                     self.lastSayMaxAcceleration = nil
                     
@@ -123,16 +123,16 @@ final class AHServiceViewModel: ObservableObject {
         Publishers.CombineLatest(machineStateService.machineState.removeDuplicates(),
                                  ahService.altitude.removeDuplicates())
             .receive(on: DispatchQueue.main)
-            .sink { [unowned self] (state, altitude) in
-                guard state.value != .completed else { return }
+            .sink { [unowned self] (info, altitude) in
+                guard info.value.state != .completed else { return }
                 
-                if state.value == .waiting {
+                if info.value.state == .waiting {
                     self.zeroAltitude = altitude.value.value - 2
                 } else {
                     self.zeroAltitude = self.zeroAltitude ?? (altitude.value.value - 2)
                 }
             
-                switch state.value {
+                switch info.value.state {
                 case .waiting:
                     self.altitude.append(max(0, altitude.value.value - (self.zeroAltitude ?? 0)))
                     self.altitude = self.altitude.suffix(30)

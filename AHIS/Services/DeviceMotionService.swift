@@ -100,9 +100,12 @@ public final class DeviceMotionService: NSObject {
             }
 
             self.prevHeading = motion.heading
-            self.headingSubject = .init(timestamp: motion.date.timeIntervalSinceBootTime, value: .init(value: heading + self.rotate * 360, unit: .degrees))
+            self.headingSubject = .init(timestamp: .date(motion.date),
+                                        value: .init(value: heading + self.rotate * 360, unit: .degrees))
             self.latestAttitude = motion.attitude.copy() as? CMAttitude
-            self.deviceMotionQuaternionSubject = .init(timestamp: motion.date.timeIntervalSinceBootTime, value: motion.attitude.quaternion)
+
+            self.deviceMotionQuaternionSubject = .init(timestamp: .date(motion.date),
+                                                       value: motion.attitude.quaternion)
         }
     }
 }
@@ -170,8 +173,10 @@ extension DeviceMotionService: CLLocationManagerDelegate {
     
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let last = locations.last(where: { $0.speedAccuracy > 0 }) else { return }
-        speedSubject = .init(timestamp: last.timestamp.timeIntervalSinceBootTime, value: .init(value: last.speed, unit: .metersPerSecond))
-        altitudeSubject = .init(timestamp: last.timestamp.timeIntervalSinceBootTime, value: .init(value: last.altitude, unit: .meters))
+        speedSubject = .init(timestamp: .date(last.timestamp),
+                             value: .init(value: last.speed, unit: .metersPerSecond))
+        altitudeSubject = .init(timestamp: .date(last.timestamp),
+                                value: .init(value: last.altitude, unit: .meters))
     }
     
     public func locationManagerShouldDisplayHeadingCalibration(_ manager: CLLocationManager) -> Bool {

@@ -17,8 +17,3 @@ extension CMLogItem {
     }
 }
 
-extension Date {
-    var timeIntervalSinceBootTime: TimeInterval {
-        timeIntervalSince(CMLogItem.bootTime)
-    }
-}

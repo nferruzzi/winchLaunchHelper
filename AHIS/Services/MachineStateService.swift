@@ -18,8 +18,14 @@ enum MachineState: String {
     case completed
 }
 
+struct MachineInfo: Equatable {
+    let state: MachineState
+    let instantSpeed: DataPointSpeed
+    let instantAcceleration: DataPointAcceleration
+}
 
-typealias DataPointMachineState = DataPoint<MachineState>
+
+typealias DataPointMachineState = DataPoint<MachineInfo>
 
 protocol MachineStateProtocol {
     var speed: AnyPublisher<DataPointSpeed, Never> { get }
@@ -35,7 +41,7 @@ final class MachineStateService {
         static let speedThreshold = Measurement<UnitSpeed>(value: 20, unit: .kilometersPerHour)
 
         // CoreLocation generates just 1 msg per second, we interpolate the speed to have more
-        static let throttleSeconds: Double = 0.1
+        static let throttleSeconds: Double = 0.01
     }
     
     var speedPublisher: AnyPublisher<DataPointSpeed, Never>
@@ -43,7 +49,8 @@ final class MachineStateService {
     private var lastPublishedTime: Date?
     private var speeds: [DataPointSpeed] = []
     private var notStoppedTime: Date?
-    
+    private var lastPublishedSmoothedTime: Date?
+
     /// Data from core location are too sparse, a moving average would simply add too much delay
     lazy var smoothedSpeedPublisher: some Publisher<DataPointSpeed, Never> = {
         interpolatedSpeedPublisher
@@ -78,22 +85,23 @@ final class MachineStateService {
     
     lazy var statePublisher: some Publisher<DataPointMachineState, Never> = {
         Publishers.CombineLatest(
-            speed,
-            acceleration
+            smoothedSpeedPublisher,
+            accelerationPublisher
         )
             .map { speed, acceleration in
                 guard speed.value > Constants.speedThreshold else {
-                    return .init(timestamp: speed.timestamp, value: .waiting)
+                    return .init(timestamp: speed.timestamp, value: .init(state: .waiting, instantSpeed: speed, instantAcceleration: acceleration))
                 }
                 
                 if acceleration.value > Constants.accelerationThreshold {
-                    return .init(timestamp: speed.timestamp, value: .acceleration)
+                    return .init(timestamp: speed.timestamp, value: .init(state: .acceleration, instantSpeed: speed, instantAcceleration: acceleration))
                 } else if acceleration.value < Constants.accelerationThreshold * -1.0 {
-                    return .init(timestamp: speed.timestamp, value: .deceleration)
+                    return .init(timestamp: speed.timestamp, value: .init(state: .deceleration, instantSpeed: speed, instantAcceleration: acceleration))
                 } else {
-                    return .init(timestamp: speed.timestamp, value: .constantSpeed)
+                    return .init(timestamp: speed.timestamp, value:  .init(state: .constantSpeed, instantSpeed: speed, instantAcceleration: acceleration))
                 }
             }
+            .print("state")
             .share()
     }()
     
@@ -102,19 +110,24 @@ final class MachineStateService {
             Timer.publish(every: Constants.throttleSeconds, on: RunLoop.main, in: .default).autoconnect(),
             speedPublisher.zip(speedPublisher.dropFirst())
         )
-        .map { timer, speeds -> DataPointSpeed in
+        .compactMap { [unowned self] timer, speeds -> DataPointSpeed? in
+            guard timer != self.lastPublishedSmoothedTime else { return nil }
+            self.lastPublishedSmoothedTime = timer
+            
             let prev = speeds.0
             let current = speeds.1
             
-            let t = prev.timestamp + timer.timeIntervalSinceBootTime.truncatingRemainder(dividingBy: 1.0)
-            let interpolate = Double.interpolate(t1: prev.timestamp,
+            let t = timer.timeRelativeToDataPointInterval
+            let interpolate = Double.interpolate(t1: prev.timestamp.relativeTimeInterval,
                                                  v1: prev.value.value,
-                                                 t2: current.timestamp,
+                                                 t2: current.timestamp.relativeTimeInterval,
                                                  v2: current.value.value,
                                                  t: t)
 
-            return .init(timestamp: timer.timeIntervalSinceBootTime,
-                         value: .init(value: interpolate, unit: .metersPerSecond))
+//            debugPrint(timer.timeIntervalSince1970, t, prev.value.value, current.value.value, " -> ", interpolate)
+            let value = DataPointSpeed(timestamp: .relative(t),
+                                       value: .init(value: interpolate, unit: .metersPerSecond))
+            return value
         }
         .share()
     }()
@@ -132,13 +145,11 @@ final class MachineStateService {
 
 extension MachineStateService: MachineStateProtocol {
     var speed: AnyPublisher<DataPointSpeed, Never> {
-        smoothedSpeedPublisher
-            .eraseToAnyPublisher()
+        smoothedSpeedPublisher.eraseToAnyPublisher()
     }
 
     var acceleration: AnyPublisher<DataPointAcceleration, Never> {
-        accelerationPublisher
-            .eraseToAnyPublisher()
+        accelerationPublisher.eraseToAnyPublisher()
     }
 
     var machineState: AnyPublisher<DataPointMachineState, Never> {

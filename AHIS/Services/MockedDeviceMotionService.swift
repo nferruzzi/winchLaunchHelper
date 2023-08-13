@@ -124,18 +124,19 @@ public final class MockedDeviceMotionService: DeviceMotionProtocol {
     public init() {
         let filtered = filterClosestToIntX(points: interpolatePoints(points: Constants.test))
         let indexed = indexYValuesForIntX(points: filtered)
-
+        
         /// Data are generated with the same CM frequency (1hz)
         Timer.publish(every: 1.0, on: RunLoop.main, in: .default)
             .autoconnect()
             .sink { [unowned self] timer in
                 self.start = self.start ?? timer
-                let timestamp = timer.timeIntervalSince(self.start!)
-                let diff = Int(timestamp.rounded())
-                let speed = indexed[diff] ?? filtered.last!.y
-//                print(timestamp, diff, speed)
-                self.speedSubject = .init(timestamp: timestamp, value: .init(value: speed, unit: .kilometersPerHour).converted(to: .metersPerSecond))
-//                self.altitudeSubject = .init(timestamp: timestamp, value: .init(value: self.altitudeSubject.value.value * 1.1, unit: .meters))
+                DataPointTimeInterval.relativeOrigin = self.start!
+                
+                let diff = timer.timeRelativeToDataPointInterval - self.start!.timeRelativeToDataPointInterval
+                let index = Int((diff).rounded())
+                let speed = indexed[index] ?? filtered.last!.y
+                self.speedSubject = .init(timestamp: .relative(diff),
+                                          value: .init(value: speed, unit: .kilometersPerHour).converted(to: .metersPerSecond))
             }
             .store(in: &subscription)
     }
