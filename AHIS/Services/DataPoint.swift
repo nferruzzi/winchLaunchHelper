@@ -61,6 +61,10 @@ public struct DataPoint<Value: Equatable & Codable>: Equatable, Codable {
     public func toRelative() -> Self {
         return .init(timestamp: .relative(timestamp.relativeTimeInterval), value: value)
     }
+    
+    public func toScaledRelative(relative: TimeInterval) -> Self {
+        return .init(timestamp: .relative(Double(Int(timestamp.relativeTimeInterval - relative) * 10)), value: value)
+    }
 }
 
 

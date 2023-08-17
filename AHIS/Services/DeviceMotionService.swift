@@ -97,20 +97,20 @@ public final class DeviceMotionService: NSObject {
             }
             .store(in: &subscriptions)
         
-        $serialization.throttle(for: .seconds(10), scheduler: RunLoop.main, latest: true)
-            .sink { state in
-                // Ottieni il percorso del folder "Documents"
-                if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-                    let fileURL = documentsDirectory.appendingPathComponent("\(Constants.launchDate.timeIntervalSince1970).json")
-
-                    // Ad esempio, per scrivere una stringa nel file:
-                    if let data = try? JSONEncoder().encode(state) {
-                        try? data.write(to: fileURL)
-                        print("Dumped in \(fileURL)")
-                    }
-                }
-            }
-            .store(in: &subscriptions)
+//        $serialization.throttle(for: .seconds(10), scheduler: RunLoop.main, latest: true)
+//            .sink { state in
+//                // Ottieni il percorso del folder "Documents"
+//                if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+//                    let fileURL = documentsDirectory.appendingPathComponent("\(Constants.launchDate.timeIntervalSince1970).json")
+//
+//                    // Ad esempio, per scrivere una stringa nel file:
+//                    if let data = try? JSONEncoder().encode(state) {
+//                        try? data.write(to: fileURL)
+//                        print("Dumped in \(fileURL)")
+//                    }
+//                }
+//            }
+//            .store(in: &subscriptions)
         
     }
     

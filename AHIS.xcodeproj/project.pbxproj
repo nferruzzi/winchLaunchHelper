@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		8A522DCB2A8CE9E00010E719 /* ExtendedKalmanFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A522DCA2A8CE9E00010E719 /* ExtendedKalmanFilter.swift */; };
 		8A522DD02A8E42AA0010E719 /* drive_flat_to_hill_01.json in Resources */ = {isa = PBXBuildFile; fileRef = 8A522DCF2A8E42AA0010E719 /* drive_flat_to_hill_01.json */; };
+		8A522DD22A8E43390010E719 /* ReplayDeviceMotionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A522DD12A8E43390010E719 /* ReplayDeviceMotionService.swift */; };
 		8A6BE19E25AA2B0800D3C2D9 /* HeadingIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A6BE19D25AA2B0800D3C2D9 /* HeadingIndicatorView.swift */; };
 		8AFCD6AC2A79699C009F97FA /* AttitudeIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6AB2A79699C009F97FA /* AttitudeIndicatorView.swift */; };
 		8AFCD6AF2A7969F9009F97FA /* Double+math.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6AE2A7969F9009F97FA /* Double+math.swift */; };
@@ -33,6 +34,7 @@
 /* Begin PBXFileReference section */
 		8A522DCA2A8CE9E00010E719 /* ExtendedKalmanFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKalmanFilter.swift; sourceTree = "<group>"; };
 		8A522DCF2A8E42AA0010E719 /* drive_flat_to_hill_01.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = drive_flat_to_hill_01.json; sourceTree = "<group>"; };
+		8A522DD12A8E43390010E719 /* ReplayDeviceMotionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplayDeviceMotionService.swift; sourceTree = "<group>"; };
 		8A6BE19D25AA2B0800D3C2D9 /* HeadingIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadingIndicatorView.swift; sourceTree = "<group>"; };
 		8AFCD6AB2A79699C009F97FA /* AttitudeIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttitudeIndicatorView.swift; sourceTree = "<group>"; };
 		8AFCD6AE2A7969F9009F97FA /* Double+math.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Double+math.swift"; sourceTree = "<group>"; };
@@ -97,6 +99,7 @@
 				8AFCD6C12A84E716009F97FA /* DataPoint.swift */,
 				8AFCD6C52A85447B009F97FA /* MockedDeviceMotionService.swift */,
 				8A522DCA2A8CE9E00010E719 /* ExtendedKalmanFilter.swift */,
+				8A522DD12A8E43390010E719 /* ReplayDeviceMotionService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -237,6 +240,7 @@
 				8AFE555A25A86E5400EC5329 /* DeviceMotionService.swift in Sources */,
 				8AFCD6AC2A79699C009F97FA /* AttitudeIndicatorView.swift in Sources */,
 				8AFCD6BE2A844E8E009F97FA /* CMAttitude+math.swift in Sources */,
+				8A522DD22A8E43390010E719 /* ReplayDeviceMotionService.swift in Sources */,
 				8AFCD6B12A796A39009F97FA /* TriangleShape.swift in Sources */,
 				8AFCD6BA2A7A830F009F97FA /* AHServiceViewModel.swift in Sources */,
 				8A522DCB2A8CE9E00010E719 /* ExtendedKalmanFilter.swift in Sources */,
