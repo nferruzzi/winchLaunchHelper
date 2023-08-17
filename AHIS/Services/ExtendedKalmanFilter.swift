@@ -26,15 +26,14 @@ struct ExtendedKalmanFilter {
     let measurementNoise: simd_double2x2 = matrix_identity_double2x2
     
     mutating func predictState() {
-        let newVelocity = velocity + acceleration * Constant.timeStep
         // acceleration remains the same during prediction in this model
-        velocity = newVelocity
+//        velocity += acceleration * Constant.timeStep
         estimateError = (stateTransition * estimateError * stateTransition.transpose) + processNoise
     }
     
     mutating func updateWithAcceleration(accelerationValue: Double) {
         acceleration = accelerationValue
-        velocity += 0.5 * accelerationValue * Constant.timeStep * Constant.timeStep
+        velocity += accelerationValue * Constant.timeStep
     }
     
     mutating func updateWithVelocity(velocityMeasurement: Double) {
