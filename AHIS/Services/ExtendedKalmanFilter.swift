@@ -4,6 +4,10 @@
 //
 //  Created by Nicola Ferruzzi on 16/08/23.
 //
+//  Reference material for future improvements
+//  https://www.youtube.com/watch?v=HkYRJJoyBwQ
+//  https://ardupilot.org/dev/docs/extended-kalman-filter.html
+
 
 import Foundation
 import simd

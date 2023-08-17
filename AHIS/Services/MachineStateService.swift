@@ -12,16 +12,21 @@ import Combine
 
 enum MachineState: String, Codable {
     case waiting
-    case acceleration
-    case constantSpeed
-    case deceleration
-    case completed
+    
+    case takingOff
+    case minSpeedReached
+    case minSpeedLost
+    case maxSpeedReached
+    
+//    case acceleration
+//    case constantSpeed
+//    case deceleration
+//    case completed
 }
 
 struct MachineInfo: Equatable, Codable {
     let state: MachineState
-    let instantSpeed: DataPointSpeed
-    let instantAcceleration: DataPointAcceleration
+    let stateTimestamp: DataPointTimeInterval
 }
 
 
@@ -37,12 +42,17 @@ protocol MachineStateProtocol {
 final class MachineStateService {
     enum Constants {
         static let windowSize: Int = 10
-        static let accelerationThreshold = Measurement<UnitAcceleration>(value: 0.5, unit: .metersPerSecondSquared)
+        static let accelerationThreshold = Measurement<UnitAcceleration>(value: 1.0, unit: .metersPerSecondSquared)
         static let speedThreshold = Measurement<UnitSpeed>(value: 20, unit: .kilometersPerHour)
 
         // CoreLocation generates just 1 msg per second, we interpolate the speed to have more
         static let throttleSeconds: Double = 0.01
+
+        /// ask13
+        static let minSpeed = Measurement<UnitSpeed>(value: 30, unit: .kilometersPerHour)
+        static let maxSpeed = Measurement<UnitSpeed>(value: 50, unit: .kilometersPerHour)
     }
+    
     
     var speedPublisher: AnyPublisher<DataPointSpeed, Never>
     var userAccelerationPublisher: AnyPublisher<DataPointUserAcceleration, Never>
@@ -52,6 +62,9 @@ final class MachineStateService {
     private var notStoppedTime: Date?
     private var lastPublishedSmoothedTime: Date?
     private var ekf = ExtendedKalmanFilter()
+    private var accelerations: [DataPointAcceleration] = []
+    
+    private var currentInfo: MachineInfo = .init(state: .waiting, stateTimestamp: .date(Date()))
 
     lazy var interpolatedSpeedPublisher: some Publisher<DataPointSpeed, Never> = {
         speedPublisher.map { [unowned self] dataPoint in
@@ -98,24 +111,62 @@ final class MachineStateService {
         .share()
     }()
     
+    lazy var smoothedAccelerationsPublisher: some Publisher<DataPointAcceleration, Never> = {
+        accelerationPublisher
+            .map { [unowned self] acceleration -> DataPointAcceleration in
+                self.accelerations.append(acceleration)
+                if self.accelerations.count > Constants.windowSize {
+                    self.accelerations.removeFirst()
+                }
+
+                let movingAverage = accelerations.reduce(0, { $0 + $1.value.value }) / Double(accelerations.count)
+                return .init(timestamp: acceleration.timestamp, value: .init(value: movingAverage, unit: .metersPerSecondSquared))
+            }
+//            .filter { [unowned self] speed in
+//                if let lastPublishedTime = self.lastPublishedTime, speed.date.timeIntervalSince(lastPublishedTime) < 0.1 {
+//                    return false
+//                }
+//                self.lastPublishedTime = speed.date
+//                return true
+//            }
+            .share()
+    }()
+    
     lazy var statePublisher: some Publisher<DataPointMachineState, Never> = {
         Publishers.CombineLatest(
             smoothedSpeedPublisher,
-            accelerationPublisher
+            smoothedAccelerationsPublisher
         )
-            .map { speed, acceleration in
+            .map { [unowned self] speed, acceleration in
                 guard speed.value > Constants.speedThreshold else {
-                    return .init(timestamp: speed.timestamp, value: .init(state: .waiting, instantSpeed: speed, instantAcceleration: acceleration))
+                    return .init(timestamp: speed.timestamp, value: .init(state: .waiting, stateTimestamp: speed.timestamp))
                 }
                 
-                if acceleration.value > Constants.accelerationThreshold {
-                    return .init(timestamp: speed.timestamp, value: .init(state: .acceleration, instantSpeed: speed, instantAcceleration: acceleration))
-                } else if acceleration.value < Constants.accelerationThreshold * -1.0 {
-                    return .init(timestamp: speed.timestamp, value: .init(state: .deceleration, instantSpeed: speed, instantAcceleration: acceleration))
-                } else {
-                    return .init(timestamp: speed.timestamp, value:  .init(state: .constantSpeed, instantSpeed: speed, instantAcceleration: acceleration))
+                switch self.currentInfo.state {
+                case .waiting:
+                    return .init(timestamp: speed.timestamp, value: .init(state: .takingOff, stateTimestamp: speed.timestamp))
+
+                case .takingOff:
+                    if speed.value > Constants.minSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .minSpeedReached, stateTimestamp: speed.timestamp)) }
+                    return .init(timestamp: speed.timestamp, value: self.currentInfo)
+
+                case .minSpeedReached:
+                    if speed.value < Constants.minSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .minSpeedLost, stateTimestamp: speed.timestamp)) }
+                    if speed.value > Constants.maxSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .maxSpeedReached, stateTimestamp: speed.timestamp)) }
+                    return .init(timestamp: speed.timestamp, value: self.currentInfo)
+                    
+                case .minSpeedLost:
+                    if speed.value > Constants.minSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .minSpeedReached, stateTimestamp: speed.timestamp)) }
+                    return .init(timestamp: speed.timestamp, value: self.currentInfo)
+
+                case .maxSpeedReached:
+                    if speed.value < Constants.minSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .minSpeedReached, stateTimestamp: speed.timestamp)) }
+                    return .init(timestamp: speed.timestamp, value: self.currentInfo)
                 }
             }
+            .handleEvents(receiveOutput: { [unowned self] state in
+                self.currentInfo = state.value
+            })
             .share()
     }()
     

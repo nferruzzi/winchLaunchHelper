@@ -14,9 +14,6 @@ import AVFoundation
 final class AHServiceViewModel: ObservableObject {
     enum Constants {
         static let synthesizer = AVSpeechSynthesizer()
-        /// ask13 
-        static let minSpeed = Measurement<UnitSpeed>(value: 70, unit: .kilometersPerHour)
-        static let maxSpeed = Measurement<UnitSpeed>(value: 110, unit: .kilometersPerHour)
     }
     
     private var subscriptions = Set<AnyCancellable>()
@@ -36,9 +33,11 @@ final class AHServiceViewModel: ObservableObject {
     @Published private(set) var lasSayString: String = ""
     @Published private(set) var altitude: [Double] = []
     
-    private var lastSayMinAcceleration: Date?
-    private var lastSayMaxAcceleration: Date?
-    private var lastSayMinDeceleration: Date?
+
+    private var lastSayMin: Date?
+    private var lastSayMinSpeed: Date?
+    private var lastSayMinSpeedLost: Date?
+    private var lastSayMaxSpeedReached: Date?
 
     private var zeroAltitude: Double?
     
@@ -101,29 +100,36 @@ final class AHServiceViewModel: ObservableObject {
         
         
         Publishers.CombineLatest(machineStateService.machineState.removeDuplicates(),
-                                 machineStateService.speed.removeDuplicates())
+                                 ahService.speed.removeDuplicates())
             .receive(on: DispatchQueue.main)
             .sink { [unowned self] (info, speed) in
-                if info.value.state == .acceleration {
-                    self.lastSayMinDeceleration = nil
-                    
-                    if speed.value > Constants.minSpeed, self.lastSayMinAcceleration == nil {
-                        self.lastSayMinAcceleration = Date()
-                        self.say("+\(Int(Constants.minSpeed.value))")
+                switch info.value.state {
+                case .waiting: ()
+                case .takingOff:
+                    if self.lastSayMin == nil {
+                        self.lastSayMin = Date()
+                        self.say("Min", speedMultiplier: 0.4)
                     }
-                    if speed.value > Constants.maxSpeed, self.lastSayMaxAcceleration == nil {
-                        self.lastSayMaxAcceleration = Date()
-                        self.say("+\(Int(Constants.maxSpeed.value))")
+                case .minSpeedReached:
+                    if self.lastSayMinSpeed == nil {
+                        self.lastSayMinSpeed = Date()
+                        self.lastSayMinSpeedLost = nil
+                        self.lastSayMaxSpeedReached = nil
+                        self.say("\(Int(speed.value.converted(to: .kilometersPerHour).value))")
                     }
-                }
                 
-                if info.value.state == .deceleration {
-                    self.lastSayMinAcceleration = nil
-                    self.lastSayMaxAcceleration = nil
-                    
-                    if speed.value < Constants.minSpeed, self.lastSayMinDeceleration == nil {
-                        self.lastSayMinDeceleration = Date()
-                        self.say("-\(Int(Constants.minSpeed.value))")
+                case .minSpeedLost:
+                    if self.lastSayMinSpeedLost == nil {
+                        self.lastSayMinSpeedLost = Date()
+                        self.lastSayMinSpeed = nil
+                        self.say("\(Int(speed.value.converted(to: .kilometersPerHour).value))")
+                    }
+
+                case .maxSpeedReached:
+                    if self.lastSayMaxSpeedReached == nil {
+                        self.lastSayMaxSpeedReached = Date()
+                        self.lastSayMinSpeed = nil
+                        self.say("\(Int(speed.value.converted(to: .kilometersPerHour).value))")
                     }
                 }
             }
@@ -133,8 +139,6 @@ final class AHServiceViewModel: ObservableObject {
                                  ahService.altitude.removeDuplicates())
             .receive(on: DispatchQueue.main)
             .sink { [unowned self] (info, altitude) in
-                guard info.value.state != .completed else { return }
-                
                 if info.value.state == .waiting {
                     self.zeroAltitude = altitude.value.value - 2
                 } else {
@@ -159,9 +163,9 @@ final class AHServiceViewModel: ObservableObject {
         ahService?.reset()
     }
     
-    func say(_ string: String) {
+    func say(_ string: String, speedMultiplier: Float = 0.6) {
         let speechUtterance = AVSpeechUtterance(string: string)
-        speechUtterance.rate = (AVSpeechUtteranceMinimumSpeechRate + AVSpeechUtteranceMaximumSpeechRate) * 0.6
+        speechUtterance.rate = (AVSpeechUtteranceMinimumSpeechRate + AVSpeechUtteranceMaximumSpeechRate) * speedMultiplier
         speechUtterance.voice = AVSpeechSynthesisVoice()
         Constants.synthesizer.speak(speechUtterance)
         lasSayString = string

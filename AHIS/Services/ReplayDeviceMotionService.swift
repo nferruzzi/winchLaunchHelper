@@ -142,7 +142,7 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
             DataPointTimeInterval.relativeOrigin = Date()
 
             /// skip
-            while timestamp <= 40 {
+            while timestamp <= 60 {
                 while self.reduce(rounded: Int(self.timestamp * 10), skip: true) == false {}
                 timestamp += 0.1
             }
