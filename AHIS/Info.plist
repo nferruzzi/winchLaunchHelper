@@ -31,6 +31,8 @@
 	</dict>
 	<key>NSLocationUsageDescription</key>
 	<string>To read the GPS speed, it is necessary to authorize the app.</string>
+	<key>LSApplicationCategoryType</key>
+	<string></string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>To read the GPS speed, it is necessary to authorize the app.</string>
 	<key>NSMotionUsageDescription</key>
@@ -52,5 +54,7 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+    <key>UIFileSharingEnabled</key>
+    <true/>
 </dict>
 </plist>

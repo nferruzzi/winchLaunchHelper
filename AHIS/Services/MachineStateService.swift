@@ -10,7 +10,7 @@ import CoreLocation
 import Combine
 
 
-enum MachineState: String {
+enum MachineState: String, Codable {
     case waiting
     case acceleration
     case constantSpeed
@@ -18,7 +18,7 @@ enum MachineState: String {
     case completed
 }
 
-struct MachineInfo: Equatable {
+struct MachineInfo: Equatable, Codable {
     let state: MachineState
     let instantSpeed: DataPointSpeed
     let instantAcceleration: DataPointAcceleration
@@ -45,12 +45,57 @@ final class MachineStateService {
     }
     
     var speedPublisher: AnyPublisher<DataPointSpeed, Never>
+    var userAccelerationPublisher: AnyPublisher<DataPointUserAcceleration, Never>
 
     private var lastPublishedTime: Date?
     private var speeds: [DataPointSpeed] = []
     private var notStoppedTime: Date?
     private var lastPublishedSmoothedTime: Date?
+    private var ekf = ExtendedKalmanFilter()
 
+    lazy var interpolatedSpeedPublisher: some Publisher<DataPointSpeed, Never> = {
+        speedPublisher.map { [unowned self] dataPoint in
+            self.ekf.updateWithVelocity(velocityMeasurement: dataPoint.value.value)
+//            print("update vel")
+            return self.accelerationPublisher
+        }
+        .switchToLatest()
+        .map { [unowned self] dataPoint in
+            self.ekf.updateWithAcceleration(acceleration: dataPoint.value.value)
+//            print("update acceleration")
+            let speed = self.ekf.state[0]
+            return DataPointSpeed(timestamp: dataPoint.timestamp, value: .init(value: speed, unit: .metersPerSecond))
+        }
+//        .print("is")
+        .share()
+        
+//
+//        Publishers.CombineLatest(
+//            Timer.publish(every: Constants.throttleSeconds, on: RunLoop.main, in: .default).autoconnect(),
+//            accelerationPublisher
+//        )
+//        .compactMap { [unowned self] timer, speeds -> DataPointSpeed? in
+//            guard timer != self.lastPublishedSmoothedTime else { return nil }
+//            self.lastPublishedSmoothedTime = timer
+//
+//            let prev = speeds.0
+//            let current = speeds.1
+//
+//            let t = timer.timeRelativeToDataPointInterval
+//            let interpolate = Double.interpolate(t1: prev.timestamp.relativeTimeInterval,
+//                                                 v1: prev.value.value,
+//                                                 t2: current.timestamp.relativeTimeInterval,
+//                                                 v2: current.value.value,
+//                                                 t: t)
+//
+////            debugPrint(timer.timeIntervalSince1970, t, prev.value.value, current.value.value, " -> ", interpolate)
+//            let value = DataPointSpeed(timestamp: .relative(t),
+//                                       value: .init(value: interpolate, unit: .metersPerSecond))
+//            return value
+//        }
+//        .share()
+    }()
+        
     /// Data from core location are too sparse, a moving average would simply add too much delay
     lazy var smoothedSpeedPublisher: some Publisher<DataPointSpeed, Never> = {
         interpolatedSpeedPublisher
@@ -73,14 +118,21 @@ final class MachineStateService {
     }()
 
     lazy var accelerationPublisher: some Publisher<DataPointAcceleration, Never> = {
-        smoothedSpeedPublisher
-            .zip(smoothedSpeedPublisher.dropFirst())
-            .map { prev, current in
-                precondition(prev.timestamp <= current.timestamp)
-                let acceleration = (current.value.value - prev.value.value) / Constants.throttleSeconds
-                return .init(timestamp: current.timestamp, value: .init(value: acceleration, unit: .metersPerSecondSquared))
-            }
-            .share()
+        userAccelerationPublisher.map { dataPoint in
+            let measure = Measurement<UnitAcceleration>(value: -dataPoint.value.z, unit: .gravity)
+            return .init(timestamp: dataPoint.timestamp, value: measure.converted(to: .metersPerSecondSquared))
+        }
+//        .print("Acc")
+        .share()
+//        smoothedSpeedPublisher
+//            .zip(smoothedSpeedPublisher.dropFirst())
+//            .map { prev, current in
+//                precondition(prev.timestamp <= current.timestamp)
+//                let acceleration = (current.value.value - prev.value.value) / Constants.throttleSeconds
+//                return .init(timestamp: current.timestamp, value: .init(value: acceleration, unit: .metersPerSecondSquared))
+//            }
+//            .share()
+        
     }()
     
     lazy var statePublisher: some Publisher<DataPointMachineState, Never> = {
@@ -101,40 +153,13 @@ final class MachineStateService {
                     return .init(timestamp: speed.timestamp, value:  .init(state: .constantSpeed, instantSpeed: speed, instantAcceleration: acceleration))
                 }
             }
-            .print("state")
+//            .print("state")
             .share()
     }()
     
-    lazy var interpolatedSpeedPublisher: some Publisher<DataPointSpeed, Never> = {
-        Publishers.CombineLatest(
-            Timer.publish(every: Constants.throttleSeconds, on: RunLoop.main, in: .default).autoconnect(),
-            speedPublisher.zip(speedPublisher.dropFirst())
-        )
-        .compactMap { [unowned self] timer, speeds -> DataPointSpeed? in
-            guard timer != self.lastPublishedSmoothedTime else { return nil }
-            self.lastPublishedSmoothedTime = timer
-            
-            let prev = speeds.0
-            let current = speeds.1
-            
-            let t = timer.timeRelativeToDataPointInterval
-            let interpolate = Double.interpolate(t1: prev.timestamp.relativeTimeInterval,
-                                                 v1: prev.value.value,
-                                                 t2: current.timestamp.relativeTimeInterval,
-                                                 v2: current.value.value,
-                                                 t: t)
-
-//            debugPrint(timer.timeIntervalSince1970, t, prev.value.value, current.value.value, " -> ", interpolate)
-            let value = DataPointSpeed(timestamp: .relative(t),
-                                       value: .init(value: interpolate, unit: .metersPerSecond))
-            return value
-        }
-        .share()
-    }()
-        
-    init<SpeedPublisher: Publisher<DataPointSpeed, Never>>(speedPublisher: SpeedPublisher) {
+    init(speedPublisher: AnyPublisher<DataPointSpeed, Never>, userAccelerationPublisher: AnyPublisher<DataPointUserAcceleration, Never>) {
         self.speedPublisher = speedPublisher
-            .eraseToAnyPublisher()
+        self.userAccelerationPublisher = userAccelerationPublisher
     }
         
     private func calculateMovingAverage() -> CLLocationSpeed {

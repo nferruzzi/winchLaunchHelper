@@ -10,8 +10,10 @@ import SwiftUI
 @main
 struct AHISApp: App {
     enum Constants {
-        static let ahService: DeviceMotionProtocol = DeviceMotionService()
-        static let msService: MachineStateProtocol = MachineStateService(speedPublisher: ahService.speed)
+        static let ahService: DeviceMotionProtocol = DeviceMotionService() // MockedDeviceMotionService
+//        static let ahService: DeviceMotionProtocol = MockedDeviceMotionService()
+        static let msService: MachineStateProtocol = MachineStateService(speedPublisher: ahService.speed.eraseToAnyPublisher(),
+                                                                         userAccelerationPublisher: ahService.userAcceleration.eraseToAnyPublisher())
     }
     
     var body: some Scene {

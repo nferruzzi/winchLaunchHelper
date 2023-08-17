@@ -7,8 +7,10 @@
 
 import Foundation
 import CoreMotion
+import simd
 
-public enum DataPointTimeInterval: Equatable {
+
+public enum DataPointTimeInterval: Equatable, Codable {
     static var relativeOrigin = Date(timeIntervalSinceNow: -ProcessInfo.processInfo.systemUptime)
 
     case date(Date)
@@ -40,7 +42,7 @@ extension Date {
 }
 
 
-public struct DataPoint<Value: Equatable>: Equatable {
+public struct DataPoint<Value: Equatable & Codable>: Equatable, Codable {
     typealias ValueType = Value
     
     public let value: Value
@@ -54,6 +56,10 @@ public struct DataPoint<Value: Equatable>: Equatable {
     public init(date: Date, value: Value) {
         self.timestamp = .date(date)
         self.value = value
+    }
+    
+    public func toRelative() -> Self {
+        return .init(timestamp: .relative(timestamp.relativeTimeInterval), value: value)
     }
 }
 
@@ -88,9 +94,73 @@ extension DataPoint where Value == Measurement<UnitPressure> {
     }
 }
 
+extension CMAcceleration: Codable {
+    
+    enum CodingKeys: String, CodingKey {
+        case x
+        case y
+        case z
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let x = try container.decode(Double.self, forKey: .x)
+        let y = try container.decode(Double.self, forKey: .y)
+        let z = try container.decode(Double.self, forKey: .z)
+        self.init(x: x, y: y, z: z)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(x, forKey: .x)
+        try container.encode(y, forKey: .y)
+        try container.encode(z, forKey: .z)
+    }
+}
+
+extension CMQuaternion: Codable {
+    
+    enum CodingKeys: String, CodingKey {
+        case x
+        case y
+        case z
+        case w
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let x = try container.decode(Double.self, forKey: .x)
+        let y = try container.decode(Double.self, forKey: .y)
+        let z = try container.decode(Double.self, forKey: .z)
+        let w = try container.decode(Double.self, forKey: .w)
+        self.init(x: x, y: y, z: z, w: w)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(x, forKey: .x)
+        try container.encode(y, forKey: .y)
+        try container.encode(z, forKey: .z)
+        try container.encode(w, forKey: .w)
+    }
+}
+
+
+extension DataPoint where Value == CMAcceleration {
+    static var zero: Self {
+        .init(timestamp: .relative(0), value: .init())
+    }
+}
+
 extension CMQuaternion: Equatable {
     public static func == (lhs: CMQuaternion, rhs: CMQuaternion) -> Bool {
         lhs.simdQuatd == rhs.simdQuatd
+    }
+}
+
+extension CMAcceleration: Equatable {
+    public static func == (lhs: CMAcceleration, rhs: CMAcceleration) -> Bool {
+        lhs.simDouble3 == rhs.simDouble3
     }
 }
 
@@ -100,3 +170,4 @@ public typealias DataPointAltitude = DataPoint<Measurement<UnitLength>>
 public typealias DataPointAcceleration = DataPoint<Measurement<UnitAcceleration>>
 public typealias DataPointCMQuaternion = DataPoint<CMQuaternion>
 public typealias DataPointPressure = DataPoint<Measurement<UnitPressure>>
+public typealias DataPointUserAcceleration = DataPoint<CMAcceleration>
