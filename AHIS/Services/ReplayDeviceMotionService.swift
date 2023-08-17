@@ -70,6 +70,48 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
         }
     }
     
+    public func reduce(rounded: Int, skip: Bool = false) -> Bool {
+        var done = true
+        
+        if let last = self.state.roll.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
+            if !skip { self.rollSubject = last }
+            self.state.roll.removeLast()
+            done = false
+        }
+
+        if let last = self.state.pitch.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
+            if !skip { self.pitchSubject = last }
+            self.state.pitch.removeLast()
+            done = false
+        }
+
+        if let last = self.state.speed.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
+            if !skip { self.speedSubject = last }
+            self.state.speed.removeLast()
+            done = false
+        }
+
+        if let last = self.state.userAcceleration.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
+            if !skip { self.userAccelerationSubject = last }
+            self.state.userAcceleration.removeLast()
+            done = false
+        }
+
+        if let last = self.state.altitude.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
+            if !skip { self.altitudeSubject = last }
+            self.state.altitude.removeLast()
+            done = false
+        }
+
+        if let last = self.state.heading.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
+            if !skip { self.headingSubject = last }
+            self.state.heading.removeLast()
+            done = false
+        }
+        
+        return done
+    }
+    
     public init(bundle: String) {
         do {
             let fileURL = Bundle.main.url(forResource: bundle, withExtension: nil)!
@@ -96,58 +138,21 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
             self.state.heading = self.state.heading.map { $0.toNewRelative(relative: min.relativeTimeInterval) }.reversed()
             self.state.speed = self.state.speed.map { $0.toNewRelative(relative: min.relativeTimeInterval) }.reversed()
             self.state.userAcceleration = self.state.userAcceleration.map { $0.toNewRelative(relative: min.relativeTimeInterval) }.reversed()
-
+            
             DataPointTimeInterval.relativeOrigin = Date()
+
+            /// skip
+            while timestamp <= 40 {
+                while self.reduce(rounded: Int(self.timestamp * 10), skip: true) == false {}
+                timestamp += 0.1
+            }
             
             Timer.publish(every: 0.1, on: RunLoop.main, in: .default)
                 .autoconnect()
                 .sink { [unowned self] timer in
 //                    print(self.timestamp, "sec")
-
-                    let rounded = Int(self.timestamp * 10)
-                    var done = false
-                    
-                    while done == false {
-                        done = true
-                        
-                        if let last = self.state.roll.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
-                            self.rollSubject = last
-                            self.state.roll.removeLast()
-                            done = false
-                        }
-
-                        if let last = self.state.pitch.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
-                            self.pitchSubject = last
-                            self.state.pitch.removeLast()
-                            done = false
-                        }
-
-                        if let last = self.state.speed.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
-                            self.speedSubject = last
-                            self.state.speed.removeLast()
-                            done = false
-                        }
-
-                        if let last = self.state.userAcceleration.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
-                            self.userAccelerationSubject = last
-                            self.state.userAcceleration.removeLast()
-                            done = false
-                        }
-
-                        if let last = self.state.altitude.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
-                            self.altitudeSubject = last
-                            self.state.altitude.removeLast()
-                            done = false
-                        }
-
-                        if let last = self.state.heading.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
-                            self.headingSubject = last
-                            self.state.heading.removeLast()
-                            done = false
-                        }
-                    }
-                    
-                    self.timestamp = self.timestamp + 0.1
+                    while self.reduce(rounded: Int(self.timestamp * 10)) == false {}
+                    self.timestamp += 0.1
                 }
                 .store(in: &subscription)
         }

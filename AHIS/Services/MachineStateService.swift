@@ -56,14 +56,14 @@ final class MachineStateService {
     lazy var interpolatedSpeedPublisher: some Publisher<DataPointSpeed, Never> = {
         speedPublisher.map { [unowned self] dataPoint in
             self.ekf.updateWithVelocity(velocityMeasurement: dataPoint.value.value)
-//            print("update vel")
             return self.accelerationPublisher
         }
         .switchToLatest()
         .map { [unowned self] dataPoint in
-            self.ekf.updateWithAcceleration(acceleration: dataPoint.value.value)
-//            print("update acceleration")
-            let speed = self.ekf.state[0]
+            self.ekf.updateWithAcceleration(accelerationValue: dataPoint.value.value)
+            self.ekf.predictState()
+            
+            let speed = self.ekf.velocity
             return DataPointSpeed(timestamp: dataPoint.timestamp, value: .init(value: speed, unit: .metersPerSecond))
         }
 //        .print("is")

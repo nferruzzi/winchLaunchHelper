@@ -29,6 +29,8 @@ final class AHServiceViewModel: ObservableObject {
     @Published private(set) var heading: Double = 0
     
     @Published private(set) var speed: DataPointSpeed.ValueType = .init(value: 0, unit: .metersPerSecond)
+    @Published private(set) var gpsSpeed: DataPointSpeed.ValueType = .init(value: 0, unit: .metersPerSecond)
+    
     @Published private(set) var acceleration: DataPointAcceleration.ValueType = .init(value: 0, unit: .metersPerSecondSquared)
     @Published private(set) var state: MachineState = .waiting
     @Published private(set) var lasSayString: String = ""
@@ -48,6 +50,13 @@ final class AHServiceViewModel: ObservableObject {
         
         guard let machineStateService = machineStateService,
               let ahService = ahService else { return }
+        
+        ahService
+            .speed
+            .map { $0.value.converted(to: .metersPerSecond) }
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.gpsSpeed, on: self)
+            .store(in: &subscriptions)
 
         ahService
             .roll

@@ -26,8 +26,10 @@ struct WinchLaunchView: View {
         VStack {
             Text(Constants.formatter.string(from: model.speed.converted(to: .kilometersPerHour)))
                 .font(.system(size: 80, weight: .bold, design: .monospaced))
-            Text(model.lasSayString)
-                .font(.system(size: 40, weight: .bold, design: .monospaced))
+            Text(Constants.formatter.string(from: model.gpsSpeed.converted(to: .kilometersPerHour)))
+                .font(.system(size: 80, weight: .bold, design: .monospaced))
+//            Text(model.lasSayString)
+//                .font(.system(size: 40, weight: .bold, design: .monospaced))
             Text(model.state.rawValue)
                 .font(.system(size: 20, weight: .bold, design: .monospaced))
         }
