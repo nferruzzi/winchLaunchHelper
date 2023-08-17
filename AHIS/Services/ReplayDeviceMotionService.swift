@@ -90,12 +90,12 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
         ].compactMap { $0 }
         
         if let min = reference.min(by: <=) {
-            self.state.roll = self.state.roll.map { $0.toScaledRelative(relative: min.relativeTimeInterval) }.reversed()
-            self.state.pitch = self.state.pitch.map { $0.toScaledRelative(relative: min.relativeTimeInterval) }.reversed()
-            self.state.altitude = self.state.altitude.map { $0.toScaledRelative(relative: min.relativeTimeInterval) }.reversed()
-            self.state.heading = self.state.heading.map { $0.toScaledRelative(relative: min.relativeTimeInterval) }.reversed()
-            self.state.speed = self.state.speed.map { $0.toScaledRelative(relative: min.relativeTimeInterval) }.reversed()
-            self.state.userAcceleration = self.state.userAcceleration.map { $0.toScaledRelative(relative: min.relativeTimeInterval) }.reversed()
+            self.state.roll = self.state.roll.map { $0.toNewRelative(relative: min.relativeTimeInterval) }.reversed()
+            self.state.pitch = self.state.pitch.map { $0.toNewRelative(relative: min.relativeTimeInterval) }.reversed()
+            self.state.altitude = self.state.altitude.map { $0.toNewRelative(relative: min.relativeTimeInterval) }.reversed()
+            self.state.heading = self.state.heading.map { $0.toNewRelative(relative: min.relativeTimeInterval) }.reversed()
+            self.state.speed = self.state.speed.map { $0.toNewRelative(relative: min.relativeTimeInterval) }.reversed()
+            self.state.userAcceleration = self.state.userAcceleration.map { $0.toNewRelative(relative: min.relativeTimeInterval) }.reversed()
 
             DataPointTimeInterval.relativeOrigin = Date()
             
@@ -110,37 +110,37 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
                     while done == false {
                         done = true
                         
-                        if let last = self.state.roll.last, Int(last.timestamp.relativeTimeInterval) <= rounded {
+                        if let last = self.state.roll.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
                             self.rollSubject = last
                             self.state.roll.removeLast()
                             done = false
                         }
 
-                        if let last = self.state.pitch.last, Int(last.timestamp.relativeTimeInterval) <= rounded {
+                        if let last = self.state.pitch.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
                             self.pitchSubject = last
                             self.state.pitch.removeLast()
                             done = false
                         }
 
-                        if let last = self.state.speed.last, Int(last.timestamp.relativeTimeInterval) <= rounded {
+                        if let last = self.state.speed.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
                             self.speedSubject = last
                             self.state.speed.removeLast()
                             done = false
                         }
 
-                        if let last = self.state.userAcceleration.last, Int(last.timestamp.relativeTimeInterval) <= rounded {
+                        if let last = self.state.userAcceleration.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
                             self.userAccelerationSubject = last
                             self.state.userAcceleration.removeLast()
                             done = false
                         }
 
-                        if let last = self.state.altitude.last, Int(last.timestamp.relativeTimeInterval) <= rounded {
+                        if let last = self.state.altitude.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
                             self.altitudeSubject = last
                             self.state.altitude.removeLast()
                             done = false
                         }
 
-                        if let last = self.state.heading.last, Int(last.timestamp.relativeTimeInterval) <= rounded {
+                        if let last = self.state.heading.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
                             self.headingSubject = last
                             self.state.heading.removeLast()
                             done = false
