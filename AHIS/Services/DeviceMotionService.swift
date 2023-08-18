@@ -15,7 +15,6 @@ import simd
 
 public protocol DeviceMotionProtocol {
     func reset()
-    func record(value: Bool)
     
     var roll: AnyPublisher<DataPointAngle, Never> { get }
     var pitch: AnyPublisher<DataPointAngle, Never> { get }
@@ -26,6 +25,7 @@ public protocol DeviceMotionProtocol {
     
     var minSpeed: Measurement<UnitSpeed> { get set }
     var maxSpeed: Measurement<UnitSpeed> { get set }
+    var record: Bool { get set }
 }
 
 
@@ -49,6 +49,10 @@ extension DeviceMotionProtocol {
             
         }
     }
+    
+    public var record: Bool {
+        get { false } set { }
+    }
 }
 
 
@@ -64,7 +68,6 @@ public struct SensorState: Codable {
 public final class DeviceMotionService: NSObject {
     
     enum Constants {
-        static let launchDate = Date()
         static let manager = CMMotionManager()
         static let locationManager = CLLocationManager()
         static let queue = OperationQueue()
@@ -98,14 +101,21 @@ public final class DeviceMotionService: NSObject {
         }
     }
     
+    public var record: Bool = false {
+        didSet {
+            recordDate = Date()
+            serialization = SensorState(roll: [], pitch: [], heading: [], speed: [], altitude: [], userAcceleration: [])
+        }
+    }
+    
     private var subscriptions = Set<AnyCancellable>()
     private var latestAttitude: CMAttitude?
     private var rotate: Double = 10
     private var prevHeading: Double = 0
+    private var recordDate: Date = Date()
 
     private var pitchZero: Double?
     private var rollZero: Double?
-    private var recordEnabled: Bool = false
     
     @Published private var serialization: SensorState = SensorState(roll: [], pitch: [], heading: [], speed: [], altitude: [], userAcceleration: [])
     
@@ -149,11 +159,11 @@ public final class DeviceMotionService: NSObject {
         
         $serialization.throttle(for: .seconds(10), scheduler: RunLoop.main, latest: true)
             .sink { [unowned self] state in
-                if self.recordEnabled == false { return }
+                if self.record == false { return }
                 
                 // Ottieni il percorso del folder "Documents"
                 if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-                    let fileURL = documentsDirectory.appendingPathComponent("\(Constants.launchDate.timeIntervalSince1970).json")
+                    let fileURL = documentsDirectory.appendingPathComponent("\(self.recordDate.timeIntervalSince1970).json")
 
                     // Ad esempio, per scrivere una stringa nel file:
                     if let data = try? JSONEncoder().encode(state) {
@@ -242,10 +252,6 @@ extension DeviceMotionService: DeviceMotionProtocol {
         
         pitchZero = latestAttitude.quaternion.simdQuatd.pitch
         rollZero = latestAttitude.quaternion.simdQuatd.roll
-    }
-    
-    public func record(value: Bool) {
-        recordEnabled = value
     }
 }
 

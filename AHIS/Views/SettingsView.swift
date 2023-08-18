@@ -32,11 +32,12 @@ struct SettingsView: View {
                     }
                 }
                 
-//                Section(header: Text("Winch")) {
-//                }
-//
-//                Section(header: Text("Record")) {
-//                }
+                Section(header: Text("Winch")) {
+                }
+
+                Section(header: Text("Record")) {
+                    Toggle("Log sensors data to local json files", isOn: $model.record)
+                }
             }
             .listStyle(GroupedListStyle()) // Questo style assomiglia alle settings di iOS
             .navigationTitle("Settings")
