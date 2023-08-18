@@ -152,6 +152,16 @@ struct AttitudeIndicatorView: View {
             .offset(x: 0, y: 42)
     }
     
+    var align: some View {
+        Button {
+            model.reset()
+        } label: {
+            Image(systemName: "rotate.3d")
+                .imageScale(.large)
+        }
+
+    }
+    
     @ViewBuilder
     var body: some View {
         VStack {
@@ -178,9 +188,7 @@ struct AttitudeIndicatorView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                         .shadow(color: Color(.sRGBLinear, white: 1, opacity: 0.7), radius: 5)
                 }
-                .overlay(Button("Align") {
-                    model.reset()
-                }, alignment: .bottomTrailing)
+                .overlay(align, alignment: .bottomTrailing)
                 .padding()
             }
         }

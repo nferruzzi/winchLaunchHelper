@@ -18,7 +18,7 @@ final class AHServiceViewModel: ObservableObject {
     
     private var subscriptions = Set<AnyCancellable>()
     
-    private let ahService: DeviceMotionProtocol?
+    private var ahService: DeviceMotionProtocol?
     private let machineStateService: MachineStateProtocol?
     
     @Published private(set) var roll: Int = 0
@@ -33,6 +33,18 @@ final class AHServiceViewModel: ObservableObject {
     @Published private(set) var lasSayString: String = ""
     @Published private(set) var altitude: [Double] = []
     
+    @Published var minSpeed: DataPointSpeed.ValueType {
+        didSet {
+            ahService?.minSpeed = minSpeed
+        }
+    }
+    
+    @Published var maxSpeed: DataPointSpeed.ValueType {
+        didSet {
+            ahService?.maxSpeed = maxSpeed
+        }
+    }
+    
 
     private var lastSayMin: Date?
     private var lastSayMinSpeed: Date?
@@ -46,6 +58,8 @@ final class AHServiceViewModel: ObservableObject {
         
         self.ahService = ahService
         self.machineStateService = machineStateService
+        self.minSpeed = ahService?.minSpeed ?? .init(value: 0, unit: .kilometersPerHour)
+        self.maxSpeed = ahService?.maxSpeed ?? .init(value: 0, unit: .kilometersPerHour)
         
         guard let machineStateService = machineStateService,
               let ahService = ahService else { return }

@@ -70,6 +70,8 @@ public final class DeviceMotionService: NSObject {
         static let queue = OperationQueue()
         static let userSettingsPitch = "Pitch Zero"
         static let userSettingsRoll = "Roll Zero"
+        static let userSettingsMinSpeed = "Min Speed"
+        static let userSettingsMaxSpeed = "Max Speed"
     }
 
     @Published private var deviceMotionSubject: CMDeviceMotion?
@@ -82,8 +84,19 @@ public final class DeviceMotionService: NSObject {
     @Published private var altitudeSubject: DataPointAltitude? = .zero
     @Published private var userAccelerationSubject: DataPointUserAcceleration? = .zero
 
-    public var minSpeed: Measurement<UnitSpeed> = .init(value: 70, unit: .kilometersPerHour)
-    public var maxSpeed: Measurement<UnitSpeed> = .init(value: 110, unit: .kilometersPerHour)
+    public var minSpeed: Measurement<UnitSpeed> = .init(value: 70, unit: .kilometersPerHour) {
+        didSet {
+            UserDefaults.standard.set(minSpeed.converted(to: .kilometersPerHour).value, forKey: Constants.userSettingsMinSpeed)
+            UserDefaults.standard.synchronize()
+        }
+    }
+    
+    public var maxSpeed: Measurement<UnitSpeed> = .init(value: 110, unit: .kilometersPerHour) {
+        didSet {
+            UserDefaults.standard.set(maxSpeed.converted(to: .kilometersPerHour).value, forKey: Constants.userSettingsMaxSpeed)
+            UserDefaults.standard.synchronize()
+        }
+    }
     
     private var subscriptions = Set<AnyCancellable>()
     private var latestAttitude: CMAttitude?
@@ -109,6 +122,12 @@ public final class DeviceMotionService: NSObject {
         pitchZero = UserDefaults.standard.double(forKey: Constants.userSettingsPitch)
         rollZero = UserDefaults.standard.double(forKey: Constants.userSettingsRoll)
         
+        let minSpeedValue = UserDefaults.standard.double(forKey: Constants.userSettingsMinSpeed)
+        let maxSpeedValue = UserDefaults.standard.double(forKey: Constants.userSettingsMaxSpeed)
+        
+        minSpeed = .init(value: minSpeedValue > 0 ? minSpeedValue : 70, unit: .kilometersPerHour)
+        maxSpeed = .init(value: maxSpeedValue > 0 ? maxSpeedValue : 110, unit: .kilometersPerHour)
+
         start(reference: .xMagneticNorthZVertical)
         
         if Constants.locationManager.authorizationStatus == .notDetermined {
