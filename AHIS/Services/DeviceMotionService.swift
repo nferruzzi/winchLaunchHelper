@@ -15,23 +15,63 @@ import simd
 
 public protocol DeviceMotionProtocol {
     func reset()
+    func record(value: Bool)
     
     var roll: AnyPublisher<DataPointAngle, Never> { get }
     var pitch: AnyPublisher<DataPointAngle, Never> { get }
     var heading: AnyPublisher<DataPointAngle, Never> { get }
     var speed: AnyPublisher<DataPointSpeed, Never> { get }
     var altitude: AnyPublisher<DataPointAltitude, Never> { get }
+    var userAcceleration: AnyPublisher<DataPointUserAcceleration, Never> { get }
+    
+    var minSpeed: Measurement<UnitSpeed> { get set }
+    var maxSpeed: Measurement<UnitSpeed> { get set }
 }
 
+
+extension DeviceMotionProtocol {
+    public func record(value: Bool) {}
+    
+    public var minSpeed: Measurement<UnitSpeed> {
+        get {
+            .init(value: 70, unit: .kilometersPerHour)
+        }
+        set {
+            
+        }
+    }
+    
+    public var maxSpeed: Measurement<UnitSpeed> {
+        get {
+            .init(value: 110, unit: .kilometersPerHour)
+        }
+        set {
+            
+        }
+    }
+}
+
+
+public struct SensorState: Codable {
+    var roll: [DataPointAngle]
+    var pitch: [DataPointAngle]
+    var heading: [DataPointAngle]
+    var speed: [DataPointSpeed]
+    var altitude: [DataPointAltitude]
+    var userAcceleration: [DataPointUserAcceleration]
+}
 
 public final class DeviceMotionService: NSObject {
     
     enum Constants {
+        static let launchDate = Date()
         static let manager = CMMotionManager()
         static let locationManager = CLLocationManager()
         static let queue = OperationQueue()
         static let userSettingsPitch = "Pitch Zero"
         static let userSettingsRoll = "Roll Zero"
+        static let userSettingsMinSpeed = "Min Speed"
+        static let userSettingsMaxSpeed = "Max Speed"
     }
 
     @Published private var deviceMotionSubject: CMDeviceMotion?
@@ -42,7 +82,22 @@ public final class DeviceMotionService: NSObject {
     @Published private var pitchSubject: DataPointAngle? = .zero
     @Published private var speedSubject: DataPointSpeed? = .zero
     @Published private var altitudeSubject: DataPointAltitude? = .zero
+    @Published private var userAccelerationSubject: DataPointUserAcceleration? = .zero
 
+    public var minSpeed: Measurement<UnitSpeed> = .init(value: 70, unit: .kilometersPerHour) {
+        didSet {
+            UserDefaults.standard.set(minSpeed.converted(to: .kilometersPerHour).value, forKey: Constants.userSettingsMinSpeed)
+            UserDefaults.standard.synchronize()
+        }
+    }
+    
+    public var maxSpeed: Measurement<UnitSpeed> = .init(value: 110, unit: .kilometersPerHour) {
+        didSet {
+            UserDefaults.standard.set(maxSpeed.converted(to: .kilometersPerHour).value, forKey: Constants.userSettingsMaxSpeed)
+            UserDefaults.standard.synchronize()
+        }
+    }
+    
     private var subscriptions = Set<AnyCancellable>()
     private var latestAttitude: CMAttitude?
     private var rotate: Double = 10
@@ -50,11 +105,14 @@ public final class DeviceMotionService: NSObject {
 
     private var pitchZero: Double?
     private var rollZero: Double?
+    private var recordEnabled: Bool = false
+    
+    @Published private var serialization: SensorState = SensorState(roll: [], pitch: [], heading: [], speed: [], altitude: [], userAcceleration: [])
     
     public override init() {
         super.init()
         Constants.manager.showsDeviceMovementDisplay = true
-        Constants.manager.deviceMotionUpdateInterval = TimeInterval(1.0/100.0)
+        Constants.manager.deviceMotionUpdateInterval = TimeInterval(1.0/10.0)
 
         Constants.locationManager.desiredAccuracy = kCLLocationAccuracyBest
         Constants.locationManager.activityType = .airborne
@@ -64,6 +122,12 @@ public final class DeviceMotionService: NSObject {
         pitchZero = UserDefaults.standard.double(forKey: Constants.userSettingsPitch)
         rollZero = UserDefaults.standard.double(forKey: Constants.userSettingsRoll)
         
+        let minSpeedValue = UserDefaults.standard.double(forKey: Constants.userSettingsMinSpeed)
+        let maxSpeedValue = UserDefaults.standard.double(forKey: Constants.userSettingsMaxSpeed)
+        
+        minSpeed = .init(value: minSpeedValue > 0 ? minSpeedValue : 70, unit: .kilometersPerHour)
+        maxSpeed = .init(value: maxSpeedValue > 0 ? maxSpeedValue : 110, unit: .kilometersPerHour)
+
         start(reference: .xMagneticNorthZVertical)
         
         if Constants.locationManager.authorizationStatus == .notDetermined {
@@ -77,8 +141,29 @@ public final class DeviceMotionService: NSObject {
                 let roll = attitude.value.simdQuatd.roll - (self.rollZero ?? 0)
                 self.pitchSubject = .init(timestamp: attitude.timestamp, value: .init(value: pitch, unit: .radians))
                 self.rollSubject = .init(timestamp: attitude.timestamp, value: .init(value: roll, unit: .radians))
+
+                self.serialization.pitch.append(self.pitchSubject!.toRelative())
+                self.serialization.roll.append(self.rollSubject!.toRelative())
             }
             .store(in: &subscriptions)
+        
+        $serialization.throttle(for: .seconds(10), scheduler: RunLoop.main, latest: true)
+            .sink { [unowned self] state in
+                if self.recordEnabled == false { return }
+                
+                // Ottieni il percorso del folder "Documents"
+                if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                    let fileURL = documentsDirectory.appendingPathComponent("\(Constants.launchDate.timeIntervalSince1970).json")
+
+                    // Ad esempio, per scrivere una stringa nel file:
+                    if let data = try? JSONEncoder().encode(state) {
+                        try? data.write(to: fileURL)
+                        print("Dumped in \(fileURL)")
+                    }
+                }
+            }
+            .store(in: &subscriptions)
+        
     }
     
     private func start(reference: CMAttitudeReferenceFrame) {
@@ -98,6 +183,9 @@ public final class DeviceMotionService: NSObject {
                 self.rotate += 1
 //                debugPrint("bug da 360 a 0 \(motion.heading) \(self.rotate)")
             }
+            
+            self.userAccelerationSubject = .init(timestamp: .date(motion.date),
+                                                 value: motion.userAcceleration)
 
             self.prevHeading = motion.heading
             self.headingSubject = .init(timestamp: .date(motion.date),
@@ -106,6 +194,9 @@ public final class DeviceMotionService: NSObject {
 
             self.deviceMotionQuaternionSubject = .init(timestamp: .date(motion.date),
                                                        value: motion.attitude.quaternion)
+            
+            self.serialization.userAcceleration.append(self.userAccelerationSubject!.toRelative())
+            self.serialization.heading.append(self.headingSubject!.toRelative())
         }
     }
 }
@@ -113,23 +204,27 @@ public final class DeviceMotionService: NSObject {
 
 extension DeviceMotionService: DeviceMotionProtocol {
     public var heading: AnyPublisher<DataPointAngle, Never> {
-        $headingSubject.compactMap { $0 }.removeDuplicates().eraseToAnyPublisher()
+        $headingSubject.compactMap { $0 }.eraseToAnyPublisher()
     }
 
     public var roll: AnyPublisher<DataPointAngle, Never> {
-        $rollSubject.compactMap { $0 }.removeDuplicates().eraseToAnyPublisher()
+        $rollSubject.compactMap { $0 }.eraseToAnyPublisher()
     }
 
     public var pitch: AnyPublisher<DataPointAngle, Never> {
-        $pitchSubject.compactMap { $0 }.removeDuplicates().eraseToAnyPublisher()
+        $pitchSubject.compactMap { $0 }.eraseToAnyPublisher()
     }
 
     public var speed: AnyPublisher<DataPointSpeed, Never> {
-        $speedSubject.compactMap { $0 }.removeDuplicates().eraseToAnyPublisher()
+        $speedSubject.compactMap { $0 }.eraseToAnyPublisher()
     }
     
     public var altitude: AnyPublisher<DataPointAltitude, Never> {
-        $altitudeSubject.compactMap { $0 }.removeDuplicates().eraseToAnyPublisher()
+        $altitudeSubject.compactMap { $0 }.eraseToAnyPublisher()
+    }
+    
+    public var userAcceleration: AnyPublisher<DataPointUserAcceleration, Never> {
+        $userAccelerationSubject.compactMap { $0 }.eraseToAnyPublisher()
     }
     
     public func reset() {
@@ -147,6 +242,10 @@ extension DeviceMotionService: DeviceMotionProtocol {
         
         pitchZero = latestAttitude.quaternion.simdQuatd.pitch
         rollZero = latestAttitude.quaternion.simdQuatd.roll
+    }
+    
+    public func record(value: Bool) {
+        recordEnabled = value
     }
 }
 
@@ -177,6 +276,9 @@ extension DeviceMotionService: CLLocationManagerDelegate {
                              value: .init(value: last.speed, unit: .metersPerSecond))
         altitudeSubject = .init(timestamp: .date(last.timestamp),
                                 value: .init(value: last.altitude, unit: .meters))
+
+        self.serialization.speed.append(speedSubject!.toRelative())
+        self.serialization.altitude.append(altitudeSubject!.toRelative())
     }
     
     public func locationManagerShouldDisplayHeadingCalibration(_ manager: CLLocationManager) -> Bool {

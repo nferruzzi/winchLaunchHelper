@@ -115,6 +115,10 @@ public final class MockedDeviceMotionService: DeviceMotionProtocol {
         $altitudeSubject.compactMap { $0 }.eraseToAnyPublisher()
     }
     
+    public var userAcceleration: AnyPublisher<DataPointUserAcceleration, Never> {
+        Just(.zero).eraseToAnyPublisher()
+    }
+    
     public func reset() {}
     
     private var subscription = Set<AnyCancellable>()

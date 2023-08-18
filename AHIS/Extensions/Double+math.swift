@@ -7,6 +7,7 @@
 
 import Foundation
 
+
 extension Double {
     var degree: Double {
         (self * 180.0) / Double.pi
@@ -23,4 +24,5 @@ extension Double {
         return v1 + (v2 - v1) * (t - t1) / (t2 - t1)
     }
 }
+
 

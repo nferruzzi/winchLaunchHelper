@@ -10,31 +10,50 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var isPortrait = true
+    @State private var showSettings = false
+    
     var model: AHServiceViewModel
     
     var body: some View {
-        Group {
-            if isPortrait {
-                VStack(spacing: 0) {
-                    AttitudeIndicatorView(model: model)
-                    
-                    LaunchProfileView(model: model)
-                        .frame(height: 200)
-                    
-                    WinchLaunchView(model: model)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            } else {
-                HStack {
-                    AttitudeIndicatorView(model: model)
-                    WinchLaunchView(model: model)
-                    HeadingIndicatorView(model: model)
+        ZStack {
+            Group {
+                if isPortrait {
+                    VStack(spacing: 0) {
+                        AttitudeIndicatorView(model: model)
+                        
+                        LaunchProfileView(model: model)
+                            .frame(height: 200)
+                        
+                        WinchLaunchView(model: model)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                } else {
+                    HStack {
+                        AttitudeIndicatorView(model: model)
+                        WinchLaunchView(model: model)
+                        HeadingIndicatorView(model: model)
+                    }
                 }
             }
+            .overlay(alignment: .bottomTrailing) {
+                Button {
+                    self.showSettings.toggle()
+                } label: {
+                    Image(systemName: "airplane.circle")
+                        .imageScale(.large)
+                }
+                .padding()
+            }
+            
+            if showSettings {
+                SettingsView(model: model, showSettings: $showSettings)
+            }
+            
         }.onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
             guard let scene = UIApplication.shared.windows.first?.windowScene else { return }
             self.isPortrait = scene.interfaceOrientation.isPortrait
         }
+        .environment(\.colorScheme, .dark)
     }
 }
 

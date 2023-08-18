@@ -37,3 +37,9 @@ extension simd_quatd {
         return yaw
     }
 }
+
+extension CMAcceleration {
+    var simDouble3: simd_double3 {
+        simd_double3(x, y, z)
+    }
+}

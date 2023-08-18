@@ -14,6 +14,15 @@ struct WinchLaunchView: View {
             let formatter = MeasurementFormatter()
             formatter.unitOptions = .naturalScale
             formatter.numberFormatter.maximumFractionDigits = 0
+            formatter.unitStyle = .short
+            return formatter
+        }()
+
+        static let nformatter: MeasurementFormatter = {
+            let formatter = MeasurementFormatter()
+            formatter.unitOptions = .naturalScale
+            formatter.numberFormatter.maximumFractionDigits = 0
+            formatter.unitStyle = .short
             return formatter
         }()
     }
@@ -24,10 +33,23 @@ struct WinchLaunchView: View {
     @ViewBuilder
     var content: some View {
         VStack {
-            Text(Constants.formatter.string(from: model.speed.converted(to: .kilometersPerHour)))
-                .font(.system(size: 80, weight: .bold, design: .monospaced))
-            Text(model.lasSayString)
-                .font(.system(size: 40, weight: .bold, design: .monospaced))
+            HStack {
+                Text(Constants.nformatter.string(from: model.minSpeed.converted(to: .kilometersPerHour)))
+                    .font(.caption)
+                    .fixedSize()
+                    .padding(.leading)
+                Text(Constants.formatter.string(from: model.speed.converted(to: .kilometersPerHour)))
+                    .font(.system(size: 60, weight: .bold, design: .monospaced))
+                    .frame(maxWidth: .infinity, alignment: .center)
+                Text(Constants.nformatter.string(from: model.maxSpeed.converted(to: .kilometersPerHour)))
+                    .font(.caption)
+                    .fixedSize()
+                    .padding(.trailing)
+            }
+            Text("GPS " + Constants.formatter.string(from: model.gpsSpeed.converted(to: .kilometersPerHour)))
+                .font(.system(size: 30, weight: .bold, design: .monospaced))
+//            Text(model.lasSayString)
+//                .font(.system(size: 40, weight: .bold, design: .monospaced))
             Text(model.state.rawValue)
                 .font(.system(size: 20, weight: .bold, design: .monospaced))
         }
