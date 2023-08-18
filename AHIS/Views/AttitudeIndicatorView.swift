@@ -7,17 +7,19 @@
 
 import SwiftUI
 
+extension Color {
+    static let blueI = Color(red: 0.47, green: 0.66, blue: 0.82)
+    static let blueO = Color(red: 0.04, green: 0.35, blue: 0.53)
+    static let brownI = Color(red: 0.36, green: 0.27, blue: 0.24)
+    static let brownO = Color(red: 0.13, green: 0.10, blue: 0.11)
+    static let skyGradient = Gradient(colors: [blueO, blueI])
+    static let skyGradientI = Gradient(colors: [blueI, blueO])
+    static let earthGradient = Gradient(colors: [brownO, brownI])
+    static let earthGradientO = Gradient(colors: [brownI, brownO])
+}
 
 fileprivate struct BackgroundView: View {
     enum Constants {
-        static let blueI = Color(red: 0.47, green: 0.66, blue: 0.82)
-        static let blueO = Color(red: 0.04, green: 0.35, blue: 0.53)
-        static let brownI = Color(red: 0.36, green: 0.27, blue: 0.24)
-        static let brownO = Color(red: 0.13, green: 0.10, blue: 0.11)
-        static let skyGradient = Gradient(colors: [blueO, blueI])
-        static let skyGradientI = Gradient(colors: [blueI, blueO])
-        static let earthGradient = Gradient(colors: [brownO, brownI])
-        static let earthGradientO = Gradient(colors: [brownI, brownO])
         static let fov: CGFloat = 90
     }
 
@@ -46,7 +48,7 @@ fileprivate struct BackgroundView: View {
     var background: some View {
         ZStack {
             SkyShape(size: size, horizont: outer ? pitchToPixel(0) : pitchToPixel(pitch))
-                .fill(LinearGradient(gradient: Constants.skyGradient, startPoint: .top, endPoint: .bottom))
+                .fill(LinearGradient(gradient: Color.skyGradient, startPoint: .top, endPoint: .bottom))
                 .frame(width: size, height: size)
             
             if !outer {
@@ -57,7 +59,7 @@ fileprivate struct BackgroundView: View {
 
 
             EarthShape(size: size, horizont: outer ? pitchToPixel(0) : pitchToPixel(pitch))
-                .fill(LinearGradient(gradient: Constants.earthGradient, startPoint: .bottom, endPoint: .top))
+                .fill(LinearGradient(gradient: Color.earthGradient, startPoint: .bottom, endPoint: .top))
                 .frame(width: size, height: size)
 
             if !outer {

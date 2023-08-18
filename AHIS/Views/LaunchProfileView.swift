@@ -49,10 +49,10 @@ struct LaunchProfileView: View {
     var body: some View {
         ZStack {
             Rectangle()
-                .foregroundColor(Color.blue)
-            
+                .fill(LinearGradient(gradient: Color.skyGradient, startPoint: .top, endPoint: .bottom))
+
             ProfileShape(profile: model.altitude)
-                .fill(.green)
+                .fill(LinearGradient(gradient: Color.earthGradient, startPoint: .top, endPoint: .bottom))
                 .clipped()
         }
     }
