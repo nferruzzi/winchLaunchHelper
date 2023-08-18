@@ -15,6 +15,7 @@ import simd
 
 public protocol DeviceMotionProtocol {
     func reset()
+    func record(value: Bool)
     
     var roll: AnyPublisher<DataPointAngle, Never> { get }
     var pitch: AnyPublisher<DataPointAngle, Never> { get }
@@ -22,7 +23,34 @@ public protocol DeviceMotionProtocol {
     var speed: AnyPublisher<DataPointSpeed, Never> { get }
     var altitude: AnyPublisher<DataPointAltitude, Never> { get }
     var userAcceleration: AnyPublisher<DataPointUserAcceleration, Never> { get }
+    
+    var minSpeed: Measurement<UnitSpeed> { get set }
+    var maxSpeed: Measurement<UnitSpeed> { get set }
 }
+
+
+extension DeviceMotionProtocol {
+    public func record(value: Bool) {}
+    
+    public var minSpeed: Measurement<UnitSpeed> {
+        get {
+            .init(value: 70, unit: .kilometersPerHour)
+        }
+        set {
+            
+        }
+    }
+    
+    public var maxSpeed: Measurement<UnitSpeed> {
+        get {
+            .init(value: 110, unit: .kilometersPerHour)
+        }
+        set {
+            
+        }
+    }
+}
+
 
 public struct SensorState: Codable {
     var roll: [DataPointAngle]
@@ -54,6 +82,9 @@ public final class DeviceMotionService: NSObject {
     @Published private var altitudeSubject: DataPointAltitude? = .zero
     @Published private var userAccelerationSubject: DataPointUserAcceleration? = .zero
 
+    public var minSpeed: Measurement<UnitSpeed> = .init(value: 70, unit: .kilometersPerHour)
+    public var maxSpeed: Measurement<UnitSpeed> = .init(value: 110, unit: .kilometersPerHour)
+    
     private var subscriptions = Set<AnyCancellable>()
     private var latestAttitude: CMAttitude?
     private var rotate: Double = 10
@@ -61,7 +92,7 @@ public final class DeviceMotionService: NSObject {
 
     private var pitchZero: Double?
     private var rollZero: Double?
-        
+    private var recordEnabled: Bool = false
     
     @Published private var serialization: SensorState = SensorState(roll: [], pitch: [], heading: [], speed: [], altitude: [], userAcceleration: [])
     
@@ -97,20 +128,22 @@ public final class DeviceMotionService: NSObject {
             }
             .store(in: &subscriptions)
         
-//        $serialization.throttle(for: .seconds(10), scheduler: RunLoop.main, latest: true)
-//            .sink { state in
-//                // Ottieni il percorso del folder "Documents"
-//                if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-//                    let fileURL = documentsDirectory.appendingPathComponent("\(Constants.launchDate.timeIntervalSince1970).json")
-//
-//                    // Ad esempio, per scrivere una stringa nel file:
-//                    if let data = try? JSONEncoder().encode(state) {
-//                        try? data.write(to: fileURL)
-//                        print("Dumped in \(fileURL)")
-//                    }
-//                }
-//            }
-//            .store(in: &subscriptions)
+        $serialization.throttle(for: .seconds(10), scheduler: RunLoop.main, latest: true)
+            .sink { [unowned self] state in
+                if self.recordEnabled == false { return }
+                
+                // Ottieni il percorso del folder "Documents"
+                if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                    let fileURL = documentsDirectory.appendingPathComponent("\(Constants.launchDate.timeIntervalSince1970).json")
+
+                    // Ad esempio, per scrivere una stringa nel file:
+                    if let data = try? JSONEncoder().encode(state) {
+                        try? data.write(to: fileURL)
+                        print("Dumped in \(fileURL)")
+                    }
+                }
+            }
+            .store(in: &subscriptions)
         
     }
     
@@ -190,6 +223,10 @@ extension DeviceMotionService: DeviceMotionProtocol {
         
         pitchZero = latestAttitude.quaternion.simdQuatd.pitch
         rollZero = latestAttitude.quaternion.simdQuatd.roll
+    }
+    
+    public func record(value: Bool) {
+        recordEnabled = value
     }
 }
 

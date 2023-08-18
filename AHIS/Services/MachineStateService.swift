@@ -17,11 +17,6 @@ enum MachineState: String, Codable {
     case minSpeedReached
     case minSpeedLost
     case maxSpeedReached
-    
-//    case acceleration
-//    case constantSpeed
-//    case deceleration
-//    case completed
 }
 
 struct MachineInfo: Equatable, Codable {
@@ -47,16 +42,10 @@ final class MachineStateService {
 
         // CoreLocation generates just 1 msg per second, we interpolate the speed to have more
         static let throttleSeconds: Double = 0.01
-
-        /// ask13
-        static let minSpeed = Measurement<UnitSpeed>(value: 30, unit: .kilometersPerHour)
-        static let maxSpeed = Measurement<UnitSpeed>(value: 50, unit: .kilometersPerHour)
     }
     
     
-    var speedPublisher: AnyPublisher<DataPointSpeed, Never>
-    var userAccelerationPublisher: AnyPublisher<DataPointUserAcceleration, Never>
-
+    private var ahService: DeviceMotionProtocol
     private var lastPublishedTime: Date?
     private var speeds: [DataPointSpeed] = []
     private var notStoppedTime: Date?
@@ -67,7 +56,7 @@ final class MachineStateService {
     private var currentInfo: MachineInfo = .init(state: .waiting, stateTimestamp: .date(Date()))
 
     lazy var interpolatedSpeedPublisher: some Publisher<DataPointSpeed, Never> = {
-        speedPublisher.map { [unowned self] dataPoint in
+        ahService.speed.map { [unowned self] dataPoint in
             self.ekf.updateWithVelocity(velocityMeasurement: dataPoint.value.value)
             return self.accelerationPublisher
         }
@@ -104,7 +93,7 @@ final class MachineStateService {
     }()
 
     lazy var accelerationPublisher: some Publisher<DataPointAcceleration, Never> = {
-        userAccelerationPublisher.map { dataPoint in
+        ahService.userAcceleration.map { dataPoint in
             let measure = Measurement<UnitAcceleration>(value: -dataPoint.value.z, unit: .gravity)
             return .init(timestamp: dataPoint.timestamp, value: measure.converted(to: .metersPerSecondSquared))
         }
@@ -147,20 +136,20 @@ final class MachineStateService {
                     return .init(timestamp: speed.timestamp, value: .init(state: .takingOff, stateTimestamp: speed.timestamp))
 
                 case .takingOff:
-                    if speed.value > Constants.minSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .minSpeedReached, stateTimestamp: speed.timestamp)) }
+                    if speed.value > ahService.minSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .minSpeedReached, stateTimestamp: speed.timestamp)) }
                     return .init(timestamp: speed.timestamp, value: self.currentInfo)
 
                 case .minSpeedReached:
-                    if speed.value < Constants.minSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .minSpeedLost, stateTimestamp: speed.timestamp)) }
-                    if speed.value > Constants.maxSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .maxSpeedReached, stateTimestamp: speed.timestamp)) }
+                    if speed.value < ahService.minSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .minSpeedLost, stateTimestamp: speed.timestamp)) }
+                    if speed.value > ahService.maxSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .maxSpeedReached, stateTimestamp: speed.timestamp)) }
                     return .init(timestamp: speed.timestamp, value: self.currentInfo)
                     
                 case .minSpeedLost:
-                    if speed.value > Constants.minSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .minSpeedReached, stateTimestamp: speed.timestamp)) }
+                    if speed.value > ahService.minSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .minSpeedReached, stateTimestamp: speed.timestamp)) }
                     return .init(timestamp: speed.timestamp, value: self.currentInfo)
 
                 case .maxSpeedReached:
-                    if speed.value < Constants.minSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .minSpeedReached, stateTimestamp: speed.timestamp)) }
+                    if speed.value < ahService.minSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .minSpeedReached, stateTimestamp: speed.timestamp)) }
                     return .init(timestamp: speed.timestamp, value: self.currentInfo)
                 }
             }
@@ -170,9 +159,8 @@ final class MachineStateService {
             .share()
     }()
     
-    init(speedPublisher: AnyPublisher<DataPointSpeed, Never>, userAccelerationPublisher: AnyPublisher<DataPointUserAcceleration, Never>) {
-        self.speedPublisher = speedPublisher
-        self.userAccelerationPublisher = userAccelerationPublisher
+    init(ahService: DeviceMotionProtocol) {
+        self.ahService = ahService
     }
         
     private func calculateMovingAverage() -> CLLocationSpeed {

@@ -26,7 +26,7 @@ struct ExtendedKalmanFilter {
     let stateTransition: simd_double2x2 = .init(rows: [.init(1, Constant.timeStep), .init(0, 1)])
     let observationMatrix: simd_double2x2 = .init(rows: [.init(1, 0), .init(0, 0)]) /// ignore acceleration
 
-    let processNoise: simd_double2x2 = .init(rows: [.init(2, 0.1), .init(0.1, 0.01)])
+    let processNoise: simd_double2x2 = .init(rows: [.init(2, 0.1), .init(1.0, 0.1)])
     let measurementNoise: simd_double2x2 = matrix_identity_double2x2
     
     mutating func predictState() {
