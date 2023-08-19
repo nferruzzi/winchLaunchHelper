@@ -119,6 +119,14 @@ public final class MockedDeviceMotionService: DeviceMotionProtocol {
         Just(.zero).eraseToAnyPublisher()
     }
     
+    public var location: AnyPublisher<DataPointLocation, Never> {
+        Just(.zero).eraseToAnyPublisher()
+    }
+    
+    public var pressure: AnyPublisher<DataPointPressure, Never> {
+        Just(.zero).eraseToAnyPublisher()
+    }
+    
     public func reset() {}
     
     private var subscription = Set<AnyCancellable>()

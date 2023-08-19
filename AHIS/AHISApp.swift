@@ -20,6 +20,7 @@ struct AHISApp: App {
         WindowGroup {
             ContentView(model: AHServiceViewModel(ahService: Constants.ahService,
                                                   machineStateService: Constants.msService))
+            .preferredColorScheme(.dark)
         }
     }
 }

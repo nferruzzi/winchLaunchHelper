@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreMotion
+import CoreLocation
 import simd
 
 
@@ -98,6 +99,18 @@ extension DataPoint where Value == Measurement<UnitPressure> {
     }
 }
 
+extension DataPoint where Value == CMAcceleration {
+    static var zero: Self {
+        .init(timestamp: .relative(0), value: .init())
+    }
+}
+
+extension DataPoint where Value == CLLocationCoordinate2D {
+    static var zero: Self {
+        .init(timestamp: .relative(0), value: .init(latitude: 0, longitude: 0))
+    }
+}
+
 extension CMAcceleration: Codable {
     
     enum CodingKeys: String, CodingKey {
@@ -149,10 +162,23 @@ extension CMQuaternion: Codable {
     }
 }
 
+extension CLLocationCoordinate2D: Codable {
+    enum CodingKeys: String, CodingKey {
+        case latitude
+        case longitude
+    }
 
-extension DataPoint where Value == CMAcceleration {
-    static var zero: Self {
-        .init(timestamp: .relative(0), value: .init())
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let latitude = try container.decode(Double.self, forKey: .latitude)
+        let longitude = try container.decode(Double.self, forKey: .longitude)
+        self.init(latitude: latitude, longitude: longitude)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(latitude, forKey: .latitude)
+        try container.encode(longitude, forKey: .longitude)
     }
 }
 
@@ -168,6 +194,12 @@ extension CMAcceleration: Equatable {
     }
 }
 
+extension CLLocationCoordinate2D: Equatable {
+    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
+        lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude
+    }
+}
+
 public typealias DataPointSpeed = DataPoint<Measurement<UnitSpeed>>
 public typealias DataPointAngle = DataPoint<Measurement<UnitAngle>>
 public typealias DataPointAltitude = DataPoint<Measurement<UnitLength>>
@@ -175,3 +207,4 @@ public typealias DataPointAcceleration = DataPoint<Measurement<UnitAcceleration>
 public typealias DataPointCMQuaternion = DataPoint<CMQuaternion>
 public typealias DataPointPressure = DataPoint<Measurement<UnitPressure>>
 public typealias DataPointUserAcceleration = DataPoint<CMAcceleration>
+public typealias DataPointLocation = DataPoint<CLLocationCoordinate2D>

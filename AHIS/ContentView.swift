@@ -53,7 +53,6 @@ struct ContentView: View {
             guard let scene = UIApplication.shared.windows.first?.windowScene else { return }
             self.isPortrait = scene.interfaceOrientation.isPortrait
         }
-        .environment(\.colorScheme, .dark)
     }
 }
 

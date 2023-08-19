@@ -25,6 +25,8 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
     @Published private var speedSubject: DataPointSpeed? = .zero
     @Published private var altitudeSubject: DataPointAltitude? = .zero
     @Published private var userAccelerationSubject: DataPointUserAcceleration? = .zero
+    @Published private var locationSubject: DataPointLocation?
+    @Published private var pressureSubject: DataPointPressure?
     
     public var roll: AnyPublisher<DataPointAngle, Never> {
         $rollSubject.compactMap { $0 }.eraseToAnyPublisher()
@@ -49,7 +51,15 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
     public var userAcceleration: AnyPublisher<DataPointUserAcceleration, Never> {
         $userAccelerationSubject.compactMap { $0 }.eraseToAnyPublisher()
     }
+
+    public var location: AnyPublisher<DataPointLocation, Never> {
+        $locationSubject.compactMap { $0 }.eraseToAnyPublisher()
+    }
     
+    public var pressure: AnyPublisher<DataPointPressure, Never> {
+        $pressureSubject.compactMap { $0 }.eraseToAnyPublisher()
+    }
+
     public func reset() {}
     
     private var subscription = Set<AnyCancellable>()
@@ -108,7 +118,19 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
             self.state.heading.removeLast()
             done = false
         }
-        
+
+        if let last = self.state.location.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
+            if !skip { self.locationSubject = last }
+            self.state.location.removeLast()
+            done = false
+        }
+
+        if let last = self.state.pressure.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
+            if !skip { self.pressureSubject = last }
+            self.state.pressure.removeLast()
+            done = false
+        }
+
         return done
     }
     
@@ -117,6 +139,7 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
             let fileURL = Bundle.main.url(forResource: bundle, withExtension: nil)!
             let data = try Data(contentsOf: fileURL)
             self.state = try JSONDecoder().decode(SensorState.self, from: data)
+            print(state)
             print(self.state.roll.count / 10 / 60, " minutes")
         } catch {
             print(error)
@@ -128,7 +151,9 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
             self.state.altitude.first?.timestamp,
             self.state.heading.first?.timestamp,
             self.state.userAcceleration.first?.timestamp,
-            self.state.speed.first?.timestamp
+            self.state.speed.first?.timestamp,
+            self.state.location.first?.timestamp,
+            self.state.pressure.first?.timestamp
         ].compactMap { $0 }
         
         if let min = reference.min(by: <=) {
@@ -138,14 +163,16 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
             self.state.heading = self.state.heading.map { $0.toNewRelative(relative: min.relativeTimeInterval) }.reversed()
             self.state.speed = self.state.speed.map { $0.toNewRelative(relative: min.relativeTimeInterval) }.reversed()
             self.state.userAcceleration = self.state.userAcceleration.map { $0.toNewRelative(relative: min.relativeTimeInterval) }.reversed()
+            self.state.location = self.state.location.map { $0.toNewRelative(relative: min.relativeTimeInterval) }.reversed()
+            self.state.pressure = self.state.pressure.map { $0.toNewRelative(relative: min.relativeTimeInterval) }.reversed()
             
             DataPointTimeInterval.relativeOrigin = Date()
 
             /// skip
-            while timestamp <= 60 {
-                while self.reduce(rounded: Int(self.timestamp * 10), skip: true) == false {}
-                timestamp += 0.1
-            }
+//            while timestamp <= 60 {
+//                while self.reduce(rounded: Int(self.timestamp * 10), skip: truae) == false {}
+//                timestamp += 0.1
+//            }
             
             Timer.publish(every: 0.1, on: RunLoop.main, in: .default)
                 .autoconnect()

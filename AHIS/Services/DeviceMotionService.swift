@@ -22,7 +22,9 @@ public protocol DeviceMotionProtocol {
     var speed: AnyPublisher<DataPointSpeed, Never> { get }
     var altitude: AnyPublisher<DataPointAltitude, Never> { get }
     var userAcceleration: AnyPublisher<DataPointUserAcceleration, Never> { get }
-    
+    var location: AnyPublisher<DataPointLocation, Never> { get }
+    var pressure: AnyPublisher<DataPointPressure, Never> { get } 
+
     var minSpeed: Measurement<UnitSpeed> { get set }
     var maxSpeed: Measurement<UnitSpeed> { get set }
     var record: Bool { get set }
@@ -63,6 +65,33 @@ public struct SensorState: Codable {
     var speed: [DataPointSpeed]
     var altitude: [DataPointAltitude]
     var userAcceleration: [DataPointUserAcceleration]
+    var location: [DataPointLocation]
+    var pressure: [DataPointPressure]
+    
+    init(roll: [DataPointAngle] = [],
+         pitch: [DataPointAngle] = [],
+         heading: [DataPointAngle] = [],
+         speed: [DataPointSpeed] = [],
+         altitude: [DataPointAltitude] = [],
+         userAcceleration: [DataPointUserAcceleration] = [],
+         location: [DataPointLocation] = [],
+         pressure: [DataPointPressure] = []) {
+        self.roll = roll
+        self.pitch = pitch
+        self.heading = heading
+        self.speed = speed
+        self.altitude = altitude
+        self.userAcceleration = userAcceleration
+        self.location = location
+        self.pressure = pressure
+    }
+}
+
+extension Array {
+    mutating func append(_ element: Element?) {
+        guard let element = element else { return }
+        self.append(element)
+    }
 }
 
 public final class DeviceMotionService: NSObject {
@@ -70,6 +99,7 @@ public final class DeviceMotionService: NSObject {
     enum Constants {
         static let manager = CMMotionManager()
         static let locationManager = CLLocationManager()
+        static let altimeter = CMAltimeter()
         static let queue = OperationQueue()
         static let userSettingsPitch = "Pitch Zero"
         static let userSettingsRoll = "Roll Zero"
@@ -78,14 +108,55 @@ public final class DeviceMotionService: NSObject {
     }
 
     @Published private var deviceMotionSubject: CMDeviceMotion?
-
     @Published private var deviceMotionQuaternionSubject: DataPointCMQuaternion?
-    @Published private var headingSubject: DataPointAngle? = .zero
-    @Published private var rollSubject: DataPointAngle? = .zero
-    @Published private var pitchSubject: DataPointAngle? = .zero
-    @Published private var speedSubject: DataPointSpeed? = .zero
-    @Published private var altitudeSubject: DataPointAltitude? = .zero
-    @Published private var userAccelerationSubject: DataPointUserAcceleration? = .zero
+
+    @Published private var headingSubject: DataPointAngle? = .zero {
+        didSet {
+            self.serialization.heading.append(headingSubject?.toRelative())
+        }
+    }
+    
+    @Published private var rollSubject: DataPointAngle? = .zero {
+        didSet {
+            self.serialization.roll.append(rollSubject?.toRelative())
+        }
+    }
+    
+    @Published private var pitchSubject: DataPointAngle? = .zero {
+        didSet {
+            self.serialization.pitch.append(pitchSubject?.toRelative())
+        }
+    }
+    
+    @Published private var speedSubject: DataPointSpeed? = .zero {
+        didSet {
+            self.serialization.speed.append(speedSubject?.toRelative())
+        }
+    }
+    
+    @Published private var altitudeSubject: DataPointAltitude? = .zero {
+        didSet {
+            self.serialization.altitude.append(altitudeSubject?.toRelative())
+        }
+    }
+    
+    @Published private var userAccelerationSubject: DataPointUserAcceleration? = .zero {
+        didSet {
+            self.serialization.userAcceleration.append(userAccelerationSubject?.toRelative())
+        }
+    }
+    
+    @Published private var locationSubject: DataPointLocation? {
+        didSet {
+            self.serialization.location.append(locationSubject?.toRelative())
+        }
+    }
+    
+    @Published private var pressureSubject: DataPointPressure? {
+        didSet {
+            self.serialization.pressure.append(pressureSubject?.toRelative())
+        }
+    }
 
     public var minSpeed: Measurement<UnitSpeed> = .init(value: 70, unit: .kilometersPerHour) {
         didSet {
@@ -104,7 +175,7 @@ public final class DeviceMotionService: NSObject {
     public var record: Bool = false {
         didSet {
             recordDate = Date()
-            serialization = SensorState(roll: [], pitch: [], heading: [], speed: [], altitude: [], userAcceleration: [])
+            serialization = SensorState()
         }
     }
     
@@ -117,7 +188,7 @@ public final class DeviceMotionService: NSObject {
     private var pitchZero: Double?
     private var rollZero: Double?
     
-    @Published private var serialization: SensorState = SensorState(roll: [], pitch: [], heading: [], speed: [], altitude: [], userAcceleration: [])
+    @Published private var serialization: SensorState = SensorState()
     
     public override init() {
         super.init()
@@ -151,9 +222,6 @@ public final class DeviceMotionService: NSObject {
                 let roll = attitude.value.simdQuatd.roll - (self.rollZero ?? 0)
                 self.pitchSubject = .init(timestamp: attitude.timestamp, value: .init(value: pitch, unit: .radians))
                 self.rollSubject = .init(timestamp: attitude.timestamp, value: .init(value: roll, unit: .radians))
-
-                self.serialization.pitch.append(self.pitchSubject!.toRelative())
-                self.serialization.roll.append(self.rollSubject!.toRelative())
             }
             .store(in: &subscriptions)
         
@@ -204,9 +272,14 @@ public final class DeviceMotionService: NSObject {
 
             self.deviceMotionQuaternionSubject = .init(timestamp: .date(motion.date),
                                                        value: motion.attitude.quaternion)
-            
-            self.serialization.userAcceleration.append(self.userAccelerationSubject!.toRelative())
-            self.serialization.heading.append(self.headingSubject!.toRelative())
+        }
+        
+        Constants.altimeter.startRelativeAltitudeUpdates(to: Constants.queue) { [weak self] altitude, error in
+            guard error == nil else { return }
+            guard let altitude = altitude else { return }
+            let kp = altitude.pressure.doubleValue
+            self?.pressureSubject = .init(timestamp: .date(altitude.date),
+                                          value: .init(value: kp, unit: .kilopascals))
         }
     }
 }
@@ -235,6 +308,14 @@ extension DeviceMotionService: DeviceMotionProtocol {
     
     public var userAcceleration: AnyPublisher<DataPointUserAcceleration, Never> {
         $userAccelerationSubject.compactMap { $0 }.eraseToAnyPublisher()
+    }
+    
+    public var location: AnyPublisher<DataPointLocation, Never> {
+        $locationSubject.compactMap { $0 }.eraseToAnyPublisher()
+    }
+    
+    public var pressure: AnyPublisher<DataPointPressure, Never> {
+        $pressureSubject.compactMap { $0 }.eraseToAnyPublisher()
     }
     
     public func reset() {
@@ -282,9 +363,8 @@ extension DeviceMotionService: CLLocationManagerDelegate {
                              value: .init(value: last.speed, unit: .metersPerSecond))
         altitudeSubject = .init(timestamp: .date(last.timestamp),
                                 value: .init(value: last.altitude, unit: .meters))
-
-        self.serialization.speed.append(speedSubject!.toRelative())
-        self.serialization.altitude.append(altitudeSubject!.toRelative())
+        locationSubject = .init(timestamp: .date(last.timestamp),
+                                value: last.coordinate)
     }
     
     public func locationManagerShouldDisplayHeadingCalibration(_ manager: CLLocationManager) -> Bool {
