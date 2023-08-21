@@ -68,6 +68,14 @@ struct LaunchProfileView: View {
                 .font(.system(size: 50, weight: .bold))
                 .padding(.top)
         }
+        .overlay(alignment: .trailing) {
+            HStack {
+//                Text("\(Int(model.distanceFromInitialLocation.value)) / ")
+                Text("\(Int(max(0, model.winchLength.value - model.distanceFromInitialLocation.value))) mt")
+            }
+            .font(.system(size: 30, weight: .bold))
+            .padding(.trailing)
+        }
     }
 }
 

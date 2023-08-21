@@ -28,6 +28,7 @@ final class AHServiceViewModel: ObservableObject {
     @Published private(set) var speed: DataPointSpeed.ValueType = .init(value: 0, unit: .metersPerSecond)
     @Published private(set) var gpsSpeed: DataPointSpeed.ValueType = .init(value: 0, unit: .metersPerSecond)
     @Published private(set) var qfe: DataPointAltitude.ValueType = .init(value: 0, unit: .meters)
+    @Published private(set) var distanceFromInitialLocation: DataPointLength.ValueType = .init(value: 0, unit: .meters)
     
     @Published private(set) var acceleration: DataPointAcceleration.ValueType = .init(value: 0, unit: .metersPerSecondSquared)
     @Published private(set) var state: MachineState = .waiting
@@ -67,6 +68,7 @@ final class AHServiceViewModel: ObservableObject {
     private var lastSayMaxSpeedReached: Date?
 
     private var zeroAltitude: Double?
+    private var initialLocation: CLLocation?
     
     init(ahService: DeviceMotionProtocol? = nil,
          machineStateService: MachineStateProtocol? = nil) {
@@ -103,10 +105,21 @@ final class AHServiceViewModel: ObservableObject {
             .assign(to: \.pitch, on: self)
             .store(in: &subscriptions)
         
-        ahService.heading
+        ahService
+            .heading
             .map { $0.value.converted(to: .degrees).value }
             .receive(on: DispatchQueue.main)
             .assign(to: \.heading, on: self)
+            .store(in: &subscriptions)
+        
+        ahService
+            .location
+            .map { [unowned self] value in
+                guard let initialLocation = self.initialLocation else { return .init(value: 0, unit: .meters) }
+                let distance = initialLocation.distance(from: .init(latitude: value.value.latitude, longitude: value.value.longitude))
+                return .init(value: distance, unit: .meters)
+            }
+            .assign(to: \.distanceFromInitialLocation, on: self)
             .store(in: &subscriptions)
         
         machineStateService
@@ -179,14 +192,16 @@ final class AHServiceViewModel: ObservableObject {
             }
             .store(in: &subscriptions)
 
-        Publishers.CombineLatest(machineStateService.machineState.removeDuplicates(),
-                                 machineStateService.altitude.removeDuplicates())
+        Publishers.CombineLatest3(
+            machineStateService.machineState.removeDuplicates(),
+            machineStateService.altitude.removeDuplicates(),
+            ahService.location.removeDuplicates()
+        )
             .receive(on: DispatchQueue.main)
-            .sink { [unowned self] (info, altitude) in
+            .sink { [unowned self] (info, altitude, location) in
                 if info.value.state == .waiting {
                     self.zeroAltitude = altitude.value.value
-                } else {
-                    self.zeroAltitude = self.zeroAltitude ?? (altitude.value.value)
+                    self.initialLocation = CLLocation(latitude: location.value.latitude, longitude: location.value.longitude)
                 }
             
                 switch info.value.state {
