@@ -29,6 +29,7 @@ typealias DataPointMachineState = DataPoint<MachineInfo>
 
 protocol MachineStateProtocol {
     var speed: AnyPublisher<DataPointSpeed, Never> { get }
+    var altitude: AnyPublisher<DataPointAltitude, Never> { get }
     var acceleration: AnyPublisher<DataPointAcceleration, Never> { get }
     var machineState: AnyPublisher<DataPointMachineState, Never> { get }
 }
@@ -38,7 +39,7 @@ final class MachineStateService {
     enum Constants {
         static let windowSize: Int = 10
         static let accelerationThreshold = Measurement<UnitAcceleration>(value: 1.0, unit: .metersPerSecondSquared)
-        static let speedThreshold = Measurement<UnitSpeed>(value: 20, unit: .kilometersPerHour)
+        static let speedThreshold = Measurement<UnitSpeed>(value: 10, unit: .kilometersPerHour)
 
         // CoreLocation generates just 1 msg per second, we interpolate the speed to have more
         static let throttleSeconds: Double = 0.01
@@ -90,6 +91,18 @@ final class MachineStateService {
 //                return true
 //            }
             .share()
+    }()
+    
+    lazy var smoothedAltitudePublisher: some Publisher<DataPointAltitude, Never> = {
+        ahService.pressure.map { value in
+            func altitudeFromPressure(pressureInKPa: Double) -> Double {
+                let P0 = 101.325
+                let altitude = 44330 * (1 - pow((pressureInKPa / P0), (1/5.257)))
+                return altitude
+            }
+            let mt = altitudeFromPressure(pressureInKPa: value.value.converted(to: .kilopascals).value)
+            return .init(timestamp: value.timestamp, value: .init(value: mt, unit: .meters))
+        }
     }()
 
     lazy var accelerationPublisher: some Publisher<DataPointAcceleration, Never> = {
@@ -180,5 +193,9 @@ extension MachineStateService: MachineStateProtocol {
 
     var machineState: AnyPublisher<DataPointMachineState, Never> {
         statePublisher.eraseToAnyPublisher()
+    }
+    
+    var altitude: AnyPublisher<DataPointAltitude, Never> {
+        smoothedAltitudePublisher.eraseToAnyPublisher()
     }
 }

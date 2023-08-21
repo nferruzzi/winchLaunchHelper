@@ -39,15 +39,19 @@ struct WinchLaunchView: View {
                     .fixedSize()
                     .padding(.leading)
                 Text(Constants.formatter.string(from: model.speed.converted(to: .kilometersPerHour)))
-                    .font(.system(size: 60, weight: .bold, design: .monospaced))
+                    .font(.system(size: 50, weight: .bold, design: .monospaced))
                     .frame(maxWidth: .infinity, alignment: .center)
                 Text(Constants.nformatter.string(from: model.maxSpeed.converted(to: .kilometersPerHour)))
                     .font(.caption)
                     .fixedSize()
                     .padding(.trailing)
             }
-            Text("GPS " + Constants.formatter.string(from: model.gpsSpeed.converted(to: .kilometersPerHour)))
-                .font(.system(size: 30, weight: .bold, design: .monospaced))
+            if let takingOff = model.takingOffDate {
+                Text("\(-Int(takingOff.timeIntervalSinceNow)) sec")
+            }
+//            Text("QFE " + Constants.formatter.string(from: model.qfe))
+//            Text("GPS " + Constants.formatter.string(from: model.gpsSpeed.converted(to: .kilometersPerHour)))
+//                .font(.system(size: 30, weight: .bold, design: .monospaced))
 //            Text(model.lasSayString)
 //                .font(.system(size: 40, weight: .bold, design: .monospaced))
             Text(model.state.rawValue)

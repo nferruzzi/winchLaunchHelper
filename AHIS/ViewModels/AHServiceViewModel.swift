@@ -27,11 +27,14 @@ final class AHServiceViewModel: ObservableObject {
     
     @Published private(set) var speed: DataPointSpeed.ValueType = .init(value: 0, unit: .metersPerSecond)
     @Published private(set) var gpsSpeed: DataPointSpeed.ValueType = .init(value: 0, unit: .metersPerSecond)
+    @Published private(set) var qfe: DataPointAltitude.ValueType = .init(value: 0, unit: .meters)
     
     @Published private(set) var acceleration: DataPointAcceleration.ValueType = .init(value: 0, unit: .metersPerSecondSquared)
     @Published private(set) var state: MachineState = .waiting
     @Published private(set) var lasSayString: String = ""
-    @Published private(set) var altitude: [Double] = []
+    @Published private(set) var altitudeHistory: [Double] = []
+    
+    @Published private(set) var takingOffDate: Date?
     
     @Published var minSpeed: DataPointSpeed.ValueType {
         didSet {
@@ -75,6 +78,7 @@ final class AHServiceViewModel: ObservableObject {
             .speed
             .map { $0.value.converted(to: .metersPerSecond) }
             .receive(on: DispatchQueue.main)
+//            .print("GPS SPEED")
             .assign(to: \.gpsSpeed, on: self)
             .store(in: &subscriptions)
 
@@ -119,14 +123,26 @@ final class AHServiceViewModel: ObservableObject {
             .assign(to: \.state, on: self)
             .store(in: &subscriptions)
         
+        machineStateService
+            .altitude
+            .map { $0.value.converted(to: .meters) }
+            .receive(on: DispatchQueue.main)
+            .map { [unowned self] value in
+                .init(value: max(0, value.value - (self.zeroAltitude ?? 0)), unit: .meters)
+            }
+            .assign(to: \.qfe, on: self)
+            .store(in: &subscriptions)
+
         
         Publishers.CombineLatest(machineStateService.machineState.removeDuplicates(),
-                                 ahService.speed.removeDuplicates())
+                                 machineStateService.speed.removeDuplicates())
             .receive(on: DispatchQueue.main)
             .sink { [unowned self] (info, speed) in
                 switch info.value.state {
                 case .waiting: ()
                 case .takingOff:
+                    self.takingOffDate = self.takingOffDate ?? Date()
+                    
                     if self.lastSayMin == nil {
                         self.lastSayMin = Date()
                         self.say("Min", speedMultiplier: 0.4)
@@ -157,23 +173,23 @@ final class AHServiceViewModel: ObservableObject {
             .store(in: &subscriptions)
 
         Publishers.CombineLatest(machineStateService.machineState.removeDuplicates(),
-                                 ahService.altitude.removeDuplicates())
+                                 machineStateService.altitude.removeDuplicates())
             .receive(on: DispatchQueue.main)
             .sink { [unowned self] (info, altitude) in
                 if info.value.state == .waiting {
-                    self.zeroAltitude = altitude.value.value - 2
+                    self.zeroAltitude = altitude.value.value
                 } else {
-                    self.zeroAltitude = self.zeroAltitude ?? (altitude.value.value - 2)
+                    self.zeroAltitude = self.zeroAltitude ?? (altitude.value.value)
                 }
             
                 switch info.value.state {
                 case .waiting:
-                    self.altitude.append(max(0, altitude.value.value - (self.zeroAltitude ?? 0)))
-                    self.altitude = self.altitude.suffix(30)
+                    self.altitudeHistory.append(max(0, altitude.value.value - (self.zeroAltitude ?? 0)))
+                    self.altitudeHistory = self.altitudeHistory.suffix(10)
                 
                 default:
-                    self.altitude.append(max(0, altitude.value.value - (self.zeroAltitude ?? 0)))
-                    self.altitude = self.altitude.suffix(1024)
+                    self.altitudeHistory.append(max(0, altitude.value.value - (self.zeroAltitude ?? 0)))
+                    self.altitudeHistory = self.altitudeHistory.suffix(1024)
                 }
             }
             .store(in: &subscriptions)

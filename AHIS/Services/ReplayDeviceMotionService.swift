@@ -180,7 +180,7 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
             Timer.publish(every: 1 / Constants.frequency, on: RunLoop.main, in: .default)
                 .autoconnect()
                 .sink { [unowned self] timer in
-                    print(self.timestamp, "sec")
+//                    print(self.timestamp, "sec")
                     while self.reduce(rounded: Int(self.timestamp * Constants.frequency)) == false {}
                     self.timestamp += 1 / Constants.frequency
                 }

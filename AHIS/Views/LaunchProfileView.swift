@@ -43,6 +43,14 @@ struct ProfileShape: Shape {
 
 
 struct LaunchProfileView: View {
+    enum Constants {
+        static let formatter: NumberFormatter = {
+            var formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            formatter.maximumFractionDigits = 2
+            return formatter
+        }()
+    }
     @ObservedObject var model: AHServiceViewModel
     @State var profile: [Double] = []
     
@@ -51,9 +59,14 @@ struct LaunchProfileView: View {
             Rectangle()
                 .fill(LinearGradient(gradient: Color.skyGradient, startPoint: .top, endPoint: .bottom))
 
-            ProfileShape(profile: model.altitude)
+            ProfileShape(profile: model.altitudeHistory)
                 .fill(LinearGradient(gradient: Color.earthGradient, startPoint: .top, endPoint: .bottom))
                 .clipped()
+        }
+        .overlay(alignment: .top) {
+            Text("QFE \(Constants.formatter.string(from: .init(floatLiteral: model.qfe.value)) ?? "") mt")
+                .font(.system(size: 50, weight: .bold))
+                .padding(.top)
         }
     }
 }
