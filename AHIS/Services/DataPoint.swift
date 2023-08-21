@@ -208,3 +208,4 @@ public typealias DataPointCMQuaternion = DataPoint<CMQuaternion>
 public typealias DataPointPressure = DataPoint<Measurement<UnitPressure>>
 public typealias DataPointUserAcceleration = DataPoint<CMAcceleration>
 public typealias DataPointLocation = DataPoint<CLLocationCoordinate2D>
+public typealias DataPointLength = DataPoint<Measurement<UnitLength>>

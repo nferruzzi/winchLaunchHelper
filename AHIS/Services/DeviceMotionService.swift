@@ -27,6 +27,8 @@ public protocol DeviceMotionProtocol {
 
     var minSpeed: Measurement<UnitSpeed> { get set }
     var maxSpeed: Measurement<UnitSpeed> { get set }
+    var winchLength: Measurement<UnitLength> { get set }
+    
     var record: Bool { get set }
 }
 
@@ -51,7 +53,16 @@ extension DeviceMotionProtocol {
             
         }
     }
-    
+
+    public var winchLength: Measurement<UnitLength> {
+        get {
+            .init(value: 800, unit: .meters)
+        }
+        set {
+            
+        }
+    }
+
     public var record: Bool {
         get { false } set { }
     }
@@ -105,6 +116,7 @@ public final class DeviceMotionService: NSObject {
         static let userSettingsRoll = "Roll Zero"
         static let userSettingsMinSpeed = "Min Speed"
         static let userSettingsMaxSpeed = "Max Speed"
+        static let userSettingsWinchLength = "Winch Length"
     }
 
     @Published private var deviceMotionSubject: CMDeviceMotion?
@@ -171,7 +183,14 @@ public final class DeviceMotionService: NSObject {
             UserDefaults.standard.synchronize()
         }
     }
-    
+
+    public var winchLength: Measurement<UnitLength> = .init(value: 800, unit: .meters) {
+        didSet {
+            UserDefaults.standard.set(winchLength.converted(to: .meters).value, forKey: Constants.userSettingsWinchLength)
+            UserDefaults.standard.synchronize()
+        }
+    }
+
     public var record: Bool = false {
         didSet {
             recordDate = Date()
@@ -205,9 +224,11 @@ public final class DeviceMotionService: NSObject {
         
         let minSpeedValue = UserDefaults.standard.double(forKey: Constants.userSettingsMinSpeed)
         let maxSpeedValue = UserDefaults.standard.double(forKey: Constants.userSettingsMaxSpeed)
+        let winchLengthValue = UserDefaults.standard.double(forKey: Constants.userSettingsWinchLength)
         
         minSpeed = .init(value: minSpeedValue > 0 ? minSpeedValue : 70, unit: .kilometersPerHour)
         maxSpeed = .init(value: maxSpeedValue > 0 ? maxSpeedValue : 110, unit: .kilometersPerHour)
+        winchLength = .init(value: maxSpeedValue > 0 ? winchLengthValue : 800, unit: .meters)
 
         start(reference: .xMagneticNorthZVertical)
         

@@ -14,7 +14,8 @@ struct SettingsView: View {
     @Environment(\.presentationMode) var presentationMode
     @State var minSpeed: String = ""
     @State var maxSpeed: String = ""
-    
+    @State var winchLength: String = ""
+
     
     var body: some View {
         NavigationView {
@@ -33,6 +34,11 @@ struct SettingsView: View {
                 }
                 
                 Section(header: Text("Winch")) {
+                    HStack{
+                        Text("Winch length")
+                        TextField("meters", text: $winchLength)
+                            .foregroundColor(.accentColor)
+                    }
                 }
 
                 Section(header: Text("Record")) {
@@ -51,6 +57,7 @@ struct SettingsView: View {
             .onAppear {
                 minSpeed = model.minSpeed.converted(to: .kilometersPerHour).value.formatted()
                 maxSpeed = model.maxSpeed.converted(to: .kilometersPerHour).value.formatted()
+                winchLength = model.winchLength.converted(to: .meters).value.formatted()
             }
             .onChange(of: minSpeed) { newValue in
                 guard let nv = Double(newValue) else { return }
@@ -59,6 +66,10 @@ struct SettingsView: View {
             .onChange(of: maxSpeed) { newValue in
                 guard let nv = Double(newValue) else { return }
                 model.maxSpeed = .init(value: nv, unit: .kilometersPerHour)
+            }
+            .onChange(of: winchLength) { newValue in
+                guard let nv = Double(newValue) else { return }
+                model.winchLength = .init(value: nv, unit: .meters)
             }
         }
     }

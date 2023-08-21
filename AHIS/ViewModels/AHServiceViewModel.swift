@@ -48,6 +48,12 @@ final class AHServiceViewModel: ObservableObject {
         }
     }
     
+    @Published var winchLength: DataPointLength.ValueType {
+        didSet {
+            ahService?.winchLength = winchLength
+        }
+    }
+    
     @Published var record: Bool {
         didSet {
             ahService?.record = record
@@ -69,6 +75,7 @@ final class AHServiceViewModel: ObservableObject {
         self.machineStateService = machineStateService
         self.minSpeed = ahService?.minSpeed ?? .init(value: 0, unit: .kilometersPerHour)
         self.maxSpeed = ahService?.maxSpeed ?? .init(value: 0, unit: .kilometersPerHour)
+        self.winchLength = ahService?.winchLength ?? .init(value: 0, unit: .meters)
         self.record = ahService?.record ?? false
         
         guard let machineStateService = machineStateService,
