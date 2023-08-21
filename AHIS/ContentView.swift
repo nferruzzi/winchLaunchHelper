@@ -18,14 +18,16 @@ struct ContentView: View {
         ZStack {
             Group {
                 if isPortrait {
-                    VStack(spacing: 0) {
-                        AttitudeIndicatorView(model: model)
-                        
-                        LaunchProfileView(model: model)
-                            .frame(height: 200)
-                        
-                        WinchLaunchView(model: model)
-                            .fixedSize(horizontal: false, vertical: true)
+                    GeometryReader { value in
+                        VStack(spacing: 0) {
+                            AttitudeIndicatorView(model: model)
+                                .frame(height: value.size.height / 2.3)
+
+                            LaunchProfileView(model: model)
+                            
+                            WinchLaunchView(model: model)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                 } else {
                     HStack {
