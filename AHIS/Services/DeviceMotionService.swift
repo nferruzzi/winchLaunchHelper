@@ -146,13 +146,13 @@ public final class DeviceMotionService: NSObject {
         }
     }
     
-    @Published private var locationSubject: DataPointLocation? {
+    @Published private var locationSubject: DataPointLocation? = .zero {
         didSet {
             self.serialization.location.append(locationSubject?.toRelative())
         }
     }
     
-    @Published private var pressureSubject: DataPointPressure? {
+    @Published private var pressureSubject: DataPointPressure? = .zero {
         didSet {
             self.serialization.pressure.append(pressureSubject?.toRelative())
         }
@@ -241,7 +241,6 @@ public final class DeviceMotionService: NSObject {
                 }
             }
             .store(in: &subscriptions)
-        
     }
     
     private func start(reference: CMAttitudeReferenceFrame) {

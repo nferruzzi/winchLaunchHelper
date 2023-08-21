@@ -94,7 +94,7 @@ final class MachineStateService {
 
     lazy var accelerationPublisher: some Publisher<DataPointAcceleration, Never> = {
         ahService.userAcceleration.map { dataPoint in
-            let measure = Measurement<UnitAcceleration>(value: -dataPoint.value.z, unit: .gravity)
+            let measure = Measurement<UnitAcceleration>(value: dataPoint.value.z, unit: .gravity)
             return .init(timestamp: dataPoint.timestamp, value: measure.converted(to: .metersPerSecondSquared))
         }
         .share()

@@ -17,6 +17,9 @@ fileprivate struct Point {
 
 
 public final class ReplayDeviceMotionService: DeviceMotionProtocol {
+    enum Constants {
+        static let frequency: Double = 10
+    }
     
     @Published private var deviceMotionQuaternionSubject: DataPointCMQuaternion?
     @Published private var headingSubject: DataPointAngle? = .zero
@@ -64,7 +67,7 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
     
     private var subscription = Set<AnyCancellable>()
     private var start: Date?
-    private var state: SensorState = SensorState(roll: [], pitch: [], heading: [], speed: [], altitude: [], userAcceleration: [])
+    private var state: SensorState = SensorState()
     private var timestamp: TimeInterval = 0
     
     public init(name: String) {
@@ -83,49 +86,49 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
     public func reduce(rounded: Int, skip: Bool = false) -> Bool {
         var done = true
         
-        if let last = self.state.roll.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
+        if let last = self.state.roll.last, Int(last.timestamp.relativeTimeInterval * Constants.frequency) <= rounded {
             if !skip { self.rollSubject = last }
             self.state.roll.removeLast()
             done = false
         }
 
-        if let last = self.state.pitch.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
+        if let last = self.state.pitch.last, Int(last.timestamp.relativeTimeInterval * Constants.frequency) <= rounded {
             if !skip { self.pitchSubject = last }
             self.state.pitch.removeLast()
             done = false
         }
 
-        if let last = self.state.speed.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
+        if let last = self.state.speed.last, Int(last.timestamp.relativeTimeInterval * Constants.frequency) <= rounded {
             if !skip { self.speedSubject = last }
             self.state.speed.removeLast()
             done = false
         }
 
-        if let last = self.state.userAcceleration.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
+        if let last = self.state.userAcceleration.last, Int(last.timestamp.relativeTimeInterval * Constants.frequency) <= rounded {
             if !skip { self.userAccelerationSubject = last }
             self.state.userAcceleration.removeLast()
             done = false
         }
 
-        if let last = self.state.altitude.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
+        if let last = self.state.altitude.last, Int(last.timestamp.relativeTimeInterval * Constants.frequency) <= rounded {
             if !skip { self.altitudeSubject = last }
             self.state.altitude.removeLast()
             done = false
         }
 
-        if let last = self.state.heading.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
+        if let last = self.state.heading.last, Int(last.timestamp.relativeTimeInterval * Constants.frequency) <= rounded {
             if !skip { self.headingSubject = last }
             self.state.heading.removeLast()
             done = false
         }
 
-        if let last = self.state.location.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
+        if let last = self.state.location.last, Int(last.timestamp.relativeTimeInterval * Constants.frequency) <= rounded {
             if !skip { self.locationSubject = last }
             self.state.location.removeLast()
             done = false
         }
 
-        if let last = self.state.pressure.last, Int(last.timestamp.relativeTimeInterval * 10) <= rounded {
+        if let last = self.state.pressure.last, Int(last.timestamp.relativeTimeInterval * Constants.frequency) <= rounded {
             if !skip { self.pressureSubject = last }
             self.state.pressure.removeLast()
             done = false
@@ -174,12 +177,12 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
 //                timestamp += 0.1
 //            }
             
-            Timer.publish(every: 0.1, on: RunLoop.main, in: .default)
+            Timer.publish(every: 1 / Constants.frequency, on: RunLoop.main, in: .default)
                 .autoconnect()
                 .sink { [unowned self] timer in
-//                    print(self.timestamp, "sec")
-                    while self.reduce(rounded: Int(self.timestamp * 10)) == false {}
-                    self.timestamp += 0.1
+                    print(self.timestamp, "sec")
+                    while self.reduce(rounded: Int(self.timestamp * Constants.frequency)) == false {}
+                    self.timestamp += 1 / Constants.frequency
                 }
                 .store(in: &subscription)
         }
