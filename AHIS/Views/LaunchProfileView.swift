@@ -51,6 +51,10 @@ struct LaunchProfileView: View {
     @ObservedObject var model: AHServiceViewModel
     @State var profile: [Double] = []
     
+    var qfe: String {
+        "QFE \(naturalScale: model.qfe, digits: true)"
+    }
+    
     var body: some View {
         ZStack {
             Rectangle()
@@ -63,7 +67,7 @@ struct LaunchProfileView: View {
         .overlay(alignment: .top) {
             VStack {
                 WinchLengthView(model: model)
-                Text("QFE \(Constants.formatter.string(from: .init(floatLiteral: model.qfe.value)) ?? "") mt")
+                Text(qfe)
                     .font(.system(size: 50, weight: .bold))
             }
             .padding(.top)

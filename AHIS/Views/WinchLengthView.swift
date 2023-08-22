@@ -8,25 +8,6 @@
 import SwiftUI
 
 
-struct WinchLengthShape: Shape {
-    var completed: Double
-    
-    func path(in rect: CGRect) -> Path {
-        Path { path in
-            path.move(to: .init(x: min(completed, 1), y: 1) * rect)
-            path.addLine(to: .init(x: min(completed, 1), y: 0.0) * rect)
-            path.addLine(to: .init(x: 1, y: 0.0) * rect)
-            path.addLine(to: .init(x: 1, y: 1) * rect)
-        }
-    }
-    
-    var animatableData: CGFloat {
-        get { completed }
-        set { completed = newValue }
-    }
-}
-
-
 struct DiagonalBarsView: View {
     let numberOfBars: Int
     let colors: [Color]
@@ -60,6 +41,10 @@ struct WinchLengthView: View {
         model.distanceFromInitialLocation.value / model.winchLength.value
     }
     
+    var distance: String {
+        "\(naturalScale: model.winchLength - model.distanceFromInitialLocation)"
+    }
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
@@ -70,7 +55,7 @@ struct WinchLengthView: View {
                     .animation(.linear, value: model.distanceFromInitialLocation)
             }
             .overlay(alignment: .center) {
-                Text("\(Int(max(0, model.winchLength.value - model.distanceFromInitialLocation.value))) mt")
+                Text(distance)
                     .font(.system(size: geometry.size.height, weight: .bold))
             }
         }

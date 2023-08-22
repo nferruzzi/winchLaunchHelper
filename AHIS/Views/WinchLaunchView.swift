@@ -9,53 +9,43 @@ import SwiftUI
 
 
 struct WinchLaunchView: View {
-    enum Constants {
-        static let formatter: MeasurementFormatter = {
-            let formatter = MeasurementFormatter()
-            formatter.unitOptions = .naturalScale
-            formatter.numberFormatter.maximumFractionDigits = 0
-            formatter.unitStyle = .short
-            return formatter
-        }()
-
-        static let nformatter: MeasurementFormatter = {
-            let formatter = MeasurementFormatter()
-            formatter.unitOptions = .naturalScale
-            formatter.numberFormatter.maximumFractionDigits = 0
-            formatter.unitStyle = .short
-            return formatter
-        }()
-    }
-    
     @ObservedObject var model: AHServiceViewModel
             
-    
+    var minSpeed: String {
+        "\(naturalScale: model.minSpeed.converted(to: .kilometersPerHour))"
+    }
+
+    var speed: String {
+        "\(naturalScale: model.speed.converted(to: .kilometersPerHour))"
+    }
+
+    var maxSpeed: String {
+        "\(naturalScale: model.maxSpeed.converted(to: .kilometersPerHour))"
+    }
+
     @ViewBuilder
     var content: some View {
         VStack {
             HStack {
-                Text(Constants.nformatter.string(from: model.minSpeed.converted(to: .kilometersPerHour)))
+                Text(minSpeed)
                     .font(.caption)
                     .fixedSize()
                     .padding(.leading)
-                Text(Constants.formatter.string(from: model.speed.converted(to: .kilometersPerHour)))
+                Text(speed)
                     .font(.system(size: 50, weight: .bold, design: .monospaced))
                     .frame(maxWidth: .infinity, alignment: .center)
-                Text(Constants.nformatter.string(from: model.maxSpeed.converted(to: .kilometersPerHour)))
+                Text(maxSpeed)
                     .font(.caption)
                     .fixedSize()
                     .padding(.trailing)
             }
             if let takingOff = model.takingOffDate {
                 Text("\(-Int(takingOff.timeIntervalSinceNow)) sec")
+            } else {
+                Text("Waiting...")
             }
-//            Text("QFE " + Constants.formatter.string(from: model.qfe))
-//            Text("GPS " + Constants.formatter.string(from: model.gpsSpeed.converted(to: .kilometersPerHour)))
-//                .font(.system(size: 30, weight: .bold, design: .monospaced))
-//            Text(model.lasSayString)
-//                .font(.system(size: 40, weight: .bold, design: .monospaced))
-            Text(model.state.rawValue)
-                .font(.system(size: 20, weight: .bold, design: .monospaced))
+//            Text(model.state.rawValue)
+//                .font(.system(size: 20, weight: .bold, design: .monospaced))
         }
     }
     
