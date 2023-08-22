@@ -7,9 +7,6 @@
 
 import SwiftUI
 
-fileprivate func *(point: CGPoint, rect: CGRect) -> CGPoint {
-    CGPoint(x: point.x * rect.width, y: rect.height - point.y * rect.height)
-}
 
 struct ProfileShape: Shape {
     var profile: [Double]
@@ -64,17 +61,12 @@ struct LaunchProfileView: View {
                 .clipped()
         }
         .overlay(alignment: .top) {
-            Text("QFE \(Constants.formatter.string(from: .init(floatLiteral: model.qfe.value)) ?? "") mt")
-                .font(.system(size: 50, weight: .bold))
-                .padding(.top)
-        }
-        .overlay(alignment: .trailing) {
-            HStack {
-//                Text("\(Int(model.distanceFromInitialLocation.value)) / ")
-                Text("\(Int(max(0, model.winchLength.value - model.distanceFromInitialLocation.value))) mt")
+            VStack {
+                WinchLengthView(model: model)
+                Text("QFE \(Constants.formatter.string(from: .init(floatLiteral: model.qfe.value)) ?? "") mt")
+                    .font(.system(size: 50, weight: .bold))
             }
-            .font(.system(size: 30, weight: .bold))
-            .padding(.trailing)
+            .padding(.top)
         }
     }
 }
