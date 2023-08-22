@@ -142,7 +142,6 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
             let fileURL = Bundle.main.url(forResource: bundle, withExtension: nil)!
             let data = try Data(contentsOf: fileURL)
             self.state = try JSONDecoder().decode(SensorState.self, from: data)
-            print(state)
             print(self.state.roll.count / 10 / 60, " minutes")
         } catch {
             print(error)
