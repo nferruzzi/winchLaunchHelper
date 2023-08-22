@@ -10,9 +10,8 @@ import SwiftUI
 @main
 struct AHISApp: App {
     enum Constants {
-        static let ahService: DeviceMotionProtocol = DeviceMotionService() // MockedDeviceMotionService
-//        static let ahService: DeviceMotionProtocol = MockedDeviceMotionService()
-//        static let ahService: DeviceMotionProtocol = ReplayDeviceMotionService(bundle: "drive_flat_to_hill_01.json")
+        static let ahService: DeviceMotionProtocol = DeviceMotionService()
+//        static let ahService: DeviceMotionProtocol = ReplayDeviceMotionService(bundle: "k2_apollonia_strong_wind_1.json")
         static let msService: MachineStateProtocol = MachineStateService(ahService: Self.ahService)
     }
     
