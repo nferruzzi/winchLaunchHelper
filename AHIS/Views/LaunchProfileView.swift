@@ -10,6 +10,7 @@ import SwiftUI
 
 struct ProfileShape: Shape {
     var profile: [Double]
+    let max: Double
         
     func path(in rect: CGRect) -> Path {
         Path { path in
@@ -19,7 +20,7 @@ struct ProfileShape: Shape {
             
             for (index, value) in filtered.enumerated() {
                 let x = CGFloat(index) / rect.width
-                let y = value / rect.height
+                let y = value / max  /// rect.height
                 
                 path.addLine(to: .init(x: x, y: y) * rect)
 
@@ -39,36 +40,90 @@ struct ProfileShape: Shape {
 }
 
 
+struct GridShape: Shape {
+    let value: Double
+    let max: Double
+    
+    func path(in rect: CGRect) -> Path {
+        Path { path in
+            path.move(to: CGPoint(x: 0, y: rect.height - (value / max) * rect.height))
+            path.addLine(to: CGPoint(x: rect.width, y: rect.height - (value / max) * rect.height))
+        }
+    }
+}
+
+
 struct LaunchProfileView: View {
     enum Constants {
-        static let formatter: NumberFormatter = {
-            var formatter = NumberFormatter()
-            formatter.numberStyle = .decimal
-            formatter.maximumFractionDigits = 2
-            return formatter
-        }()
+        static let maxHeight: Double = 600
     }
+    
     @ObservedObject var model: AHServiceViewModel
-    @State var profile: [Double] = []
     
     var qfe: String {
         "QFE \(naturalScale: model.qfe, digits: true)"
+    }
+    
+    var label: String {
+        "\(naturalScale: Measurement<UnitLength>(value: 50, unit: .meters))"
+    }
+    
+    var info: some View {
+        ZStack(alignment: .bottom) {
+            GridShape(value: 50, max: Constants.maxHeight)
+                .stroke(style: StrokeStyle(lineWidth: 3, dash: [10, 5]))
+
+            GridShape(value: 100, max: Constants.maxHeight)
+                .stroke(style: StrokeStyle(lineWidth: 1, dash: [10, 5]))
+
+            GridShape(value: 200, max: Constants.maxHeight)
+                .stroke(style: StrokeStyle(lineWidth: 1, dash: [10, 5]))
+
+            GridShape(value: 300, max: Constants.maxHeight)
+                .stroke(style: StrokeStyle(lineWidth: 1, dash: [10, 5]))
+        }
+    }
+
+    var labels: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .bottom) {
+                Text(verbatim: "\(naturalScale: Measurement<UnitLength>(value: 50, unit: .meters))")
+                    .position(.init(x: geometry.size.width - 20, y: geometry.size.height - geometry.size.height / Constants.maxHeight * 50 - 15))
+                    .font(.subheadline)
+
+                Text(verbatim: "\(naturalScale: Measurement<UnitLength>(value: 100, unit: .meters))")
+                    .position(.init(x: geometry.size.width - 20, y: geometry.size.height - geometry.size.height / Constants.maxHeight * 100 - 15))
+                    .font(.subheadline)
+
+                Text(verbatim: "\(naturalScale: Measurement<UnitLength>(value: 200, unit: .meters))")
+                    .position(.init(x: geometry.size.width - 20, y: geometry.size.height - geometry.size.height / Constants.maxHeight * 200 - 15))
+                    .font(.subheadline)
+
+                Text(verbatim: "\(naturalScale: Measurement<UnitLength>(value: 300, unit: .meters))")
+                    .position(.init(x: geometry.size.width - 20, y: geometry.size.height - geometry.size.height / Constants.maxHeight * 300 - 15))
+                    .font(.subheadline)
+            }
+        }
     }
     
     var body: some View {
         ZStack {
             Rectangle()
                 .fill(LinearGradient(gradient: Color.skyGradient, startPoint: .top, endPoint: .bottom))
+                .overlay(info)
 
-            ProfileShape(profile: model.altitudeHistory)
+            ProfileShape(profile: model.altitudeHistory, max: Constants.maxHeight)
                 .fill(LinearGradient(gradient: Color.earthGradient, startPoint: .top, endPoint: .bottom))
                 .clipped()
+                .overlay(labels)
         }
         .overlay(alignment: .top) {
-            VStack {
-                WinchLengthView(model: model)
+            VStack(spacing: 0) {
+                WinchLengthView(distanceFromInitialLocation: model.distanceFromInitialLocation,
+                                winchLength: model.winchLength)
                 Text(qfe)
                     .font(.system(size: 50, weight: .bold))
+                    .foregroundColor(model.qfe.value > 50 ? nil : .red)
             }
             .padding(.top)
         }

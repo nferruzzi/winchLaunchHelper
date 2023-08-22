@@ -35,14 +35,16 @@ struct DiagonalBarsView: View {
 
 
 struct WinchLengthView: View {
-    @ObservedObject var model: AHServiceViewModel
-
+//    @ObservedObject var model: AHServiceViewModel
+    let distanceFromInitialLocation: DataPointLength.ValueType
+    let winchLength: DataPointLength.ValueType
+    
     var completed: Double {
-        model.distanceFromInitialLocation.value / model.winchLength.value
+        distanceFromInitialLocation.value / winchLength.value
     }
     
     var distance: String {
-        "\(naturalScale: model.winchLength - model.distanceFromInitialLocation)"
+        "\(naturalScale: winchLength - distanceFromInitialLocation)"
     }
     
     var body: some View {
@@ -52,7 +54,7 @@ struct WinchLengthView: View {
 
                 WinchLengthShape(completed: completed)
                     .fill(Color.green)
-                    .animation(.linear, value: model.distanceFromInitialLocation)
+                    .animation(.linear, value: distanceFromInitialLocation)
             }
             .overlay(alignment: .center) {
                 Text(distance)
