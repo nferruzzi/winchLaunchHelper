@@ -13,4 +13,5 @@ extension Color {
     static let skyGradient = Gradient(colors: [Color("SkyHigh"), Color("SkyLow")])
     static let earthGradient = Gradient(colors: [Color("EarthHigh"), Color("EarthLow")])
     static let trunkRed = Color("TrunkRed")
+    static let leafGreen = Color("LeafGreen")
 }

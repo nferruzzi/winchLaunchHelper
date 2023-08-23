@@ -7,6 +7,10 @@
 
 import SwiftUI
 
+fileprivate enum Constants {
+    static let maskBoder: CGFloat = 40
+}
+
 
 fileprivate struct BackgroundView: View {
     enum Constants {
@@ -164,7 +168,7 @@ struct AttitudeIndicatorView: View {
                                    pitch: CGFloat(model.pitch),
                                    roll: CGFloat(model.roll),
                                    outer: false)
-                        .animation(.linear)
+                        .animation(.linear, value: model.pitch + model.roll)
                         .mask(Circle())
                         .overlay(plane.shadow(radius: 5), alignment: .center)
                         .overlay(virata.shadow(radius: 5), alignment: .top)
@@ -175,8 +179,8 @@ struct AttitudeIndicatorView: View {
                                    pitch: CGFloat(model.pitch),
                                    roll: CGFloat(model.roll),
                                    outer: true)
-                        .animation(.linear)
-                        .mask(Circle().strokeBorder(style: StrokeStyle.init(lineWidth: 40, lineCap: .round, lineJoin: .round)))
+                        .animation(.linear, value: model.pitch + model.roll)
+                        .mask(Circle().strokeBorder(style: StrokeStyle.init(lineWidth: Constants.maskBoder, lineCap: .round, lineJoin: .round)))
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                         .shadow(color: Color(.sRGBLinear, white: 1, opacity: 0.7), radius: 5)
                 }

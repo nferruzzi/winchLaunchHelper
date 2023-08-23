@@ -125,8 +125,9 @@ struct HeadingIndicatorView: View {
         VStack {
             ZStack {
                 GeometryReader { geometry in
-                    HeadingIndicatorInnerView(size: min(geometry.size.width, geometry.size.height), angle: anglePassed)
-                        .animation(.linear)
+                    HeadingIndicatorInnerView(size: min(geometry.size.width, geometry.size.height),
+                                              angle: anglePassed)
+                        .animation(.linear, value: anglePassed)
                 }
                 Image("Airplane")
                     .resizable()

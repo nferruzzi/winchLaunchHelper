@@ -53,7 +53,7 @@ struct WinchLengthView: View {
                 DiagonalBarsView(numberOfBars: 30, colors: [.orange, .trunkRed])
 
                 WinchLengthShape(completed: completed)
-                    .fill(Color.green)
+                    .fill(Color.leafGreen)
                     .animation(.linear, value: distanceFromInitialLocation)
             }
             .overlay(alignment: .center) {
