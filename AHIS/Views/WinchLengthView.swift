@@ -50,7 +50,7 @@ struct WinchLengthView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
-                DiagonalBarsView(numberOfBars: 30, colors: [.orange, .red])
+                DiagonalBarsView(numberOfBars: 30, colors: [.orange, .trunkRed])
 
                 WinchLengthShape(completed: completed)
                     .fill(Color.green)

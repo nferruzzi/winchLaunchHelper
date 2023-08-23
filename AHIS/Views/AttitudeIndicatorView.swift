@@ -7,16 +7,6 @@
 
 import SwiftUI
 
-extension Color {
-    static let blueI = Color(red: 0.47, green: 0.66, blue: 0.82)
-    static let blueO = Color(red: 0.04, green: 0.35, blue: 0.53)
-    static let brownI = Color(red: 0.36, green: 0.27, blue: 0.24)
-    static let brownO = Color(red: 0.13, green: 0.10, blue: 0.11)
-    static let skyGradient = Gradient(colors: [blueO, blueI])
-    static let skyGradientI = Gradient(colors: [blueI, blueO])
-    static let earthGradient = Gradient(colors: [brownO, brownI])
-    static let earthGradientO = Gradient(colors: [brownI, brownO])
-}
 
 fileprivate struct BackgroundView: View {
     enum Constants {
@@ -54,7 +44,7 @@ fileprivate struct BackgroundView: View {
             if !outer {
                 Rectangle()
                     .frame(width: size, height: size)
-                    .foregroundColor(Color(red: 1.0, green: 0, blue: 0, opacity: pitchToOpacity(pitch)))
+                    .foregroundColor(Color.trunkRed.opacity(pitchToOpacity(pitch)))
             }
 
 

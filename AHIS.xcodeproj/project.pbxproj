@@ -15,6 +15,7 @@
 		8A522DE02A94DE530010E719 /* k2_apollonia_strong_wind_1.json in Resources */ = {isa = PBXBuildFile; fileRef = 8A522DDF2A94DE530010E719 /* k2_apollonia_strong_wind_1.json */; };
 		8A522DE22A94E4ED0010E719 /* WinchLengthShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A522DE12A94E4ED0010E719 /* WinchLengthShape.swift */; };
 		8A522DE42A94E5AD0010E719 /* String+interpolation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A522DE32A94E5AD0010E719 /* String+interpolation.swift */; };
+		8A522DE62A9640D60010E719 /* Color+custom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A522DE52A9640D60010E719 /* Color+custom.swift */; };
 		8A6BE19E25AA2B0800D3C2D9 /* HeadingIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A6BE19D25AA2B0800D3C2D9 /* HeadingIndicatorView.swift */; };
 		8AFCD6AC2A79699C009F97FA /* AttitudeIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6AB2A79699C009F97FA /* AttitudeIndicatorView.swift */; };
 		8AFCD6AF2A7969F9009F97FA /* Double+math.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFCD6AE2A7969F9009F97FA /* Double+math.swift */; };
@@ -45,6 +46,7 @@
 		8A522DDF2A94DE530010E719 /* k2_apollonia_strong_wind_1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = k2_apollonia_strong_wind_1.json; sourceTree = "<group>"; };
 		8A522DE12A94E4ED0010E719 /* WinchLengthShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinchLengthShape.swift; sourceTree = "<group>"; };
 		8A522DE32A94E5AD0010E719 /* String+interpolation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+interpolation.swift"; sourceTree = "<group>"; };
+		8A522DE52A9640D60010E719 /* Color+custom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+custom.swift"; sourceTree = "<group>"; };
 		8A6BE19D25AA2B0800D3C2D9 /* HeadingIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadingIndicatorView.swift; sourceTree = "<group>"; };
 		8AFCD6AB2A79699C009F97FA /* AttitudeIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttitudeIndicatorView.swift; sourceTree = "<group>"; };
 		8AFCD6AE2A7969F9009F97FA /* Double+math.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Double+math.swift"; sourceTree = "<group>"; };
@@ -125,6 +127,7 @@
 				8AFCD6BF2A84D3EA009F97FA /* CMLogItem+date.swift */,
 				8A522DDD2A93C5430010E719 /* CGPoint+math.swift */,
 				8A522DE32A94E5AD0010E719 /* String+interpolation.swift */,
+				8A522DE52A9640D60010E719 /* Color+custom.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -266,6 +269,7 @@
 				8A522DDC2A93C41E0010E719 /* WinchLengthView.swift in Sources */,
 				8A522DE42A94E5AD0010E719 /* String+interpolation.swift in Sources */,
 				8AFCD6B52A796AB3009F97FA /* SkyShape.swift in Sources */,
+				8A522DE62A9640D60010E719 /* Color+custom.swift in Sources */,
 				8AFCD6AF2A7969F9009F97FA /* Double+math.swift in Sources */,
 				8A522DDE2A93C5430010E719 /* CGPoint+math.swift in Sources */,
 				8AFE553F25A75D6C00EC5329 /* AHISApp.swift in Sources */,

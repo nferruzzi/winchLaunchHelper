@@ -123,7 +123,7 @@ struct LaunchProfileView: View {
                                 winchLength: model.winchLength)
                 Text(qfe)
                     .font(.system(size: 50, weight: .bold))
-                    .foregroundColor(model.qfe.value > 50 ? nil : .red)
+                    .foregroundColor(model.qfe.value > 50 ? nil : .trunkRed)
             }
             .padding(.top)
         }
