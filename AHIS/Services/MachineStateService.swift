@@ -17,11 +17,49 @@ enum MachineState: String, Codable {
     case minSpeedReached
     case minSpeedLost
     case maxSpeedReached
+    
+    case completed
+    case aborted
 }
 
 struct MachineInfo: Equatable, Codable {
     let state: MachineState
     let stateTimestamp: DataPointTimeInterval
+
+    let takeOffAltitude: DataPointAltitude?
+    let maxAltitude: DataPointAltitude?
+    let finalAltitude: DataPointAltitude?
+    
+    var isLaunching: Bool {
+        state != .waiting && state != .aborted && state != .completed
+    }
+    
+    init(state: MachineState,
+         stateTimestamp: DataPointTimeInterval,
+         takeOffAltitude: DataPointAltitude? = nil,
+         maxAltitude: DataPointAltitude? = nil,
+         finalAltitude: DataPointAltitude? = nil
+    ) {
+        self.state = state
+        self.stateTimestamp = stateTimestamp
+        self.takeOffAltitude = takeOffAltitude
+        self.maxAltitude = maxAltitude
+        self.finalAltitude = finalAltitude
+    }
+
+    func with(state: MachineState? = nil,
+              stateTimestamp: DataPointTimeInterval? = nil,
+              takeOffAltitude: DataPointAltitude? = nil,
+              maxAltitude: DataPointAltitude? = nil,
+              finalAltitude: DataPointAltitude? = nil
+    ) -> MachineInfo {
+        MachineInfo(state: state ?? self.state,
+                    stateTimestamp: stateTimestamp ?? self.stateTimestamp,
+                    takeOffAltitude: takeOffAltitude ?? self.takeOffAltitude,
+                    maxAltitude: maxAltitude ?? self.maxAltitude,
+                    finalAltitude: finalAltitude ?? self.finalAltitude
+        )
+    }
 }
 
 
@@ -40,7 +78,8 @@ final class MachineStateService {
         static let windowSize: Int = 10
         static let accelerationThreshold = Measurement<UnitAcceleration>(value: 1.0, unit: .metersPerSecondSquared)
         static let speedThreshold = Measurement<UnitSpeed>(value: 10, unit: .kilometersPerHour)
-
+        static let abortThreshold = Measurement<UnitLength>(value: 1, unit: .meters)
+        
         // CoreLocation generates just 1 msg per second, we interpolate the speed to have more
         static let throttleSeconds: Double = 0.01
     }
@@ -135,35 +174,72 @@ final class MachineStateService {
     }()
     
     lazy var statePublisher: some Publisher<DataPointMachineState, Never> = {
-        Publishers.CombineLatest(
+        Publishers.CombineLatest3(
             smoothedSpeedPublisher,
-            smoothedAccelerationsPublisher
+            smoothedAccelerationsPublisher,
+            smoothedAltitudePublisher
         )
-            .map { [unowned self] speed, acceleration in
-                guard speed.value > Constants.speedThreshold else {
-                    return .init(timestamp: speed.timestamp, value: .init(state: .waiting, stateTimestamp: speed.timestamp))
+            .map { [unowned self] speed, acceleration, altitude in
+                let currentMaxAltitude = self.currentInfo.maxAltitude ?? .zero
+                let maxAltitude: DataPointAltitude = currentMaxAltitude.value > altitude.value ? currentMaxAltitude : altitude
+
+                if self.currentInfo.isLaunching, let tof = self.currentInfo.takeOffAltitude {
+                    let altitudeDiff = (altitude.value - tof.value)
+                    
+                    if speed.value < Constants.speedThreshold && altitudeDiff < Constants.abortThreshold {
+                        return .init(timestamp: speed.timestamp,
+                                     value: self.currentInfo.with(state: .aborted, 
+                                                                  stateTimestamp: speed.timestamp, 
+                                                                  maxAltitude: maxAltitude,
+                                                                  finalAltitude: altitude))
+                    }
                 }
+                
+                var def = DataPointMachineState(timestamp: speed.timestamp,
+                                                value: self.currentInfo.with(maxAltitude: maxAltitude))
                 
                 switch self.currentInfo.state {
                 case .waiting:
-                    return .init(timestamp: speed.timestamp, value: .init(state: .takingOff, stateTimestamp: speed.timestamp))
+                    if speed.value > Constants.speedThreshold {
+                        def.value = def.value.with(state: .takingOff, stateTimestamp: speed.timestamp)
+                    }
+                    
+                    return def
 
                 case .takingOff:
-                    if speed.value > ahService.minSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .minSpeedReached, stateTimestamp: speed.timestamp)) }
-                    return .init(timestamp: speed.timestamp, value: self.currentInfo)
+                    if speed.value > ahService.minSpeed {
+                        def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
+                    }
+                    
+                    return def
 
                 case .minSpeedReached:
-                    if speed.value < ahService.minSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .minSpeedLost, stateTimestamp: speed.timestamp)) }
-                    if speed.value > ahService.maxSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .maxSpeedReached, stateTimestamp: speed.timestamp)) }
-                    return .init(timestamp: speed.timestamp, value: self.currentInfo)
+                    if speed.value < ahService.minSpeed {
+                        def.value = def.value.with(state: .minSpeedLost, stateTimestamp: speed.timestamp)
+                    }
                     
+                    if speed.value > ahService.maxSpeed {
+                        def.value = def.value.with(state: .maxSpeedReached, stateTimestamp: speed.timestamp)
+                    }
+                    
+                    return def
+
                 case .minSpeedLost:
-                    if speed.value > ahService.minSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .minSpeedReached, stateTimestamp: speed.timestamp)) }
-                    return .init(timestamp: speed.timestamp, value: self.currentInfo)
+                    if speed.value > ahService.minSpeed {
+                        def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
+                    }
+                    
+                    return def
 
                 case .maxSpeedReached:
-                    if speed.value < ahService.minSpeed { return .init(timestamp: speed.timestamp, value: .init(state: .minSpeedReached, stateTimestamp: speed.timestamp)) }
-                    return .init(timestamp: speed.timestamp, value: self.currentInfo)
+                    if speed.value < ahService.minSpeed {
+                        def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
+                    }
+                    
+                    return def
+
+                case .aborted, .completed:
+                    return def
                 }
             }
             .handleEvents(receiveOutput: { [unowned self] state in

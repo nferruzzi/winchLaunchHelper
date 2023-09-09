@@ -46,7 +46,7 @@ extension Date {
 public struct DataPoint<Value: Equatable & Codable>: Equatable, Codable {
     typealias ValueType = Value
     
-    public let value: Value
+    public var value: Value
     public var timestamp: DataPointTimeInterval
     
     public init(timestamp: DataPointTimeInterval, value: Value) {

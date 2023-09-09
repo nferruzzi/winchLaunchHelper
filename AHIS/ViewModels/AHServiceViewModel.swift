@@ -188,6 +188,8 @@ final class AHServiceViewModel: ObservableObject {
                         self.lastSayMinSpeed = nil
                         self.say("\(Int(speed.value.converted(to: .kilometersPerHour).value))")
                     }
+                    
+                case .aborted, .completed: ()
                 }
             }
             .store(in: &subscriptions)
