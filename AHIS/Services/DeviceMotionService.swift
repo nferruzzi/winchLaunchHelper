@@ -30,13 +30,12 @@ public protocol DeviceMotionProtocol {
     var maxSpeed: Measurement<UnitSpeed> { get set }
     var winchLength: Measurement<UnitLength> { get set }
     
+    var recordState: AnyPublisher<SensorState, Never> { get }
     var record: Bool { get set }
 }
 
 
 extension DeviceMotionProtocol {
-    public func record(value: Bool) {}
-    
     public var minSpeed: Measurement<UnitSpeed> {
         get {
             .init(value: 70, unit: .kilometersPerHour)
@@ -66,6 +65,10 @@ extension DeviceMotionProtocol {
 
     public var record: Bool {
         get { false } set { }
+    }
+    
+    public var recordState: AnyPublisher<SensorState, Never> {
+        Just(SensorState()).eraseToAnyPublisher()
     }
 }
 
@@ -97,6 +100,56 @@ public struct SensorState: Codable {
         self.location = location
         self.pressure = pressure
     }
+    
+    func prefix(interval: TimeInterval) -> SensorState {
+        .init(roll: roll.filter { $0.timestamp.relativeTimeInterval > interval },
+              pitch: pitch.filter { $0.timestamp.relativeTimeInterval > interval },
+              heading: heading.filter { $0.timestamp.relativeTimeInterval > interval },
+              speed: speed.filter { $0.timestamp.relativeTimeInterval > interval },
+              altitude: altitude.filter { $0.timestamp.relativeTimeInterval > interval },
+              userAcceleration: userAcceleration.filter { $0.timestamp.relativeTimeInterval > interval },
+              location: location.filter { $0.timestamp.relativeTimeInterval > interval },
+              pressure: pressure.filter { $0.timestamp.relativeTimeInterval > interval }
+        )
+    }
+    
+    func suffix(interval: TimeInterval) -> SensorState {
+        .init(roll: roll.filter { $0.timestamp.relativeTimeInterval < interval },
+              pitch: pitch.filter { $0.timestamp.relativeTimeInterval < interval },
+              heading: heading.filter { $0.timestamp.relativeTimeInterval < interval },
+              speed: speed.filter { $0.timestamp.relativeTimeInterval < interval },
+              altitude: altitude.filter { $0.timestamp.relativeTimeInterval < interval },
+              userAcceleration: userAcceleration.filter { $0.timestamp.relativeTimeInterval < interval },
+              location: location.filter { $0.timestamp.relativeTimeInterval < interval },
+              pressure: pressure.filter { $0.timestamp.relativeTimeInterval < interval }
+        )
+    }
+    
+    func normalize() -> SensorState {
+        let reference = [
+            roll.first?.timestamp,
+            pitch.first?.timestamp,
+            heading.first?.timestamp,
+            speed.first?.timestamp,
+            altitude.first?.timestamp,
+            userAcceleration.first?.timestamp,
+            location.first?.timestamp,
+            pressure.first?.timestamp
+        ].compactMap { $0 }
+        
+        guard let min = reference.min(by: <=) else { return self }
+        
+        let r = roll.map { $0.toNewRelative(relative: min.relativeTimeInterval) }
+        let p = pitch.map { $0.toNewRelative(relative: min.relativeTimeInterval) }
+        let a = altitude.map { $0.toNewRelative(relative: min.relativeTimeInterval) }
+        let h = heading.map { $0.toNewRelative(relative: min.relativeTimeInterval) }
+        let s = speed.map { $0.toNewRelative(relative: min.relativeTimeInterval) }
+        let u = userAcceleration.map { $0.toNewRelative(relative: min.relativeTimeInterval) }
+        let l = location.map { $0.toNewRelative(relative: min.relativeTimeInterval) }
+        let b = pressure.map { $0.toNewRelative(relative: min.relativeTimeInterval) }
+        
+        return .init(roll: r, pitch: p, heading: h, speed: s, altitude: a, userAcceleration: u, location: l, pressure: b)            
+    }
 }
 
 extension Array {
@@ -125,49 +178,57 @@ public final class DeviceMotionService: NSObject {
 
     @Published private var headingSubject: DataPointAngle? = .zero {
         didSet {
-            self.serialization.heading.append(headingSubject?.toRelative())
+            guard record else { return }
+            serialization.heading.append(headingSubject?.toRelative())
         }
     }
     
     @Published private var rollSubject: DataPointAngle? = .zero {
         didSet {
-            self.serialization.roll.append(rollSubject?.toRelative())
+            guard record else { return }
+            serialization.roll.append(rollSubject?.toRelative())
         }
     }
     
     @Published private var pitchSubject: DataPointAngle? = .zero {
         didSet {
-            self.serialization.pitch.append(pitchSubject?.toRelative())
+            guard record else { return }
+            serialization.pitch.append(pitchSubject?.toRelative())
         }
     }
     
     @Published private var speedSubject: DataPointSpeed? = .zero {
         didSet {
-            self.serialization.speed.append(speedSubject?.toRelative())
+            guard record else { return }
+            serialization.speed.append(speedSubject?.toRelative())
         }
     }
     
     @Published private var altitudeSubject: DataPointAltitude? = .zero {
         didSet {
-            self.serialization.altitude.append(altitudeSubject?.toRelative())
+            guard record else { return }
+            serialization.altitude.append(altitudeSubject?.toRelative())
         }
     }
     
     @Published private var userAccelerationSubject: DataPointUserAcceleration? = .zero {
         didSet {
-            self.serialization.userAcceleration.append(userAccelerationSubject?.toRelative())
+            guard record else { return }
+            serialization.userAcceleration.append(userAccelerationSubject?.toRelative())
         }
     }
     
     @Published private var locationSubject: DataPointLocation? = .zero {
         didSet {
-            self.serialization.location.append(locationSubject?.toRelative())
+            guard record else { return }
+            serialization.location.append(locationSubject?.toRelative())
         }
     }
     
     @Published private var pressureSubject: DataPointPressure? = .zero {
         didSet {
-            self.serialization.pressure.append(pressureSubject?.toRelative())
+            guard record else { return }
+            serialization.pressure.append(pressureSubject?.toRelative())
         }
     }
 
@@ -194,7 +255,6 @@ public final class DeviceMotionService: NSObject {
 
     public var record: Bool = false {
         didSet {
-            recordDate = Date()
             serialization = SensorState()
         }
     }
@@ -203,7 +263,6 @@ public final class DeviceMotionService: NSObject {
     private var latestAttitude: CMAttitude?
     private var rotate: Double = 10
     private var prevHeading: Double = 0
-    private var recordDate: Date = Date()
 
     private var pitchZero: Double?
     private var rollZero: Double?
@@ -244,23 +303,6 @@ public final class DeviceMotionService: NSObject {
                 let roll = attitude.value.simdQuatd.roll - (self.rollZero ?? 0)
                 self.pitchSubject = .init(timestamp: attitude.timestamp, value: .init(value: pitch, unit: .radians))
                 self.rollSubject = .init(timestamp: attitude.timestamp, value: .init(value: roll, unit: .radians))
-            }
-            .store(in: &subscriptions)
-        
-        $serialization.throttle(for: .seconds(10), scheduler: RunLoop.main, latest: true)
-            .sink { [unowned self] state in
-                if self.record == false { return }
-                
-                // Ottieni il percorso del folder "Documents"
-                if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-                    let fileURL = documentsDirectory.appendingPathComponent("\(self.recordDate.timeIntervalSince1970).json")
-
-                    // Ad esempio, per scrivere una stringa nel file:
-                    if let data = try? JSONEncoder().encode(state) {
-                        try? data.write(to: fileURL)
-                        print("Dumped in \(fileURL)")
-                    }
-                }
             }
             .store(in: &subscriptions)
     }
@@ -371,6 +413,10 @@ extension DeviceMotionService: DeviceMotionProtocol {
     
     public func stop() {
         subscriptions.removeAll()
+    }
+    
+    public var recordState: AnyPublisher<SensorState, Never> {
+        $serialization.eraseToAnyPublisher()
     }
 }
 

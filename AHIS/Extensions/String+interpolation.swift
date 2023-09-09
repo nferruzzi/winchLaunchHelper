@@ -35,3 +35,16 @@ extension String.StringInterpolation {
         }
     }
 }
+
+extension Date {
+    var localizedString: String {
+        lazy var dateFormatter: DateFormatter = {
+            let df = DateFormatter()
+            df.setLocalizedDateFormatFromTemplate("yyyyMMMMddHHmmss")
+            df.timeZone = TimeZone.current
+            df.locale = Locale.current
+            return df
+        }()
+        return dateFormatter.string(from: self)
+    }
+}

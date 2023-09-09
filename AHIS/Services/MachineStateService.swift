@@ -209,7 +209,7 @@ final class MachineStateService {
                 switch self.currentInfo.state {
                 case .waiting:
                     if speed.value > Constants.speedThreshold {
-                        def.value = def.value.with(state: .takingOff, stateTimestamp: speed.timestamp, takeOffAltitude: altitude)
+                        def.value = def.value.with(state: .takingOff, stateTimestamp: speed.timestamp)
                     }
                     
                     return def
@@ -247,7 +247,7 @@ final class MachineStateService {
                     return def
 
                 case .aborted, .completed:
-                    return def
+                    return DataPointMachineState(timestamp: speed.timestamp, value: self.currentInfo)
                 }
             }
             .handleEvents(receiveOutput: { [unowned self] state in

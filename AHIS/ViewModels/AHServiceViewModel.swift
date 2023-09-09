@@ -217,6 +217,37 @@ final class AHServiceViewModel: ObservableObject {
                 }
             }
             .store(in: &subscriptions)
+        
+        Publishers.CombineLatest(
+            ahService.recordState,
+            machineStateService.machineState
+        )
+            .throttle(for: .seconds(10), scheduler: RunLoop.main, latest: true)
+            .sink { (state, machine) in
+                if self.record == false { return }
+                guard let takeOffTime = machine.value.takeOffAltitude?.timestamp,
+                      let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+
+                var trimmed = state.prefix(interval: takeOffTime.relativeTimeInterval - 20)
+                guard !trimmed.pitch.isEmpty else { return }
+                
+                if let completionTime = machine.value.finalAltitude?.timestamp {
+                    trimmed = trimmed.suffix(interval: completionTime.relativeTimeInterval + 20)
+                }
+                
+                trimmed = trimmed.normalize()
+
+                let recordDate = Date(dataPoint: takeOffTime.relativeTimeInterval)
+                let filename = recordDate.localizedString + ".json"
+                let fileURL = documentsDirectory.appendingPathComponent(filename)
+
+                if let data = try? JSONEncoder().encode(trimmed) {
+                    try? data.write(to: fileURL)
+                    print("Dumped in \(fileURL)")
+                }
+            }
+            .store(in: &subscriptions)
+
     }
     
     func reset() {

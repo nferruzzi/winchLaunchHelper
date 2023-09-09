@@ -40,6 +40,10 @@ extension Date {
     public var timeRelativeToDataPointInterval: TimeInterval {
         DataPointTimeInterval.date(self).relativeTimeInterval
     }
+    
+    public init(dataPoint: TimeInterval) {
+        self.init(timeInterval: dataPoint, since: DataPointTimeInterval.relativeOrigin)
+    }
 }
 
 
