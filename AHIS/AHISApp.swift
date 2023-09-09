@@ -20,6 +20,9 @@ final class Services: ObservableObject {
     }
     
     func setup(replay: URL?) {
+        guard replay != self.replayURL else { return }
+        self.ahService.stop()
+        
         self.replayURL = replay
         if let replay = replay {
             let service = ReplayDeviceMotionService(fileURL: replay)

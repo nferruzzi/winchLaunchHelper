@@ -64,6 +64,10 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
     }
 
     public func reset() {}
+
+    public func stop() {
+        subscription.removeAll()
+    }
     
     private var subscription = Set<AnyCancellable>()
     private var start: Date?

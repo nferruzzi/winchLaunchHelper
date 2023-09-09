@@ -128,6 +128,10 @@ public final class MockedDeviceMotionService: DeviceMotionProtocol {
     }
     
     public func reset() {}
+
+    public func stop() {
+        subscription.removeAll()
+    }
     
     private var subscription = Set<AnyCancellable>()
     private var start: Date?

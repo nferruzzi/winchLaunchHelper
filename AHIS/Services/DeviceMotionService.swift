@@ -15,6 +15,7 @@ import simd
 
 public protocol DeviceMotionProtocol {
     func reset()
+    func stop()
     
     var roll: AnyPublisher<DataPointAngle, Never> { get }
     var pitch: AnyPublisher<DataPointAngle, Never> { get }
@@ -366,6 +367,10 @@ extension DeviceMotionService: DeviceMotionProtocol {
         
         pitchZero = latestAttitude.quaternion.simdQuatd.pitch
         rollZero = latestAttitude.quaternion.simdQuatd.roll
+    }
+    
+    public func stop() {
+        subscriptions.removeAll()
     }
 }
 
