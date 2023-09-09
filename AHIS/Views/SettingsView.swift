@@ -15,7 +15,7 @@ struct SettingsView: View {
     @State var minSpeed: String = ""
     @State var maxSpeed: String = ""
     @State var winchLength: String = ""
-
+    @State var selectedReplay: URL? = nil
     
     var body: some View {
         NavigationView {
@@ -43,6 +43,19 @@ struct SettingsView: View {
 
                 Section(header: Text("Record")) {
                     Toggle("Log sensors data to local json files", isOn: $model.record)
+                        .disabled(selectedReplay != nil)
+                    
+                    Picker(selection: $selectedReplay) {
+                        Text("none")
+                            .tag(URL?(nil))
+                        Divider()
+                        ForEach(DeviceMotionService.replayList(), id: \.self) { url in
+                            Text(url.deletingPathExtension().lastPathComponent)
+                                .tag(url as URL?)
+                        }
+                    } label: {
+                        Text("Replay")
+                    }
                 }
             }
             .listStyle(GroupedListStyle()) // Questo style assomiglia alle settings di iOS
@@ -58,6 +71,7 @@ struct SettingsView: View {
                 minSpeed = model.minSpeed.converted(to: .kilometersPerHour).value.formatted()
                 maxSpeed = model.maxSpeed.converted(to: .kilometersPerHour).value.formatted()
                 winchLength = model.winchLength.converted(to: .meters).value.formatted()
+                selectedReplay = Services.shared.replayURL
             }
             .onChange(of: minSpeed) { newValue in
                 guard let nv = Double(newValue) else { return }
@@ -70,6 +84,9 @@ struct SettingsView: View {
             .onChange(of: winchLength) { newValue in
                 guard let nv = Double(newValue) else { return }
                 model.winchLength = .init(value: nv, unit: .meters)
+            }
+            .onChange(of: selectedReplay) { newValue in
+                Services.shared.setup(replay: newValue)
             }
         }
     }

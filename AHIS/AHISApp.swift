@@ -7,18 +7,40 @@
 
 import SwiftUI
 
+final class Services: ObservableObject {
+    static var shared: Services = .init()
+    @Published var ahService: DeviceMotionProtocol
+    @Published var msService: MachineStateProtocol
+    var replayURL: URL?
+    
+    init() {
+        let service = DeviceMotionService()
+        self.ahService = service
+        self.msService = MachineStateService(ahService: service)
+    }
+    
+    func setup(replay: URL?) {
+        self.replayURL = replay
+        if let replay = replay {
+            let service = ReplayDeviceMotionService(fileURL: replay)
+            self.ahService = service
+            self.msService = MachineStateService(ahService: service)
+        } else {
+            let service = DeviceMotionService()
+            self.ahService = service
+            self.msService = MachineStateService(ahService: service)
+        }
+    }
+}
+
 @main
 struct AHISApp: App {
-    enum Constants {
-        static let ahService: DeviceMotionProtocol = DeviceMotionService()
-//        static let ahService: DeviceMotionProtocol = ReplayDeviceMotionService(bundle: "k2_apollonia_strong_wind_1.json")
-        static let msService: MachineStateProtocol = MachineStateService(ahService: Self.ahService)
-    }
+    @StateObject var services = Services.shared
     
     var body: some Scene {
         WindowGroup {
-            ContentView(model: AHServiceViewModel(ahService: Constants.ahService,
-                                                  machineStateService: Constants.msService))
+            ContentView(model: AHServiceViewModel(ahService: services.ahService,
+                                                  machineStateService: services.msService))
             .preferredColorScheme(.dark)
         }
     }

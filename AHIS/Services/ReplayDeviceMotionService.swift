@@ -70,18 +70,6 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
     private var state: SensorState = SensorState()
     private var timestamp: TimeInterval = 0
     
-    public init(name: String) {
-        if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-            let fileURL = documentsDirectory.appendingPathComponent(name)
-            do {
-                let data = try Data(contentsOf: fileURL)
-                self.state = try JSONDecoder().decode(SensorState.self, from: data)
-                print(self.state.roll.count)
-            } catch {
-                print(error)
-            }
-        }
-    }
     
     public func reduce(rounded: Int, skip: Bool = false) -> Bool {
         var done = true
@@ -137,9 +125,13 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
         return done
     }
     
-    public init(bundle: String) {
+    public convenience init(bundle: String) {
+        let fileURL = Bundle.main.url(forResource: bundle, withExtension: nil)!
+        self.init(fileURL: fileURL)
+    }
+    
+    public init(fileURL: URL) {
         do {
-            let fileURL = Bundle.main.url(forResource: bundle, withExtension: nil)!
             let data = try Data(contentsOf: fileURL)
             self.state = try JSONDecoder().decode(SensorState.self, from: data)
             print(self.state.roll.count / 10 / 60, " minutes")

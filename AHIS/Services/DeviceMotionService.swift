@@ -264,6 +264,19 @@ public final class DeviceMotionService: NSObject {
             .store(in: &subscriptions)
     }
     
+    static func replayList() -> [URL] {
+        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return []
+        }
+
+        let files = (try? FileManager.default.contentsOfDirectory(at: documentsDirectory, includingPropertiesForKeys: nil)) ?? []
+        let apollonia = [Bundle.main.url(forResource: "k2_apollonia_strong_wind_1", withExtension: "json")!]
+        
+        return apollonia + files.filter { url in
+            url.pathExtension == "json"
+        }
+    }
+    
     private func start(reference: CMAttitudeReferenceFrame) {
         Constants.manager.stopDeviceMotionUpdates()
         Constants.manager.startDeviceMotionUpdates(using: reference, to: Constants.queue) { [weak self](motion: CMDeviceMotion?, error: Error?) in
