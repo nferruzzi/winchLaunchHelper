@@ -224,6 +224,13 @@ final class AHServiceViewModel: ObservableObject {
         ahService?.reset()
     }
     
+    func resetMachineState() {
+        zeroAltitude = nil
+        takingOffDate = nil
+        altitudeHistory.removeAll()
+        machineStateService?.reset()
+    }
+    
     func say(_ string: String, speedMultiplier: Float = 0.6) {
         let speechUtterance = AVSpeechUtterance(string: string)
         speechUtterance.rate = (AVSpeechUtteranceMinimumSpeechRate + AVSpeechUtteranceMaximumSpeechRate) * speedMultiplier

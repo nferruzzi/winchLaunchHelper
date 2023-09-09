@@ -70,6 +70,8 @@ protocol MachineStateProtocol {
     var altitude: AnyPublisher<DataPointAltitude, Never> { get }
     var acceleration: AnyPublisher<DataPointAcceleration, Never> { get }
     var machineState: AnyPublisher<DataPointMachineState, Never> { get }
+    
+    func reset()
 }
 
 
@@ -89,7 +91,6 @@ final class MachineStateService {
     private var lastPublishedTime: Date?
     private var speeds: [DataPointSpeed] = []
     private var notStoppedTime: Date?
-    private var lastPublishedSmoothedTime: Date?
     private var ekf = ExtendedKalmanFilter()
     private var accelerations: [DataPointAcceleration] = []
     
@@ -183,32 +184,39 @@ final class MachineStateService {
                 let currentMaxAltitude = self.currentInfo.maxAltitude ?? .zero
                 let maxAltitude: DataPointAltitude = currentMaxAltitude.value > altitude.value ? currentMaxAltitude : altitude
 
+                var def = DataPointMachineState(timestamp: speed.timestamp,
+                                                value: self.currentInfo.with(maxAltitude: maxAltitude))
+
+                
                 if self.currentInfo.isLaunching, let tof = self.currentInfo.takeOffAltitude {
                     let altitudeDiff = (altitude.value - tof.value)
+                    let abortedTime = tof.timestamp.relativeTimeInterval + 5
+                    let completedTime = tof.timestamp.relativeTimeInterval + 40
                     
-                    if speed.value < Constants.speedThreshold && altitudeDiff < Constants.abortThreshold {
-                        return .init(timestamp: speed.timestamp,
-                                     value: self.currentInfo.with(state: .aborted, 
-                                                                  stateTimestamp: speed.timestamp, 
-                                                                  maxAltitude: maxAltitude,
-                                                                  finalAltitude: altitude))
+                    if speed.value < Constants.speedThreshold && altitudeDiff < Constants.abortThreshold && speed.timestamp.relativeTimeInterval > abortedTime {
+                        def.value = def.value.with(state: .aborted, stateTimestamp: speed.timestamp, finalAltitude: altitude)
+                        return def
+                    }
+                    
+                    
+                    if speed.timestamp.relativeTimeInterval > completedTime {
+                        def.value = def.value.with(state: .completed, stateTimestamp: speed.timestamp, finalAltitude: altitude)
+                        return def
                     }
                 }
                 
-                var def = DataPointMachineState(timestamp: speed.timestamp,
-                                                value: self.currentInfo.with(maxAltitude: maxAltitude))
                 
                 switch self.currentInfo.state {
                 case .waiting:
                     if speed.value > Constants.speedThreshold {
-                        def.value = def.value.with(state: .takingOff, stateTimestamp: speed.timestamp)
+                        def.value = def.value.with(state: .takingOff, stateTimestamp: speed.timestamp, takeOffAltitude: altitude)
                     }
                     
                     return def
 
                 case .takingOff:
                     if speed.value > ahService.minSpeed {
-                        def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
+                        def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp, takeOffAltitude: altitude)
                     }
                     
                     return def
@@ -254,6 +262,12 @@ final class MachineStateService {
         
     private func calculateMovingAverage() -> CLLocationSpeed {
         speeds.reduce(0, { $0 + $1.value.value }) / CLLocationSpeed(speeds.count)
+    }
+    
+    func reset() {
+        self.currentInfo = .init(state: .waiting, stateTimestamp: .date(Date()))
+        self.accelerations.removeAll()
+        self.speeds.removeAll()
     }
 }
 

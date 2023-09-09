@@ -39,11 +39,23 @@ struct WinchLaunchView: View {
                     .fixedSize()
                     .padding(.trailing)
             }
-            if let takingOff = model.takingOffDate {
-                Text("\(-Int(takingOff.timeIntervalSinceNow)) sec")
-            } else {
-                Text("Waiting...")
-            }
+
+            Button(action: {
+                model.resetMachineState()
+            }, label: {
+                switch model.state {
+                case .completed:
+                    Text("Completed")
+                case .aborted:
+                    Text("Aborted")
+                default:
+                    if let takingOff = model.takingOffDate {
+                        Text("\(-Int(takingOff.timeIntervalSinceNow)) sec")
+                    } else {
+                        Text("Waiting...")
+                    }
+                }
+            })
 //            Text(model.state.rawValue)
 //                .font(.system(size: 20, weight: .bold, design: .monospaced))
         }
