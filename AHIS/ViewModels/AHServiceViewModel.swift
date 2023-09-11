@@ -14,6 +14,17 @@ import AVFoundation
 final class AHServiceViewModel: ObservableObject {
     enum Constants {
         static let synthesizer = AVSpeechSynthesizer()
+        static let importantAltitudes: [DataPointLength.ValueType] = [
+            .init(value: 1, unit: .meters),
+            .init(value: 20, unit: .meters),
+//            .init(value: 25, unit: .meters),
+            .init(value: 50, unit: .meters),
+//            .init(value: 75, unit: .meters),
+            .init(value: 100, unit: .meters),
+//            .init(value: 150, unit: .meters),
+            .init(value: 200, unit: .meters),
+            .init(value: 250, unit: .meters),
+        ]
     }
     
     private var subscriptions = Set<AnyCancellable>()
@@ -61,12 +72,15 @@ final class AHServiceViewModel: ObservableObject {
         }
     }
     
+    @Published var importantAltitudes: [DataPointLength.ValueType] = Constants.importantAltitudes
+    
 
     private var lastSayMin: Date?
     private var lastSayMinSpeed: Date?
     private var lastSayMinSpeedLost: Date?
     private var lastSayMaxSpeedReached: Date?
-
+    private var lastSayQFE: Date?
+    
     private var zeroAltitude: Double?
     private var initialLocation: CLLocation?
     
@@ -154,43 +168,83 @@ final class AHServiceViewModel: ObservableObject {
             .store(in: &subscriptions)
 
         
-        Publishers.CombineLatest(machineStateService.machineState.removeDuplicates(),
-                                 machineStateService.speed.removeDuplicates())
+        Publishers.CombineLatest3(
+            machineStateService.machineState.removeDuplicates(),
+            machineStateService.speed.removeDuplicates(),
+            machineStateService.altitude.removeDuplicates())
             .receive(on: DispatchQueue.main)
-            .sink { [unowned self] (info, speed) in
-                switch info.value.state {
-                case .waiting: ()
-                case .takingOff:
-                    self.takingOffDate = self.takingOffDate ?? Date()
-                    
-                    if self.lastSayMin == nil {
-                        self.lastSayMin = Date()
-                        self.say("Min", speedMultiplier: 0.4)
-                    }
-                case .minSpeedReached:
-                    if self.lastSayMinSpeed == nil {
-                        self.lastSayMinSpeed = Date()
-                        self.lastSayMinSpeedLost = nil
-                        self.lastSayMaxSpeedReached = nil
-                        self.say("\(Int(speed.value.converted(to: .kilometersPerHour).value))")
-                    }
-                
-                case .minSpeedLost:
-                    if self.lastSayMinSpeedLost == nil {
-                        self.lastSayMinSpeedLost = Date()
-                        self.lastSayMinSpeed = nil
-                        self.say("\(Int(speed.value.converted(to: .kilometersPerHour).value))")
-                    }
-
-                case .maxSpeedReached:
-                    if self.lastSayMaxSpeedReached == nil {
-                        self.lastSayMaxSpeedReached = Date()
-                        self.lastSayMinSpeed = nil
-                        self.say("\(Int(speed.value.converted(to: .kilometersPerHour).value))")
-                    }
-                    
-                case .aborted, .completed: ()
+            .sink { [unowned self] (info, speed, altitude) in
+                guard info.value.isLaunching || info.value.state == .completed,
+                      let tof = info.value.takeOffAltitude else {
+                    self.importantAltitudes = Constants.importantAltitudes
+                    return
                 }
+                
+                if info.value.state == .takingOff {
+                    self.takingOffDate = self.takingOffDate ?? Date()
+                }
+                
+                if let first = self.importantAltitudes.first {
+                    let relativeFirstAltitude = first + tof.value
+                    
+                    if altitude.value > relativeFirstAltitude {
+                        let relativeAltitude = altitude.value - tof.value
+                        self.say("\(Int(relativeAltitude.converted(to: .meters).value))")
+                        self.importantAltitudes.removeFirst()
+                        return
+                    }
+                }
+
+                if info.value.state == .maxSpeedReached && self.lastSayMaxSpeedReached == nil {
+                    self.lastSayMaxSpeedReached = Date()
+                    self.say("meno")
+                    return
+                }
+                
+                if info.value.state == .minSpeedReached {
+                    self.lastSayMaxSpeedReached = nil
+                }
+                
+                if info.value.state == .completed, let maxAltitude = info.value.maxAltitude, self.lastSayQFE == nil {
+                    self.lastSayQFE = Date()
+
+                    let relativeAltitude = maxAltitude.value - tof.value
+                    self.say("Max \(Int(relativeAltitude.converted(to: .meters).value))")
+                }
+                
+//                switch info.value.state {
+//                case .waiting: ()
+//                case .takingOff:
+//                    self.takingOffDate = self.takingOffDate ?? Date()
+//                    
+//                    if self.lastSayMin == nil {
+//                        self.lastSayMin = Date()
+//                        self.say("Min", speedMultiplier: 0.4)
+//                    }
+//                case .minSpeedReached:
+//                    if self.lastSayMinSpeed == nil {
+//                        self.lastSayMinSpeed = Date()
+//                        self.lastSayMinSpeedLost = nil
+//                        self.lastSayMaxSpeedReached = nil
+//                        self.say("\(Int(speed.value.converted(to: .kilometersPerHour).value))")
+//                    }
+//                
+//                case .minSpeedLost:
+//                    if self.lastSayMinSpeedLost == nil {
+//                        self.lastSayMinSpeedLost = Date()
+//                        self.lastSayMinSpeed = nil
+//                        self.say("\(Int(speed.value.converted(to: .kilometersPerHour).value))")
+//                    }
+//
+//                case .maxSpeedReached:
+//                    if self.lastSayMaxSpeedReached == nil {
+//                        self.lastSayMaxSpeedReached = Date()
+//                        self.lastSayMinSpeed = nil
+//                        self.say("\(Int(speed.value.converted(to: .kilometersPerHour).value))")
+//                    }
+//                    
+//                case .aborted, .completed: ()
+//                }
             }
             .store(in: &subscriptions)
 
@@ -250,6 +304,10 @@ final class AHServiceViewModel: ObservableObject {
 
     }
     
+    deinit {
+        subscriptions.removeAll()
+    }
+    
     func reset() {
         zeroAltitude = nil
         ahService?.reset()
@@ -260,11 +318,14 @@ final class AHServiceViewModel: ObservableObject {
         takingOffDate = nil
         altitudeHistory.removeAll()
         machineStateService?.reset()
+        lastSayQFE = nil
     }
     
-    func say(_ string: String, speedMultiplier: Float = 0.6) {
+    func say(_ string: String, speedMultiplier: Float? = 0.6) {
         let speechUtterance = AVSpeechUtterance(string: string)
-        speechUtterance.rate = (AVSpeechUtteranceMinimumSpeechRate + AVSpeechUtteranceMaximumSpeechRate) * speedMultiplier
+        if let speedMultiplier = speedMultiplier {
+            speechUtterance.rate = (AVSpeechUtteranceMinimumSpeechRate + AVSpeechUtteranceMaximumSpeechRate) * speedMultiplier
+        }
         speechUtterance.voice = AVSpeechSynthesisVoice()
         Constants.synthesizer.speak(speechUtterance)
         lasSayString = string
