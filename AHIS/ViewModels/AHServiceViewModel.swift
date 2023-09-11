@@ -277,7 +277,7 @@ final class AHServiceViewModel: ObservableObject {
             machineStateService.machineState
         )
             .throttle(for: .seconds(10), scheduler: RunLoop.main, latest: true)
-            .sink { (state, machine) in
+            .sink { [unowned self](state, machine) in
                 if self.record == false { return }
                 guard let takeOffTime = machine.value.takeOffAltitude?.timestamp,
                       let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
@@ -319,6 +319,10 @@ final class AHServiceViewModel: ObservableObject {
         altitudeHistory.removeAll()
         machineStateService?.reset()
         lastSayQFE = nil
+    }
+    
+    func stop() {
+        subscriptions.removeAll()
     }
     
     func say(_ string: String, speedMultiplier: Float? = 0.6) {

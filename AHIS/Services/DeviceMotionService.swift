@@ -418,6 +418,11 @@ extension DeviceMotionService: DeviceMotionProtocol {
     }
     
     public func stop() {
+        Constants.locationManager.stopUpdatingHeading()
+        Constants.locationManager.stopUpdatingLocation()
+        Constants.locationManager.delegate = nil        
+        Constants.manager.stopDeviceMotionUpdates()
+        Constants.altimeter.stopRelativeAltitudeUpdates()
         subscriptions.removeAll()
     }
     

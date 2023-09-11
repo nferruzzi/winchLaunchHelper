@@ -33,7 +33,7 @@ struct MachineInfo: Equatable, Codable {
     var isLaunching: Bool {
         state != .waiting && state != .aborted && state != .completed
     }
-    
+        
     init(state: MachineState,
          stateTimestamp: DataPointTimeInterval,
          takeOffAltitude: DataPointAltitude? = nil,
@@ -181,89 +181,90 @@ final class MachineStateService {
             smoothedAccelerationsPublisher,
             smoothedAltitudePublisher
         )
-            .map { [unowned self] speed, acceleration, altitude in
-                let currentMaxAltitude = self.currentInfo.maxAltitude ?? .zero
-                let maxAltitude: DataPointAltitude = currentMaxAltitude.value > altitude.value ? currentMaxAltitude : altitude
+        .map { [unowned self] speed, acceleration, altitude in
+            
+            let currentMaxAltitude = self.currentInfo.maxAltitude ?? .zero
+            let maxAltitude: DataPointAltitude = currentMaxAltitude.value > altitude.value ? currentMaxAltitude : altitude
+        
+            var def = DataPointMachineState(timestamp: speed.timestamp,
+                                            value: self.currentInfo.with(maxAltitude: maxAltitude))
 
-                var def = DataPointMachineState(timestamp: speed.timestamp,
-                                                value: self.currentInfo.with(maxAltitude: maxAltitude))
-
+            
+            if self.currentInfo.isLaunching, let tof = self.currentInfo.takeOffAltitude {
+                let altitudeDiff = (altitude.value - tof.value)
+                let abortedTime = tof.timestamp.relativeTimeInterval + 5
+                let completedTime = tof.timestamp.relativeTimeInterval + 40
                 
-                if self.currentInfo.isLaunching, let tof = self.currentInfo.takeOffAltitude {
-                    let altitudeDiff = (altitude.value - tof.value)
-                    let abortedTime = tof.timestamp.relativeTimeInterval + 5
-                    let completedTime = tof.timestamp.relativeTimeInterval + 40
-                    
-                    if speed.value < Constants.speedThreshold && altitudeDiff < Constants.abortThreshold && speed.timestamp.relativeTimeInterval > abortedTime {
-                        def.value = def.value.with(state: .aborted, stateTimestamp: speed.timestamp, finalAltitude: altitude)
-                        return def
-                    }
-                    
-                    
-                    if speed.timestamp.relativeTimeInterval > completedTime {
-                        def.value = def.value.with(state: .completed, stateTimestamp: speed.timestamp, finalAltitude: altitude)
-                        return def
-                    }
+                if speed.value < Constants.speedThreshold && altitudeDiff < Constants.abortThreshold && speed.timestamp.relativeTimeInterval > abortedTime {
+                    def.value = def.value.with(state: .aborted, stateTimestamp: speed.timestamp, finalAltitude: altitude)
+                    return def
                 }
                 
-//                print("\(naturalScale: speed.value) \(naturalScale: ahService.minSpeed) \(naturalScale: ahService.maxSpeed)")
                 
-                switch self.currentInfo.state {
-                case .waiting:
-                    if speed.value > Constants.speedThreshold {
-                        def.value = def.value.with(state: .takingOff, stateTimestamp: speed.timestamp, takeOffAltitude: altitude)
-                    }
-                    
+                if speed.timestamp.relativeTimeInterval > completedTime {
+                    def.value = def.value.with(state: .completed, stateTimestamp: speed.timestamp, finalAltitude: altitude)
                     return def
-
-                case .takingOff:
-                    if speed.value > ahService.maxSpeed {
-                        def.value = def.value.with(state: .maxSpeedReached, stateTimestamp: speed.timestamp)
-                    } else {
-                        if speed.value > ahService.minSpeed {
-                            def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
-                        }
-                    }
-                    
-                    return def
-
-                case .minSpeedReached:
-                    if speed.value < ahService.minSpeed {
-                        def.value = def.value.with(state: .minSpeedLost, stateTimestamp: speed.timestamp)
-                    }
-                    
-                    if speed.value > ahService.maxSpeed {
-                        def.value = def.value.with(state: .maxSpeedReached, stateTimestamp: speed.timestamp)
-                    }
-                    
-                    return def
-
-                case .minSpeedLost:
-                    if speed.value > ahService.maxSpeed {
-                        def.value = def.value.with(state: .maxSpeedReached, stateTimestamp: speed.timestamp)
-                    } else {
-                        if speed.value > ahService.minSpeed {
-                            def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
-                        }
-                    }
-                    
-                    return def
-
-                case .maxSpeedReached:
-                    if speed.value < ahService.minSpeed {
-                        def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
-                    }
-                    
-                    return def
-
-                case .aborted, .completed:
-                    return DataPointMachineState(timestamp: speed.timestamp, value: self.currentInfo)
                 }
             }
-            .handleEvents(receiveOutput: { [unowned self] state in
-                self.currentInfo = state.value
-            })
-            .share()
+            
+//                print("\(naturalScale: speed.value) \(naturalScale: ahService.minSpeed) \(naturalScale: ahService.maxSpeed)")
+            
+            switch self.currentInfo.state {
+            case .waiting:
+                if speed.value > Constants.speedThreshold {
+                    def.value = def.value.with(state: .takingOff, stateTimestamp: speed.timestamp, takeOffAltitude: altitude)
+                }
+                
+                return def
+
+            case .takingOff:
+                if speed.value > ahService.maxSpeed {
+                    def.value = def.value.with(state: .maxSpeedReached, stateTimestamp: speed.timestamp)
+                } else {
+                    if speed.value > ahService.minSpeed {
+                        def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
+                    }
+                }
+                
+                return def
+
+            case .minSpeedReached:
+                if speed.value < ahService.minSpeed {
+                    def.value = def.value.with(state: .minSpeedLost, stateTimestamp: speed.timestamp)
+                }
+                
+                if speed.value > ahService.maxSpeed {
+                    def.value = def.value.with(state: .maxSpeedReached, stateTimestamp: speed.timestamp)
+                }
+                
+                return def
+
+            case .minSpeedLost:
+                if speed.value > ahService.maxSpeed {
+                    def.value = def.value.with(state: .maxSpeedReached, stateTimestamp: speed.timestamp)
+                } else {
+                    if speed.value > ahService.minSpeed {
+                        def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
+                    }
+                }
+                
+                return def
+
+            case .maxSpeedReached:
+                if speed.value < ahService.minSpeed {
+                    def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
+                }
+                
+                return def
+
+            case .aborted, .completed:
+                return DataPointMachineState(timestamp: speed.timestamp, value: self.currentInfo)
+            }
+        }
+        .handleEvents(receiveOutput: { [unowned self] state in
+            self.currentInfo = state.value
+        })
+        .share()
     }()
     
     init(ahService: DeviceMotionProtocol) {
