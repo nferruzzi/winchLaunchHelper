@@ -19,7 +19,7 @@ struct SettingsView: View {
     
     var body: some View {
         NavigationView {
-            List {
+            Form {
                 Section(header: Text("Glider")) {
                     HStack{
                         Text("Min Speed")
@@ -44,11 +44,9 @@ struct SettingsView: View {
                 Section(header: Text("Record")) {
                     Toggle("Log sensors data to local json files", isOn: $model.record)
                         .disabled(selectedReplay != nil)
-                    
                     Picker(selection: $selectedReplay) {
                         Text("none")
                             .tag(URL?(nil))
-                        Divider()
                         ForEach(DeviceMotionService.replayList(), id: \.self) { url in
                             Text(url.deletingPathExtension().lastPathComponent)
                                 .tag(url as URL?)
@@ -56,6 +54,7 @@ struct SettingsView: View {
                     } label: {
                         Text("Replay")
                     }
+                    .pickerStyle(.navigationLink)
                 }
             }
             .listStyle(GroupedListStyle())
