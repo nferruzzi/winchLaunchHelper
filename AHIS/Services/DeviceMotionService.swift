@@ -38,28 +38,34 @@ public protocol DeviceMotionProtocol {
 extension DeviceMotionProtocol {
     public var minSpeed: Measurement<UnitSpeed> {
         get {
-            .init(value: 70, unit: .kilometersPerHour)
+            let minSpeedValue = UserDefaults.standard.double(forKey: DeviceMotionService.Constants.userSettingsMinSpeed)
+            return .init(value: minSpeedValue > 0 ? minSpeedValue : 70, unit: .kilometersPerHour)
         }
         set {
-            
+            UserDefaults.standard.set(minSpeed.converted(to: .kilometersPerHour).value, forKey: DeviceMotionService.Constants.userSettingsMinSpeed)
+            UserDefaults.standard.synchronize()
         }
     }
     
     public var maxSpeed: Measurement<UnitSpeed> {
         get {
-            .init(value: 110, unit: .kilometersPerHour)
+            let maxSpeedValue = UserDefaults.standard.double(forKey: DeviceMotionService.Constants.userSettingsMaxSpeed)
+            return .init(value: maxSpeedValue > 0 ? maxSpeedValue : 110, unit: .kilometersPerHour)
         }
         set {
-            
+            UserDefaults.standard.set(maxSpeed.converted(to: .kilometersPerHour).value, forKey: DeviceMotionService.Constants.userSettingsMaxSpeed)
+            UserDefaults.standard.synchronize()
         }
     }
 
     public var winchLength: Measurement<UnitLength> {
         get {
-            .init(value: 800, unit: .meters)
+            let winchLengthValue = UserDefaults.standard.double(forKey: DeviceMotionService.Constants.userSettingsWinchLength)
+            return .init(value: winchLengthValue > 0 ? winchLengthValue : 800, unit: .meters)
         }
         set {
-            
+            UserDefaults.standard.set(winchLength.converted(to: .meters).value, forKey: DeviceMotionService.Constants.userSettingsWinchLength)
+            UserDefaults.standard.synchronize()
         }
     }
 
@@ -148,7 +154,7 @@ public struct SensorState: Codable {
         let l = location.map { $0.toNewRelative(relative: min.relativeTimeInterval) }
         let b = pressure.map { $0.toNewRelative(relative: min.relativeTimeInterval) }
         
-        return .init(roll: r, pitch: p, heading: h, speed: s, altitude: a, userAcceleration: u, location: l, pressure: b)            
+        return .init(roll: r, pitch: p, heading: h, speed: s, altitude: a, userAcceleration: u, location: l, pressure: b)
     }
 }
 
@@ -288,7 +294,7 @@ public final class DeviceMotionService: NSObject {
         
         minSpeed = .init(value: minSpeedValue > 0 ? minSpeedValue : 70, unit: .kilometersPerHour)
         maxSpeed = .init(value: maxSpeedValue > 0 ? maxSpeedValue : 110, unit: .kilometersPerHour)
-        winchLength = .init(value: maxSpeedValue > 0 ? winchLengthValue : 800, unit: .meters)
+        winchLength = .init(value: winchLengthValue > 0 ? winchLengthValue : 800, unit: .meters)
 
         start(reference: .xMagneticNorthZVertical)
         
