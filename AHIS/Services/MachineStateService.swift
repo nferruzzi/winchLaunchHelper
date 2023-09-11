@@ -97,7 +97,8 @@ final class MachineStateService {
     private var currentInfo: MachineInfo = .init(state: .waiting, stateTimestamp: .date(Date()))
 
     lazy var interpolatedSpeedPublisher: some Publisher<DataPointSpeed, Never> = {
-        ahService.speed.map { [unowned self] dataPoint in
+        ahService.speed
+        .map { [unowned self] dataPoint in
             self.ekf.updateWithVelocity(velocityMeasurement: dataPoint.value.value)
             return self.accelerationPublisher
         }

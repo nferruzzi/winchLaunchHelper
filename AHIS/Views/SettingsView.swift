@@ -58,13 +58,13 @@ struct SettingsView: View {
                     }
                 }
             }
-            .listStyle(GroupedListStyle()) // Questo style assomiglia alle settings di iOS
+            .listStyle(GroupedListStyle())
             .navigationTitle("Settings")
             .navigationBarItems(leading:
                 Button(action: {
                     showSettings.toggle()
                 }) {
-                    Image(systemName: "arrow.left") // icona di freccia a sinistra
+                    Image(systemName: "arrow.left")
                 }
             )
             .onAppear {

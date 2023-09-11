@@ -38,7 +38,7 @@ final class Services: ObservableObject {
 
 @main
 struct AHISApp: App {
-    @StateObject var services = Services.shared
+    @ObservedObject var services = Services.shared
     
     var body: some Scene {
         WindowGroup {
