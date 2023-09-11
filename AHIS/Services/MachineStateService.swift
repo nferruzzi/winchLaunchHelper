@@ -205,18 +205,23 @@ final class MachineStateService {
                     }
                 }
                 
+//                print("\(naturalScale: speed.value) \(naturalScale: ahService.minSpeed) \(naturalScale: ahService.maxSpeed)")
                 
                 switch self.currentInfo.state {
                 case .waiting:
                     if speed.value > Constants.speedThreshold {
-                        def.value = def.value.with(state: .takingOff, stateTimestamp: speed.timestamp)
+                        def.value = def.value.with(state: .takingOff, stateTimestamp: speed.timestamp, takeOffAltitude: altitude)
                     }
                     
                     return def
 
                 case .takingOff:
-                    if speed.value > ahService.minSpeed {
-                        def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp, takeOffAltitude: altitude)
+                    if speed.value > ahService.maxSpeed {
+                        def.value = def.value.with(state: .maxSpeedReached, stateTimestamp: speed.timestamp)
+                    } else {
+                        if speed.value > ahService.minSpeed {
+                            def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
+                        }
                     }
                     
                     return def
@@ -233,8 +238,12 @@ final class MachineStateService {
                     return def
 
                 case .minSpeedLost:
-                    if speed.value > ahService.minSpeed {
-                        def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
+                    if speed.value > ahService.maxSpeed {
+                        def.value = def.value.with(state: .maxSpeedReached, stateTimestamp: speed.timestamp)
+                    } else {
+                        if speed.value > ahService.minSpeed {
+                            def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
+                        }
                     }
                     
                     return def
