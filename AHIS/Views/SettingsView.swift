@@ -7,6 +7,23 @@
 
 import SwiftUI
 
+struct ReplayPickerView: View {
+    @Binding var selectedReplay: URL?
+    
+    var body: some View {
+        Picker(selection: $selectedReplay) {
+            Text("none")
+                .tag(URL?(nil))
+            ForEach(DeviceMotionService.replayList(), id: \.self) { url in
+                Text(url.deletingPathExtension().lastPathComponent)
+                    .tag(url as URL?)
+            }
+        } label: {
+            Text("Replay")
+        }
+    }
+}
+
 struct SettingsView: View {
     @ObservedObject var model: AHServiceViewModel
     @Binding var showSettings: Bool
@@ -44,17 +61,8 @@ struct SettingsView: View {
                 Section(header: Text("Record")) {
                     Toggle("Log sensors data to local json files", isOn: $model.record)
                         .disabled(selectedReplay != nil)
-                    Picker(selection: $selectedReplay) {
-                        Text("none")
-                            .tag(URL?(nil))
-                        ForEach(DeviceMotionService.replayList(), id: \.self) { url in
-                            Text(url.deletingPathExtension().lastPathComponent)
-                                .tag(url as URL?)
-                        }
-                    } label: {
-                        Text("Replay")
-                    }
-                    .pickerStyle(.navigationLink)
+                    ReplayPickerView(selectedReplay: $selectedReplay)
+                        .pickerStyle(.navigationLink)
                 }
             }
             .listStyle(GroupedListStyle())

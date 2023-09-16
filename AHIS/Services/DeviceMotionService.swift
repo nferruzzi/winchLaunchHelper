@@ -324,10 +324,19 @@ public final class DeviceMotionService: NSObject {
             return []
         }
 
-        let files = (try? FileManager.default.contentsOfDirectory(at: documentsDirectory, includingPropertiesForKeys: nil)) ?? []
+        let files = (try? FileManager.default.contentsOfDirectory(at: documentsDirectory,
+                                                                  includingPropertiesForKeys: [.creationDateKey])) ?? []
+        let orderedFiles = files.sorted { a, b in
+            let ma = (try? FileManager.default.attributesOfItem(atPath: a.path)[.creationDate]) as? Date
+            let mb = (try? FileManager.default.attributesOfItem(atPath: b.path)[.creationDate]) as? Date
+            switch (ma, mb) {
+            case let (.some(ma), .some(mb)): return ma > mb
+            default: return false
+            }
+        }
         let apollonia = [Bundle.main.url(forResource: "k2_apollonia_strong_wind_1", withExtension: "json")!]
         
-        return apollonia + files.filter { url in
+        return apollonia + orderedFiles.filter { url in
             url.pathExtension == "json"
         }
     }
