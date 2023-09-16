@@ -189,6 +189,7 @@ struct AttitudeIndicatorView: View {
                 .compositingGroup()
             }
         }
+        .background(Color.skyGradient)
     }
 }
 
