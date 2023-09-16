@@ -177,6 +177,7 @@ public final class DeviceMotionService: NSObject {
         static let userSettingsMinSpeed = "Min Speed"
         static let userSettingsMaxSpeed = "Max Speed"
         static let userSettingsWinchLength = "Winch Length"
+        static let userSettingsRecord = "Record"
     }
 
     @Published private var deviceMotionSubject: CMDeviceMotion?
@@ -261,6 +262,9 @@ public final class DeviceMotionService: NSObject {
 
     public var record: Bool = false {
         didSet {
+            UserDefaults.standard.set(record, forKey: Constants.userSettingsRecord)
+            UserDefaults.standard.synchronize()
+
             serialization = SensorState()
         }
     }
@@ -291,10 +295,12 @@ public final class DeviceMotionService: NSObject {
         let minSpeedValue = UserDefaults.standard.double(forKey: Constants.userSettingsMinSpeed)
         let maxSpeedValue = UserDefaults.standard.double(forKey: Constants.userSettingsMaxSpeed)
         let winchLengthValue = UserDefaults.standard.double(forKey: Constants.userSettingsWinchLength)
+        let recordValue = UserDefaults.standard.bool(forKey: Constants.userSettingsRecord)
         
         minSpeed = .init(value: minSpeedValue > 0 ? minSpeedValue : 70, unit: .kilometersPerHour)
         maxSpeed = .init(value: maxSpeedValue > 0 ? maxSpeedValue : 110, unit: .kilometersPerHour)
         winchLength = .init(value: winchLengthValue > 0 ? winchLengthValue : 800, unit: .meters)
+        record = recordValue
 
         start(reference: .xMagneticNorthZVertical)
         
