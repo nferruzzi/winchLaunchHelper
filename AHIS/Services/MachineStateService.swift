@@ -192,7 +192,7 @@ final class MachineStateService {
             
             if self.currentInfo.isLaunching, let tof = self.currentInfo.takeOffAltitude {
                 let altitudeDiff = (altitude.value - tof.value)
-                let abortedTime = tof.timestamp.relativeTimeInterval + 5
+                let abortedTime = tof.timestamp.relativeTimeInterval + 10
                 let completedTime = tof.timestamp.relativeTimeInterval + 40
                 
                 if speed.value < Constants.speedThreshold && altitudeDiff < Constants.abortThreshold && speed.timestamp.relativeTimeInterval > abortedTime {
