@@ -84,6 +84,8 @@ final class AHServiceViewModel: ObservableObject {
     private var zeroAltitude: Double?
     private var initialLocation: CLLocation?
     
+    private var recordTime: DataPointTimeInterval?
+    
     init(ahService: DeviceMotionProtocol? = nil,
          machineStateService: MachineStateProtocol? = nil) {
         
@@ -211,40 +213,6 @@ final class AHServiceViewModel: ObservableObject {
                     let relativeAltitude = maxAltitude.value - tof.value
                     self.say("Max \(Int(relativeAltitude.converted(to: .meters).value))")
                 }
-                
-//                switch info.value.state {
-//                case .waiting: ()
-//                case .takingOff:
-//                    self.takingOffDate = self.takingOffDate ?? Date()
-//                    
-//                    if self.lastSayMin == nil {
-//                        self.lastSayMin = Date()
-//                        self.say("Min", speedMultiplier: 0.4)
-//                    }
-//                case .minSpeedReached:
-//                    if self.lastSayMinSpeed == nil {
-//                        self.lastSayMinSpeed = Date()
-//                        self.lastSayMinSpeedLost = nil
-//                        self.lastSayMaxSpeedReached = nil
-//                        self.say("\(Int(speed.value.converted(to: .kilometersPerHour).value))")
-//                    }
-//                
-//                case .minSpeedLost:
-//                    if self.lastSayMinSpeedLost == nil {
-//                        self.lastSayMinSpeedLost = Date()
-//                        self.lastSayMinSpeed = nil
-//                        self.say("\(Int(speed.value.converted(to: .kilometersPerHour).value))")
-//                    }
-//
-//                case .maxSpeedReached:
-//                    if self.lastSayMaxSpeedReached == nil {
-//                        self.lastSayMaxSpeedReached = Date()
-//                        self.lastSayMinSpeed = nil
-//                        self.say("\(Int(speed.value.converted(to: .kilometersPerHour).value))")
-//                    }
-//                    
-//                case .aborted, .completed: ()
-//                }
             }
             .store(in: &subscriptions)
 
@@ -276,17 +244,21 @@ final class AHServiceViewModel: ObservableObject {
             ahService.recordState,
             machineStateService.machineState
         )
-            .throttle(for: .seconds(10), scheduler: RunLoop.main, latest: true)
+            .throttle(for: .seconds(2), scheduler: RunLoop.main, latest: true)
             .sink { [unowned self](state, machine) in
-                if self.record == false { return }
-                guard let takeOffTime = machine.value.takeOffAltitude?.timestamp,
+                guard self.record == true,
+                      let takeOffTime = machine.value.takeOffAltitude?.timestamp,
+                      machine.value.state == .completed || machine.value.state == .aborted,
+                      takeOffTime != self.recordTime,
                       let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
-
-                var trimmed = state.prefix(interval: takeOffTime.relativeTimeInterval - 20)
+                
+                self.recordTime = takeOffTime
+                
+                var trimmed = state.prefix(interval: takeOffTime.relativeTimeInterval - 30)
                 guard !trimmed.pitch.isEmpty else { return }
                 
                 if let completionTime = machine.value.finalAltitude?.timestamp {
-                    trimmed = trimmed.suffix(interval: completionTime.relativeTimeInterval + 20)
+                    trimmed = trimmed.suffix(interval: completionTime.relativeTimeInterval + 30)
                 }
                 
                 trimmed = trimmed.normalize()
