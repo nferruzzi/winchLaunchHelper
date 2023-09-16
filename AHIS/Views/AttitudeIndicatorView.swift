@@ -186,6 +186,7 @@ struct AttitudeIndicatorView: View {
                 }
                 .overlay(align, alignment: .bottomTrailing)
                 .padding()
+                .compositingGroup()
             }
         }
     }

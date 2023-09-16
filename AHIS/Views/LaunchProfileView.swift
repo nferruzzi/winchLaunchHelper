@@ -127,6 +127,7 @@ struct LaunchProfileView: View {
             }
             .padding(.top)
         }
+        .compositingGroup()
     }
 }
 
