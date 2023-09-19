@@ -8,19 +8,42 @@
 import SwiftUI
 
 struct ReplayPickerView: View {
+    @Environment(\.dismiss) var dismiss
     @Binding var selectedReplay: URL?
+    @State var replays: [URL] = []
     
     var body: some View {
-        Picker(selection: $selectedReplay) {
-            Text("none")
+        List(selection: $selectedReplay) {
+            Text("None")
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    selectedReplay = nil
+                    dismiss()
+                }
                 .tag(URL?(nil))
-            ForEach(DeviceMotionService.replayList(), id: \.self) { url in
-                Text(url.deletingPathExtension().lastPathComponent)
-                    .tag(url as URL?)
+                        
+            Section {
+                ForEach(DeviceMotionService.replayList(), id: \.self) { url in
+                    Text(url.deletingPathExtension().lastPathComponent)
+                        .tag(url as URL?)
+                }
+                .onDelete { val in
+                    for v in val {
+                        let item = self.replays[v]
+                        try? FileManager.default.removeItem(at: item)
+                        self.replays = DeviceMotionService.replayList()
+                    }
+                }
             }
-        } label: {
-            Text("Replay")
         }
+        .onAppear {
+            self.replays = DeviceMotionService.replayList()
+        }
+        .onChange(of: selectedReplay) { _ in
+            self.dismiss()
+        }
+        .navigationTitle("Replay...")
     }
 }
 
@@ -61,8 +84,11 @@ struct SettingsView: View {
                 Section(header: Text("Record")) {
                     Toggle("Log sensors data to local json files", isOn: $model.record)
                         .disabled(selectedReplay != nil)
-                    ReplayPickerView(selectedReplay: $selectedReplay)
-                        .pickerStyle(.navigationLink)
+                    NavigationLink {
+                        ReplayPickerView(selectedReplay: $selectedReplay)
+                    } label: {
+                        Text(selectedReplay?.deletingPathExtension().lastPathComponent ?? "None")
+                    }
                 }
             }
             .listStyle(GroupedListStyle())
