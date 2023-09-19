@@ -14,7 +14,7 @@ struct ReplayPickerView: View {
     
     var body: some View {
         List(selection: $selectedReplay) {
-            Text("None")
+            Text("Replay Off")
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
                 .onTapGesture {
@@ -23,7 +23,7 @@ struct ReplayPickerView: View {
                 }
                 .tag(URL?(nil))
                         
-            Section {
+            Section("Select to replay...") {
                 ForEach(DeviceMotionService.replayList(), id: \.self) { url in
                     Text(url.deletingPathExtension().lastPathComponent)
                         .tag(url as URL?)
@@ -43,7 +43,7 @@ struct ReplayPickerView: View {
         .onChange(of: selectedReplay) { _ in
             self.dismiss()
         }
-        .navigationTitle("Replay...")
+        .navigationTitle("Logs")
     }
 }
 
@@ -81,13 +81,13 @@ struct SettingsView: View {
                     }
                 }
 
-                Section(header: Text("Record")) {
-                    Toggle("Log sensors data to local json files", isOn: $model.record)
+                Section(header: Text("Logs")) {
+                    Toggle("Automatically log winch launches", isOn: $model.record)
                         .disabled(selectedReplay != nil)
                     NavigationLink {
                         ReplayPickerView(selectedReplay: $selectedReplay)
                     } label: {
-                        Text(selectedReplay?.deletingPathExtension().lastPathComponent ?? "None")
+                        Text(selectedReplay?.deletingPathExtension().lastPathComponent ?? "Replay Off")
                     }
                 }
             }
