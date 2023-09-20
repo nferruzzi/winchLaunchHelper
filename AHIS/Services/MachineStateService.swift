@@ -20,6 +20,7 @@ enum MachineState: String, Codable {
     
     case completed
     case aborted
+    case landed
 }
 
 struct MachineInfo: Equatable, Codable {
@@ -81,7 +82,10 @@ final class MachineStateService {
         static let accelerationThreshold = Measurement<UnitAcceleration>(value: 1.0, unit: .metersPerSecondSquared)
         static let speedThreshold = Measurement<UnitSpeed>(value: 10, unit: .kilometersPerHour)
         static let abortThreshold = Measurement<UnitLength>(value: 1, unit: .meters)
-        
+
+        // how long to wait before going back to landed/waiting
+        static let landedSeconds: TimeInterval = 60
+
         // CoreLocation generates just 1 msg per second, we interpolate the speed to have more
         static let throttleSeconds: Double = 0.01
     }
@@ -258,7 +262,18 @@ final class MachineStateService {
                 return def
 
             case .aborted, .completed:
+                /// Move back to landed when the user is back to the ground level and x seconds are passed
+                if let tof = self.currentInfo.takeOffAltitude,
+                   speed.timestamp.relativeTimeInterval > self.currentInfo.stateTimestamp.relativeTimeInterval + Constants.landedSeconds && fabs(altitude.value.value - tof.value.value) < 10  {
+
+                    return DataPointMachineState(timestamp: speed.timestamp,
+                                                 value: .init(state: .waiting, stateTimestamp: speed.timestamp))
+                }
                 return DataPointMachineState(timestamp: speed.timestamp, value: self.currentInfo)
+                
+            case .landed:
+                return DataPointMachineState(timestamp: speed.timestamp,
+                                             value: .init(state: .waiting, stateTimestamp: speed.timestamp))
             }
         }
         .handleEvents(receiveOutput: { [unowned self] state in

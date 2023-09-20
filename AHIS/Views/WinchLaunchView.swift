@@ -22,6 +22,32 @@ struct WinchLaunchView: View {
     var maxSpeed: String {
         "\(naturalScale: model.maxSpeed.converted(to: .kilometersPerHour))"
     }
+    
+    struct StateButton: View {
+        let state: MachineState
+        let takingOff: TimeInterval?
+        let current: TimeInterval
+        let action: () -> ()
+        
+        var body: some View {
+            Button(action: {
+                action()
+            }, label: {
+                switch state {
+                case .completed:
+                    Text("Completed")
+                case .aborted:
+                    Text("Aborted")
+                default:
+                    if let takingOff = takingOff {
+                        Text("\(Int(current - takingOff)) sec")
+                    } else {
+                        Text("Waiting...")
+                    }
+                }
+            })
+        }
+    }
 
     @ViewBuilder
     var content: some View {
@@ -39,25 +65,12 @@ struct WinchLaunchView: View {
                     .fixedSize()
                     .padding(.trailing)
             }
-
-            Button(action: {
+            
+            StateButton(state: model.state,
+                        takingOff: model.info.value.takeOffAltitude?.timestamp.relativeTimeInterval,
+                        current: model.info.timestamp.relativeTimeInterval) {
                 model.resetMachineState()
-            }, label: {
-                switch model.state {
-                case .completed:
-                    Text("Completed")
-                case .aborted:
-                    Text("Aborted")
-                default:
-                    if let takingOff = model.takingOffDate {
-                        Text("\(-Int(takingOff.timeIntervalSinceNow)) sec")
-                    } else {
-                        Text("Waiting...")
-                    }
-                }
-            })
-//            Text(model.state.rawValue)
-//                .font(.system(size: 20, weight: .bold, design: .monospaced))
+            }
         }
     }
     

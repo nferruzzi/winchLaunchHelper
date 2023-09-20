@@ -42,12 +42,13 @@ final class AHServiceViewModel: ObservableObject {
     @Published private(set) var distanceFromInitialLocation: DataPointLength.ValueType = .init(value: 0, unit: .meters)
     
     @Published private(set) var acceleration: DataPointAcceleration.ValueType = .init(value: 0, unit: .metersPerSecondSquared)
-    @Published private(set) var state: MachineState = .waiting
+
+    @Published private(set) var info: DataPointMachineState = .init(timestamp: .relative(0), value: .init(state: .waiting, stateTimestamp: .relative(0)))
+    var state: MachineState { info.value.state }
+
     @Published private(set) var lasSayString: String = ""
     @Published private(set) var altitudeHistory: [Double] = []
-    
-    @Published private(set) var takingOffDate: Date?
-    
+        
     @Published var minSpeed: DataPointSpeed.ValueType {
         didSet {
             ahService?.minSpeed = minSpeed
@@ -154,9 +155,9 @@ final class AHServiceViewModel: ObservableObject {
         
         machineStateService
             .machineState
-            .map { $0.value.state }
+            .map { $0 }
             .receive(on: DispatchQueue.main)
-            .assign(to: \.state, on: self)
+            .assign(to: \.info, on: self)
             .store(in: &subscriptions)
         
         machineStateService
@@ -181,11 +182,7 @@ final class AHServiceViewModel: ObservableObject {
                     self.importantAltitudes = Constants.importantAltitudes
                     return
                 }
-                
-                if info.value.state == .takingOff {
-                    self.takingOffDate = self.takingOffDate ?? Date()
-                }
-                
+                                
                 if let first = self.importantAltitudes.first {
                     let relativeFirstAltitude = first + tof.value
                     
@@ -287,7 +284,6 @@ final class AHServiceViewModel: ObservableObject {
     
     func resetMachineState() {
         zeroAltitude = nil
-        takingOffDate = nil
         altitudeHistory.removeAll()
         machineStateService?.reset()
         lastSayQFE = nil
