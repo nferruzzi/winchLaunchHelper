@@ -33,6 +33,8 @@
 	</dict>
 	<key>NSLocationUsageDescription</key>
 	<string>To read the GPS speed, it is necessary to authorize the app.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>To read the GPS speed, it is necessary to authorize the app.</string>
 	<key>NSMotionUsageDescription</key>
@@ -47,7 +49,6 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
-		<string>processing</string>
 	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>
@@ -64,6 +65,14 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
 </dict>
 </plist>
