@@ -232,7 +232,7 @@ public final class DeviceMotionService: NSObject {
         }
     }
     
-    @Published private var pressureSubject: DataPointPressure? = .zero {
+    @Published private var pressureSubject: DataPointPressure? {
         didSet {
             guard record else { return }
             serialization.pressure.append(pressureSubject?.toRelative())
