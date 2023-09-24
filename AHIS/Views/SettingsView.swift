@@ -7,6 +7,29 @@
 
 import SwiftUI
 
+enum UIUnitSpeed: String, CaseIterable {
+    case kmh, mph, knots
+        
+    var localizedString: LocalizedStringKey {
+        switch self {
+        case .kmh: "km/h"
+        case .mph: "mph"
+        case .knots: "kt"
+        }
+    }
+}
+
+enum UIUnitAltitude: String, CaseIterable {
+    case meters, feets
+    
+    var localizedString: LocalizedStringKey {
+        switch self {
+        case .meters: "mt"
+        case .feets: "ft"
+        }
+    }
+}
+
 struct ReplayPickerView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var selectedReplay: URL?
@@ -47,6 +70,51 @@ struct ReplayPickerView: View {
     }
 }
 
+struct RowLabelStyle: LabelStyle {
+    let color: Color
+    
+    init(color: Color) {
+        self.color = color
+    }
+    
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(alignment: .center) {
+            configuration.icon
+                .frame(width: 24, height: 24, alignment: .center)
+                .background(color)
+                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+            
+            configuration.title
+        }
+    }
+}
+
+struct RowStyle: TextFieldStyle {
+    let labelName: LocalizedStringKey
+    let unitName: LocalizedStringKey?
+    let systemImage: String
+    let color: Color
+    
+    init(labelName: LocalizedStringKey, systemImage: String, color: Color, unitName: LocalizedStringKey? = nil) {
+        self.labelName = labelName
+        self.unitName = unitName
+        self.systemImage = systemImage
+        self.color = color
+    }
+    
+    func _body(configuration: TextField<Self._Label>) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Label(labelName, systemImage: systemImage)
+                .labelStyle(RowLabelStyle(color: color))
+            configuration
+                .foregroundColor(.accentColor)
+            if let unitName {
+                Text(unitName).font(.caption)
+            }
+        }
+    }
+}
+
 struct SettingsView: View {
     @ObservedObject var model: AHServiceViewModel
     @Binding var showSettings: Bool
@@ -56,41 +124,75 @@ struct SettingsView: View {
     @State var maxSpeed: String = ""
     @State var winchLength: String = ""
     @State var selectedReplay: URL? = nil
-    
+
+    @AppStorage("pilotName") var pilotName: String = ""
+    @AppStorage("gliderRegistration") var gliderRegistration: String = ""
+    @AppStorage("unitSpeed") var unitSpeed: UIUnitSpeed = .kmh
+    @AppStorage("unitAltitude") var unitAltitude: UIUnitAltitude = .meters
+
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Glider")) {
-                    HStack{
-                        Text("Min Speed")
-                        TextField("km/h", text: $minSpeed)
-                            .foregroundColor(.accentColor)
+                Section(header: Text("Pilot")) {
+                    TextField("name", text: $pilotName)
+                        .textFieldStyle(RowStyle(labelName: "Name", systemImage: "person", color: .accentColor))
+                }
+                
+                Section(header: Text("Units")) {
+                    Picker(selection: $unitSpeed) {
+                        ForEach(UIUnitSpeed.allCases, id: \.self) { value in
+                            Text(value.localizedString)
+                                .tag(value)
+                        }
+                    } label: {
+                        Label("Speed", systemImage: "circle")
+                            .labelStyle(RowLabelStyle(color: Color.orange))
                     }
-                    HStack{
-                        Text("Max Speed")
-                        TextField("km/h", text: $maxSpeed)
-                            .foregroundColor(.accentColor)
+
+                    Picker(selection: $unitAltitude) {
+                        ForEach(UIUnitAltitude.allCases, id: \.self) { value in
+                            Text(value.localizedString)
+                                .tag(value)
+                        }
+                    } label: {
+                        Label("Altitude / length", systemImage: "square")
+                            .labelStyle(RowLabelStyle(color: Color.orange))
                     }
                 }
                 
+                Section(header: Text("Glider")) {
+                    TextField("registration", text: $gliderRegistration)
+                        .textFieldStyle(RowStyle(labelName: "Registration", systemImage: "airplane", color: .leafGreen))
+                    TextField(unitSpeed.localizedString, text: $minSpeed)
+                        .textFieldStyle(RowStyle(labelName: "Min Speed", systemImage: "speedometer", color: .trunkRed, unitName: unitSpeed.localizedString))
+                   TextField(unitSpeed.localizedString, text: $maxSpeed)
+                        .textFieldStyle(RowStyle(labelName: "Max Speed", systemImage: "speedometer", color: .trunkRed, unitName: unitSpeed.localizedString))
+                }
+                
                 Section(header: Text("Winch")) {
-                    HStack{
-                        Text("Winch length")
-                        TextField("meters", text: $winchLength)
-                            .foregroundColor(.accentColor)
-                    }
+                    TextField(unitAltitude.localizedString, text: $winchLength)
+                        .textFieldStyle(RowStyle(labelName: "Winch Length", systemImage: "arrow.left.and.right", color: .leafGreen, unitName: unitAltitude.localizedString))
                 }
 
                 Section(header: Text("Logs")) {
-                    Toggle("Automatically log winch launches", isOn: $model.record)
-                        .disabled(selectedReplay != nil)
+                    Toggle(isOn: $model.record) {
+                        Label("Automatically log winch launches", systemImage: "recordingtape.circle")
+                            .labelStyle(RowLabelStyle(color: Color.accentColor))
+                    }
+                    .disabled(selectedReplay != nil)
+
                     NavigationLink {
                         ReplayPickerView(selectedReplay: $selectedReplay)
                     } label: {
-                        Text(selectedReplay?.deletingPathExtension().lastPathComponent ?? "Replay Off")
+                        Label("Replay", systemImage: "play")
+                            .labelStyle(RowLabelStyle(color: Color.accentColor))
+                        Text(selectedReplay?.deletingPathExtension().lastPathComponent ?? "Off")
+                            .foregroundColor(.accentColor)
+                        
                     }
                 }
             }
+            .tint(.accentColor)
             .listStyle(GroupedListStyle())
             .navigationTitle("Settings")
             .navigationBarItems(leading:

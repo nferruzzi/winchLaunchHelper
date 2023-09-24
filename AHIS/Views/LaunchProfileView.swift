@@ -55,31 +55,29 @@ struct GridShape: Shape {
 
 struct LaunchProfileView: View {
     enum Constants {
-        static let maxHeight: Double = 600
+        static let maxHeight: Double = 500
+        static let referenceHeights: [Measurement<UnitLength>] = [
+            .init(value: 60, unit: .meters),
+            .init(value: 120, unit: .meters),
+            .init(value: 240, unit: .meters),
+        ]
     }
     
     @ObservedObject var model: AHServiceViewModel
     
     var qfe: String {
-        "QFE \(naturalScale: model.qfe, digits: true)"
+        "AGL \(height: model.qfe, digits: false)"
     }
-    
-    var label: String {
-        "\(naturalScale: Measurement<UnitLength>(value: 50, unit: .meters))"
-    }
-    
+        
     var info: some View {
         ZStack(alignment: .bottom) {
-            GridShape(value: 50, max: Constants.maxHeight)
+            GridShape(value: Constants.referenceHeights[0].value, max: Constants.maxHeight)
                 .stroke(style: StrokeStyle(lineWidth: 3, dash: [10, 5]))
 
-            GridShape(value: 100, max: Constants.maxHeight)
+            GridShape(value: Constants.referenceHeights[1].value, max: Constants.maxHeight)
                 .stroke(style: StrokeStyle(lineWidth: 1, dash: [10, 5]))
 
-            GridShape(value: 200, max: Constants.maxHeight)
-                .stroke(style: StrokeStyle(lineWidth: 1, dash: [10, 5]))
-
-            GridShape(value: 300, max: Constants.maxHeight)
+            GridShape(value: Constants.referenceHeights[2].value, max: Constants.maxHeight)
                 .stroke(style: StrokeStyle(lineWidth: 1, dash: [10, 5]))
         }
     }
@@ -87,20 +85,16 @@ struct LaunchProfileView: View {
     var labels: some View {
         GeometryReader { geometry in
             ZStack(alignment: .bottom) {
-                Text(verbatim: "\(naturalScale: Measurement<UnitLength>(value: 50, unit: .meters))")
-                    .position(.init(x: geometry.size.width - 20, y: geometry.size.height - geometry.size.height / Constants.maxHeight * 50 - 15))
+                Text(verbatim: "\(height: Constants.referenceHeights[0])")
+                    .position(.init(x: geometry.size.width - 20, y: geometry.size.height - geometry.size.height / Constants.maxHeight * Constants.referenceHeights[0].value - 15))
                     .font(.subheadline)
 
-                Text(verbatim: "\(naturalScale: Measurement<UnitLength>(value: 100, unit: .meters))")
-                    .position(.init(x: geometry.size.width - 20, y: geometry.size.height - geometry.size.height / Constants.maxHeight * 100 - 15))
+                Text(verbatim: "\(height: Constants.referenceHeights[1])")
+                    .position(.init(x: geometry.size.width - 20, y: geometry.size.height - geometry.size.height / Constants.maxHeight * Constants.referenceHeights[1].value - 15))
                     .font(.subheadline)
 
-                Text(verbatim: "\(naturalScale: Measurement<UnitLength>(value: 200, unit: .meters))")
-                    .position(.init(x: geometry.size.width - 20, y: geometry.size.height - geometry.size.height / Constants.maxHeight * 200 - 15))
-                    .font(.subheadline)
-
-                Text(verbatim: "\(naturalScale: Measurement<UnitLength>(value: 300, unit: .meters))")
-                    .position(.init(x: geometry.size.width - 20, y: geometry.size.height - geometry.size.height / Constants.maxHeight * 300 - 15))
+                Text(verbatim: "\(height: Constants.referenceHeights[2])")
+                    .position(.init(x: geometry.size.width - 20, y: geometry.size.height - geometry.size.height / Constants.maxHeight * Constants.referenceHeights[2].value - 15))
                     .font(.subheadline)
             }
         }
