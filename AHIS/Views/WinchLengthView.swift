@@ -44,7 +44,7 @@ struct WinchLengthView: View {
     }
     
     var distance: String {
-        "\(naturalScale: winchLength - distanceFromInitialLocation)"
+        "\(uiSetting: winchLength - distanceFromInitialLocation)"
     }
     
     var body: some View {

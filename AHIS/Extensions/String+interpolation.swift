@@ -51,14 +51,28 @@ extension String.StringInterpolation {
             appendInterpolation(Constants.naturalScaleNoDigits.string(from: value))
         }
     }
-    
-    mutating func appendInterpolation(height value: Measurement<UnitLength>, digits: Bool = false) {
+
+    mutating func appendInterpolation<U: Unit>(providedUnit value: Measurement<U>, digits: Bool = false) {
         if digits {
-            appendInterpolation(Constants.providedUnitDigits.string(from: value.converted(to: .init(forLocale: Locale.current, usage: .personHeight))))
+            appendInterpolation(Constants.providedUnitDigits.string(from: value))
         } else {
-            let val = value.converted(to: .init(forLocale: Locale.current, usage: .personHeight))
-            let x = Constants.providedUnitNoDigits.string(from: .init(value: val.value.rounded(), unit: val.unit))
-            appendInterpolation(x)
+            appendInterpolation(Constants.providedUnitNoDigits.string(from: value))
+        }
+    }
+
+    mutating func appendInterpolation(uiSetting value: Measurement<UnitSpeed>, digits: Bool = false) {
+        if digits {
+            appendInterpolation(Constants.providedUnitDigits.string(from: value.converted(to: UIUnitSpeed.unit)))
+        } else {
+            appendInterpolation(Constants.providedUnitNoDigits.string(from: value.converted(to: UIUnitSpeed.unit)))
+        }
+    }
+    
+    mutating func appendInterpolation(uiSetting value: Measurement<UnitLength>, digits: Bool = false) {
+        if digits {
+            appendInterpolation(Constants.providedUnitDigits.string(from: value.converted(to: UIUnitAltitude.unit)))
+        } else {
+            appendInterpolation(Constants.providedUnitNoDigits.string(from: value.converted(to: UIUnitAltitude.unit)))
         }
     }
 }

@@ -52,6 +52,33 @@ struct GridShape: Shape {
     }
 }
 
+struct TextSpeed: View {
+    @AppStorage(UIUnitSpeed.userSetting) var unitSpeed: UIUnitSpeed = .kmh
+    let value: Measurement<UnitSpeed>
+    
+    var text: String {
+        "\(uiSetting: value)"
+    }
+    
+    var body: some View {
+        Text(text)
+            .id(unitSpeed)
+    }
+}
+
+struct TextAltitude: View {
+    @AppStorage(UIUnitAltitude.userSetting) var unitAltitude: UIUnitAltitude = .meters
+    let value: Measurement<UnitLength>
+    
+    var text: String {
+        "\(uiSetting: value, digits: false)"
+    }
+    
+    var body: some View {
+        Text(text)
+            .id(unitAltitude)
+    }
+}
 
 struct LaunchProfileView: View {
     enum Constants {
@@ -64,11 +91,7 @@ struct LaunchProfileView: View {
     }
     
     @ObservedObject var model: AHServiceViewModel
-    
-    var qfe: String {
-        "AGL \(height: model.qfe, digits: false)"
-    }
-        
+            
     var info: some View {
         ZStack(alignment: .bottom) {
             GridShape(value: Constants.referenceHeights[0].value, max: Constants.maxHeight)
@@ -85,15 +108,15 @@ struct LaunchProfileView: View {
     var labels: some View {
         GeometryReader { geometry in
             ZStack(alignment: .bottom) {
-                Text(verbatim: "\(height: Constants.referenceHeights[0])")
+                TextAltitude(value: Constants.referenceHeights[0])
                     .position(.init(x: geometry.size.width - 20, y: geometry.size.height - geometry.size.height / Constants.maxHeight * Constants.referenceHeights[0].value - 15))
                     .font(.subheadline)
 
-                Text(verbatim: "\(height: Constants.referenceHeights[1])")
+                TextAltitude(value: Constants.referenceHeights[1])
                     .position(.init(x: geometry.size.width - 20, y: geometry.size.height - geometry.size.height / Constants.maxHeight * Constants.referenceHeights[1].value - 15))
                     .font(.subheadline)
 
-                Text(verbatim: "\(height: Constants.referenceHeights[2])")
+                TextAltitude(value: Constants.referenceHeights[2])
                     .position(.init(x: geometry.size.width - 20, y: geometry.size.height - geometry.size.height / Constants.maxHeight * Constants.referenceHeights[2].value - 15))
                     .font(.subheadline)
             }
@@ -115,9 +138,12 @@ struct LaunchProfileView: View {
             VStack(spacing: 0) {
                 WinchLengthView(distanceFromInitialLocation: model.distanceFromInitialLocation,
                                 winchLength: model.winchLength)
-                Text(qfe)
-                    .font(.system(size: 50, weight: .bold))
-                    .foregroundColor(model.qfe.value > 50 ? nil : .trunkRed)
+                HStack {
+                    Text("QFE")
+                    TextAltitude(value: model.qfe)
+                }
+                .font(.system(size: 50, weight: .bold))
+                .foregroundColor(model.qfe.value > 50 ? nil : .trunkRed)
             }
             .padding(.top)
         }

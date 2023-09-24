@@ -8,6 +8,8 @@
 import SwiftUI
 
 enum UIUnitSpeed: String, CaseIterable {
+    static let userSetting = "unitSpeed"
+    
     case kmh, mph, knots
         
     var localizedString: LocalizedStringKey {
@@ -17,15 +19,49 @@ enum UIUnitSpeed: String, CaseIterable {
         case .knots: "kt"
         }
     }
+
+    var unit: UnitSpeed {
+        switch self {
+        case .mph: return .milesPerHour
+        case .kmh: return .kilometersPerHour
+        case .knots: return .knots
+        }
+    }
+
+    static var unit: UnitSpeed {
+        switch UIUnitSpeed(rawValue: UserDefaults().string(forKey: Self.userSetting) ?? "") {
+        case .mph: return .milesPerHour
+        case .kmh: return .kilometersPerHour
+        case .knots: return .knots
+        default: return .kilometersPerHour
+        }
+    }
 }
 
 enum UIUnitAltitude: String, CaseIterable {
+    static let userSetting = "unitAltitude"
+
     case meters, feets
     
     var localizedString: LocalizedStringKey {
         switch self {
         case .meters: "mt"
         case .feets: "ft"
+        }
+    }
+
+    var unit: UnitLength {
+        switch self {
+        case .meters: return .meters
+        case .feets: return .feet
+        }
+    }
+
+    static var unit: UnitLength {
+        switch UIUnitAltitude(rawValue: UserDefaults().string(forKey: Self.userSetting) ?? "") {
+        case .meters: return .meters
+        case .feets: return .feet
+        default: return .meters
         }
     }
 }
@@ -127,8 +163,8 @@ struct SettingsView: View {
 
     @AppStorage("pilotName") var pilotName: String = ""
     @AppStorage("gliderRegistration") var gliderRegistration: String = ""
-    @AppStorage("unitSpeed") var unitSpeed: UIUnitSpeed = .kmh
-    @AppStorage("unitAltitude") var unitAltitude: UIUnitAltitude = .meters
+    @AppStorage(UIUnitSpeed.userSetting) var unitSpeed: UIUnitSpeed = .kmh
+    @AppStorage(UIUnitAltitude.userSetting) var unitAltitude: UIUnitAltitude = .meters
 
     var body: some View {
         NavigationView {

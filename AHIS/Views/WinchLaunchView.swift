@@ -11,17 +11,6 @@ import SwiftUI
 struct WinchLaunchView: View {
     @ObservedObject var model: AHServiceViewModel
             
-    var minSpeed: String {
-        "\(naturalScale: model.minSpeed.converted(to: .kilometersPerHour))"
-    }
-
-    var speed: String {
-        "\(naturalScale: model.speed.converted(to: .kilometersPerHour))"
-    }
-
-    var maxSpeed: String {
-        "\(naturalScale: model.maxSpeed.converted(to: .kilometersPerHour))"
-    }
     
     struct StateButton: View {
         let state: MachineState
@@ -53,14 +42,14 @@ struct WinchLaunchView: View {
     var content: some View {
         VStack {
             HStack {
-                Text(minSpeed)
+                TextSpeed(value: model.minSpeed)
                     .font(.caption)
                     .fixedSize()
                     .padding(.leading)
-                Text(speed)
+                TextSpeed(value: model.speed)
                     .font(.system(size: 50, weight: .bold, design: .monospaced))
                     .frame(maxWidth: .infinity, alignment: .center)
-                Text(maxSpeed)
+                TextSpeed(value: model.maxSpeed)
                     .font(.caption)
                     .fixedSize()
                     .padding(.trailing)
