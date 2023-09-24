@@ -1,4 +1,6 @@
 AHIS.xcodeproj/project.xcworkspace/xcuserdata/*
 AHIS.xcodeproj/xcuserdata/*
+screenshots/*
+fastlane/Preview.html
 fastlane/report.xml
 server/*
