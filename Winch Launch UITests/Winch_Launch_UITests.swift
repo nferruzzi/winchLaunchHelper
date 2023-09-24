@@ -15,7 +15,7 @@ final class Winch_Launch_UITests: XCTestCase {
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
         setupSnapshot(app)
-        app.resetAuthorizationStatus(for: .location)
+//        app.resetAuthorizationStatus(for: .location)
 
         // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
@@ -35,13 +35,18 @@ final class Winch_Launch_UITests: XCTestCase {
             return true
         }
 
+        app.buttons["Airplane Mode"].tap()
+        app.buttons["Left"].tap()
+
         snapshot("Initial")
+
         app.buttons["Airplane Mode"].tap()
         snapshot("Settings")
-        app.buttons["Replay Off"].tap()
+        app.buttons["Replay, Off"].tap()
         app.staticTexts["k2_apollonia_strong_wind_1"].tap()
         app.buttons["Left"].tap()
-        sleep(50)
+
+        sleep(45)
         snapshot("Simulation")
     }
 }

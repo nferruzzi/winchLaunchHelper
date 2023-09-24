@@ -62,6 +62,7 @@
 		8A52B8502ABC4A1D004C77D4 /* Winch Launch UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Winch Launch UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A52B8522ABC4A1D004C77D4 /* Winch_Launch_UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Winch_Launch_UITests.swift; sourceTree = "<group>"; };
 		8A52B85B2ABC4A3B004C77D4 /* SnapshotHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SnapshotHelper.swift; path = fastlane/SnapshotHelper.swift; sourceTree = SOURCE_ROOT; };
+		8A5A5FF42ABE4302002EB636 /* Snapfile */ = {isa = PBXFileReference; lastKnownFileType = text; name = Snapfile; path = fastlane/Snapfile; sourceTree = "<group>"; };
 		8A6BE19D25AA2B0800D3C2D9 /* HeadingIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadingIndicatorView.swift; sourceTree = "<group>"; };
 		8AFCD6AB2A79699C009F97FA /* AttitudeIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttitudeIndicatorView.swift; sourceTree = "<group>"; };
 		8AFCD6AE2A7969F9009F97FA /* Double+math.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Double+math.swift"; sourceTree = "<group>"; };
@@ -174,6 +175,7 @@
 		8AFE553225A75D6C00EC5329 = {
 			isa = PBXGroup;
 			children = (
+				8A5A5FF42ABE4302002EB636 /* Snapfile */,
 				8AFE553D25A75D6C00EC5329 /* AHIS */,
 				8A52B8512ABC4A1D004C77D4 /* Winch Launch UITests */,
 				8AFE553C25A75D6C00EC5329 /* Products */,
