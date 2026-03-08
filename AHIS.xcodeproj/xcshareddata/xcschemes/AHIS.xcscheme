@@ -40,6 +40,17 @@
                ReferencedContainer = "container:AHIS.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "106C47BE1A832AD6EE2C4117"
+               BuildableName = "Winch Launch Tests.xctest"
+               BlueprintName = "Winch Launch Tests"
+               ReferencedContainer = "container:AHIS.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		650F61F3C1320AF4B2AE2E3E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BB4AB936CEB1B9ABCACAAFD /* Foundation.framework */; };
+		805D26D168CE508F3AAD4DCF /* KalmanFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E3631DDA6414B0B5EF3562 /* KalmanFilterTests.swift */; };
 		8A522DCB2A8CE9E00010E719 /* ExtendedKalmanFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A522DCA2A8CE9E00010E719 /* ExtendedKalmanFilter.swift */; };
 		8A522DD22A8E43390010E719 /* ReplayDeviceMotionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A522DD12A8E43390010E719 /* ReplayDeviceMotionService.swift */; };
 		8A522DD42A9011030010E719 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A522DD32A9011030010E719 /* SettingsView.swift */; };
@@ -47,9 +49,18 @@
 			remoteGlobalIDString = 8AFE553A25A75D6C00EC5329;
 			remoteInfo = "Winch Launch";
 		};
+		E40540466038FDCD31C96FE6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8AFE553325A75D6C00EC5329 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AFE553A25A75D6C00EC5329;
+			remoteInfo = "Winch Launch";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0BB4AB936CEB1B9ABCACAAFD /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		45E3631DDA6414B0B5EF3562 /* KalmanFilterTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KalmanFilterTests.swift; sourceTree = "<group>"; };
 		8A522DCA2A8CE9E00010E719 /* ExtendedKalmanFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKalmanFilter.swift; sourceTree = "<group>"; };
 		8A522DD12A8E43390010E719 /* ReplayDeviceMotionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplayDeviceMotionService.swift; sourceTree = "<group>"; };
 		8A522DD32A9011030010E719 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -84,9 +95,18 @@
 		8AFE554525A75D6C00EC5329 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		8AFE554725A75D6C00EC5329 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8AFE555925A86E5400EC5329 /* DeviceMotionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMotionService.swift; sourceTree = "<group>"; };
+		D72059AD9F3D2540CE97E036 /* Winch Launch Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Winch Launch Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		01C015D57F2610C4D9A12DC6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				650F61F3C1320AF4B2AE2E3E /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8A52B84D2ABC4A1D004C77D4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -179,6 +199,8 @@
 				8AFE553D25A75D6C00EC5329 /* AHIS */,
 				8A52B8512ABC4A1D004C77D4 /* Winch Launch UITests */,
 				8AFE553C25A75D6C00EC5329 /* Products */,
+				EF691B84B74DB0CDC4EDDF92 /* Frameworks */,
+				D639FDB0981A7EDBE734494D /* Winch Launch Tests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -187,6 +209,7 @@
 			children = (
 				8AFE553B25A75D6C00EC5329 /* Winch Launch.app */,
 				8A52B8502ABC4A1D004C77D4 /* Winch Launch UITests.xctest */,
+				D72059AD9F3D2540CE97E036 /* Winch Launch Tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -216,9 +239,52 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
+		D639FDB0981A7EDBE734494D /* Winch Launch Tests */ = {
+			isa = PBXGroup;
+			children = (
+				45E3631DDA6414B0B5EF3562 /* KalmanFilterTests.swift */,
+			);
+			name = "Winch Launch Tests";
+			path = "Winch Launch Tests";
+			sourceTree = "<group>";
+		};
+		E21922E91365B602C24EA795 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				0BB4AB936CEB1B9ABCACAAFD /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		EF691B84B74DB0CDC4EDDF92 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E21922E91365B602C24EA795 /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		106C47BE1A832AD6EE2C4117 /* Winch Launch Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2393090BD396BBCED8B2C4B8 /* Build configuration list for PBXNativeTarget "Winch Launch Tests" */;
+			buildPhases = (
+				07B45040C36F12867D2FCE4D /* Sources */,
+				01C015D57F2610C4D9A12DC6 /* Frameworks */,
+				9819AFF3B407F340E0498ED9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				27445F2D2055BBC3632F43EE /* PBXTargetDependency */,
+			);
+			name = "Winch Launch Tests";
+			productName = "Winch Launch Tests";
+			productReference = D72059AD9F3D2540CE97E036 /* Winch Launch Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		8A52B84F2ABC4A1D004C77D4 /* Winch Launch UITests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8A52B8582ABC4A1D004C77D4 /* Build configuration list for PBXNativeTarget "Winch Launch UITests" */;
@@ -288,6 +354,7 @@
 			targets = (
 				8AFE553A25A75D6C00EC5329 /* Winch Launch */,
 				8A52B84F2ABC4A1D004C77D4 /* Winch Launch UITests */,
+				106C47BE1A832AD6EE2C4117 /* Winch Launch Tests */,
 			);
 		};
 /* End PBXProject section */
@@ -310,9 +377,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9819AFF3B407F340E0498ED9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		07B45040C36F12867D2FCE4D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				805D26D168CE508F3AAD4DCF /* KalmanFilterTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8A52B84C2ABC4A1D004C77D4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -357,6 +439,12 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		27445F2D2055BBC3632F43EE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "Winch Launch";
+			target = 8AFE553A25A75D6C00EC5329 /* Winch Launch */;
+			targetProxy = E40540466038FDCD31C96FE6 /* PBXContainerItemProxy */;
+		};
 		8A52B8572ABC4A1D004C77D4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 8AFE553A25A75D6C00EC5329 /* Winch Launch */;
@@ -594,9 +682,57 @@
 			};
 			name = Release;
 		};
+		C8E61204A6C05D5DB64EB88E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = XBC8ZV2BGE;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = glider.ninja.winch.launch.tests;
+				PRODUCT_MODULE_NAME = Winch_Launch_Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Winch Launch.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Winch Launch";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		E0909272C4B57D7D7024D87A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = XBC8ZV2BGE;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = glider.ninja.winch.launch.tests;
+				PRODUCT_MODULE_NAME = Winch_Launch_Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Winch Launch.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Winch Launch";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		2393090BD396BBCED8B2C4B8 /* Build configuration list for PBXNativeTarget "Winch Launch Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C8E61204A6C05D5DB64EB88E /* Release */,
+				E0909272C4B57D7D7024D87A /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		8A52B8582ABC4A1D004C77D4 /* Build configuration list for PBXNativeTarget "Winch Launch UITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

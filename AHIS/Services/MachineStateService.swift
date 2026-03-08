@@ -95,22 +95,34 @@ final class MachineStateService {
     private var lastPublishedTime: Date?
     private var speeds: [DataPointSpeed] = []
     private var notStoppedTime: Date?
-    private var ekf = ExtendedKalmanFilter()
+    private var ekf = KalmanFilter()
     private var accelerations: [DataPointAcceleration] = []
-    
+    /// Latest pitch angle in radians, used to project acceleration along flight path
+    private var latestPitch: Double = 0.0
+
     private var currentInfo: MachineInfo = .init(state: .waiting, stateTimestamp: .date(Date()))
+    private var pitchSubscription: AnyCancellable?
 
     lazy var interpolatedSpeedPublisher: some Publisher<DataPointSpeed, Never> = {
         ahService.speed
         .map { [unowned self] dataPoint in
-            self.ekf.updateWithVelocity(velocityMeasurement: dataPoint.value.value)
+            // Correct GPS ground speed to approximate flight path speed:
+            // groundSpeed = flightPathSpeed * cos(pitch), so flightPathSpeed = groundSpeed / cos(pitch)
+            let pitch = self.latestPitch
+            let cosPitch = cos(pitch)
+            let correctedSpeed: Double
+            if abs(cosPitch) > 0.3 { // avoid division by near-zero at extreme pitch (>~72°)
+                correctedSpeed = dataPoint.value.value / cosPitch
+            } else {
+                correctedSpeed = dataPoint.value.value / 0.3
+            }
+            self.ekf.update(velocityMeasurement: correctedSpeed)
             return self.accelerationPublisher
         }
         .switchToLatest()
         .map { [unowned self] dataPoint in
-            self.ekf.updateWithAcceleration(accelerationValue: dataPoint.value.value)
-            self.ekf.predictState()
-            
+            self.ekf.predict(controlAcceleration: dataPoint.value.value)
+
             let speed = self.ekf.velocity
             return DataPointSpeed(timestamp: dataPoint.timestamp, value: .init(value: speed, unit: .metersPerSecond))
         }
@@ -151,8 +163,19 @@ final class MachineStateService {
     }()
 
     lazy var accelerationPublisher: some Publisher<DataPointAcceleration, Never> = {
-        ahService.userAcceleration.map { dataPoint in
-            let measure = Measurement<UnitAcceleration>(value: dataPoint.value.z, unit: .gravity)
+        ahService.userAcceleration.map { [unowned self] dataPoint in
+            // userAcceleration is in xMagneticNorthZVertical reference frame (gravity removed):
+            // X = north, Y = east, Z = up
+            // Project onto flight path direction using pitch angle:
+            // a_flightPath = a_horizontal * cos(pitch) + a_vertical * sin(pitch)
+            // where a_horizontal = sqrt(ax² + ay²) with sign from forward direction
+            let pitch = self.latestPitch
+            let ax = dataPoint.value.x // north component (g)
+            let ay = dataPoint.value.y // east component (g)
+            let az = dataPoint.value.z // vertical component (g)
+            let aHorizontal = sqrt(ax * ax + ay * ay) // horizontal magnitude
+            let aFlightPath = aHorizontal * cos(pitch) + az * sin(pitch)
+            let measure = Measurement<UnitAcceleration>(value: aFlightPath, unit: .gravity)
             return .init(timestamp: dataPoint.timestamp, value: measure.converted(to: .metersPerSecondSquared))
         }
         .share()
@@ -284,6 +307,10 @@ final class MachineStateService {
     
     init(ahService: DeviceMotionProtocol) {
         self.ahService = ahService
+        self.pitchSubscription = ahService.pitch
+            .sink { [weak self] dataPoint in
+                self?.latestPitch = dataPoint.value.value
+            }
     }
         
     private func calculateMovingAverage() -> CLLocationSpeed {
@@ -294,7 +321,8 @@ final class MachineStateService {
         self.currentInfo = .init(state: .waiting, stateTimestamp: .date(Date()))
         self.accelerations.removeAll()
         self.speeds.removeAll()
-        self.ekf = ExtendedKalmanFilter()
+        self.ekf = KalmanFilter()
+        self.latestPitch = 0.0
     }
 }
 
