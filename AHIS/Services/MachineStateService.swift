@@ -95,7 +95,10 @@ final class MachineStateService {
     private var lastPublishedTime: Date?
     private var speeds: [DataPointSpeed] = []
     private var notStoppedTime: Date?
-    private var ekf = KalmanFilter()
+    /// KF for speed: state = [flightPathSpeed, acceleration], fuses GPS (1Hz) + accelerometer (10Hz)
+    private var speedKF = KalmanFilter(timeStep: 0.1, processNoiseIntensity: 5.0, measurementNoiseVariance: 1.0)
+    /// KF for altitude: state = [altitude, verticalSpeed], fuses barometer (~1Hz) + vertical accel (10Hz)
+    private var altitudeKF = KalmanFilter(timeStep: 0.1, processNoiseIntensity: 2.0, measurementNoiseVariance: 0.5)
     private var accelerations: [DataPointAcceleration] = []
     /// Latest pitch angle in radians, used to project acceleration along flight path
     private var latestPitch: Double = 0.0
@@ -116,14 +119,14 @@ final class MachineStateService {
             } else {
                 correctedSpeed = dataPoint.value.value / 0.3
             }
-            self.ekf.update(velocityMeasurement: correctedSpeed)
+            self.speedKF.update(measurement: correctedSpeed)
             return self.accelerationPublisher
         }
         .switchToLatest()
         .map { [unowned self] dataPoint in
-            self.ekf.predict(controlAcceleration: dataPoint.value.value)
+            self.speedKF.predict(controlInput: dataPoint.value.value)
 
-            let speed = self.ekf.velocity
+            let speed = self.speedKF.position
             return DataPointSpeed(timestamp: dataPoint.timestamp, value: .init(value: speed, unit: .metersPerSecond))
         }
         .share()
@@ -150,16 +153,34 @@ final class MachineStateService {
             .share()
     }()
     
+    /// Vertical acceleration publisher (Z axis in reference frame, converted to m/s²)
+    lazy var verticalAccelerationPublisher: some Publisher<DataPointAcceleration, Never> = {
+        ahService.userAcceleration.map { dataPoint in
+            let measure = Measurement<UnitAcceleration>(value: dataPoint.value.z, unit: .gravity)
+            return .init(timestamp: dataPoint.timestamp, value: measure.converted(to: .metersPerSecondSquared))
+        }
+        .share()
+    }()
+
+    /// Altitude interpolated at 10Hz: barometer (~1Hz) fused with vertical acceleration (10Hz) via KF
     lazy var smoothedAltitudePublisher: some Publisher<DataPointAltitude, Never> = {
-        ahService.pressure.map { value in
+        ahService.pressure
+        .map { [unowned self] value in
             func altitudeFromPressure(pressureInKPa: Double) -> Double {
                 let P0 = 101.325
-                let altitude = 44330 * (1 - pow((pressureInKPa / P0), (1/5.257)))
-                return altitude
+                return 44330 * (1 - pow((pressureInKPa / P0), (1/5.257)))
             }
             let mt = altitudeFromPressure(pressureInKPa: value.value.converted(to: .kilopascals).value)
-            return .init(timestamp: value.timestamp, value: .init(value: mt, unit: .meters))
+            self.altitudeKF.update(measurement: mt)
+            return self.verticalAccelerationPublisher
         }
+        .switchToLatest()
+        .map { [unowned self] dataPoint in
+            self.altitudeKF.predict(controlInput: dataPoint.value.value)
+            let alt = self.altitudeKF.position
+            return DataPointAltitude(timestamp: dataPoint.timestamp, value: .init(value: alt, unit: .meters))
+        }
+        .share()
     }()
 
     lazy var accelerationPublisher: some Publisher<DataPointAcceleration, Never> = {
@@ -321,7 +342,8 @@ final class MachineStateService {
         self.currentInfo = .init(state: .waiting, stateTimestamp: .date(Date()))
         self.accelerations.removeAll()
         self.speeds.removeAll()
-        self.ekf = KalmanFilter()
+        self.speedKF = KalmanFilter(timeStep: 0.1, processNoiseIntensity: 5.0, measurementNoiseVariance: 1.0)
+        self.altitudeKF = KalmanFilter(timeStep: 0.1, processNoiseIntensity: 2.0, measurementNoiseVariance: 0.5)
         self.latestPitch = 0.0
     }
 }

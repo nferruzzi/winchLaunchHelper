@@ -4,8 +4,8 @@
 //
 //  Created by Nicola Ferruzzi on 16/08/23.
 //
-//  Linear Kalman Filter for fusing GPS speed (1Hz) with accelerometer (10Hz).
-//  State vector: [velocity, acceleration]
+//  Generic linear Kalman Filter with state [position, velocity].
+//  Used for both speed estimation (GPS+accelerometer) and altitude estimation (barometer+accelerometer).
 //
 //  Reference material for future improvements
 //  https://www.youtube.com/watch?v=HkYRJJoyBwQ
@@ -17,22 +17,18 @@ import simd
 
 
 struct KalmanFilter {
-    enum Constant {
-        static let timeStep: Double = 0.1
-        /// Process noise intensity (tunable)
-        static let processNoiseIntensity: Double = 5.0
-        /// Measurement noise variance for GPS velocity
-        static let measurementNoiseVariance: Double = 1.0
-    }
+    let timeStep: Double
+    let processNoise: simd_double2x2
+    let measurementNoiseVariance: Double
 
-    /// State vector: [velocity, acceleration]
+    /// State vector: [position, velocity] (or [velocity, acceleration] depending on usage)
     private(set) var state: simd_double2 = .zero
 
     /// Estimate error covariance P
     var estimateError: simd_double2x2 = matrix_identity_double2x2
 
-    var velocity: Double { state[0] }
-    var acceleration: Double { state[1] }
+    var position: Double { state[0] }
+    var velocity: Double { state[1] }
 
     /// Process noise Q - symmetric, derived from constant-acceleration model
     /// Q = q * [[dt^4/4, dt^3/2], [dt^3/2, dt^2]]
@@ -46,50 +42,40 @@ struct KalmanFilter {
         ])
     }
 
-    let processNoise: simd_double2x2 = KalmanFilter.makeProcessNoise(
-        dt: Constant.timeStep,
-        q: Constant.processNoiseIntensity
-    )
+    init(timeStep: Double = 0.1, processNoiseIntensity: Double = 5.0, measurementNoiseVariance: Double = 1.0) {
+        self.timeStep = timeStep
+        self.measurementNoiseVariance = measurementNoiseVariance
+        self.processNoise = KalmanFilter.makeProcessNoise(dt: timeStep, q: processNoiseIntensity)
+    }
 
-    /// Predict step: propagate state and covariance forward by dt using current acceleration
-    /// Call this at accelerometer rate (10Hz)
-    mutating func predict(controlAcceleration: Double) {
-        let dt = Constant.timeStep
+    /// Predict step: propagate state and covariance forward by dt
+    /// controlInput is applied to position via velocity integration: pos += controlInput * dt
+    mutating func predict(controlInput: Double) {
+        let dt = timeStep
         let F: simd_double2x2 = .init(rows: [.init(1, dt), .init(0, 1)])
 
-        // State prediction: v' = v + a*dt, a' = a (constant acceleration model)
-        // Plus control input: apply measured acceleration
         state = F * state
-        state[0] += controlAcceleration * dt
+        state[0] += controlInput * dt
 
-        // Covariance prediction
         estimateError = (F * estimateError * F.transpose) + processNoise
     }
 
-    /// Update step: correct state with GPS velocity measurement
+    /// Update step: correct state with a measurement of position (state[0])
     /// Uses scalar observation model H = [1, 0] with Joseph form for numerical stability
-    mutating func update(velocityMeasurement: Double) {
-        let R = Constant.measurementNoiseVariance
+    mutating func update(measurement: Double) {
+        let R = measurementNoiseVariance
 
-        // Innovation (residual): z - H*x, where H = [1, 0]
-        let innovation = velocityMeasurement - state[0]
-
-        // Innovation covariance: S = H*P*H' + R = P[0,0] + R (scalar)
+        let innovation = measurement - state[0]
         let S = estimateError[0, 0] + R
-
-        // Kalman gain: K = P*H'/S = [P[0,0]/S, P[1,0]/S]
         let K = simd_double2(estimateError[0, 0] / S, estimateError[1, 0] / S)
 
-        // State correction
         state += K * innovation
 
-        // Covariance update using Joseph form: P = (I - K*H)*P*(I - K*H)' + K*R*K'
         let IKH: simd_double2x2 = .init(rows: [
             .init(1 - K[0], 0),
             .init(-K[1], 1)
         ])
         estimateError = (IKH * estimateError * IKH.transpose)
-        // Add K*R*K' term
         let KRKt: simd_double2x2 = .init(rows: [
             .init(K[0] * K[0] * R, K[0] * K[1] * R),
             .init(K[1] * K[0] * R, K[1] * K[1] * R)
