@@ -95,10 +95,10 @@ final class MachineStateService {
     private var lastPublishedTime: Date?
     private var speeds: [DataPointSpeed] = []
     private var notStoppedTime: Date?
-    /// KF for speed: state = [flightPathSpeed, acceleration], fuses GPS (1Hz) + accelerometer (10Hz)
-    private var speedKF = KalmanFilter(timeStep: 0.1, processNoiseIntensity: 5.0, measurementNoiseVariance: 1.0)
-    /// KF for altitude: state = [altitude, verticalSpeed], fuses barometer (~1Hz) + vertical accel (10Hz)
-    private var altitudeKF = KalmanFilter(timeStep: 0.1, processNoiseIntensity: 2.0, measurementNoiseVariance: 0.5)
+    /// KF for speed: state = [flightPathSpeed, acceleration], fuses GPS (1Hz) + accelerometer (50Hz)
+    private var speedKF = KalmanFilter(timeStep: 0.02, processNoiseIntensity: 5.0, measurementNoiseVariance: 1.0)
+    /// KF for altitude: state = [altitude, verticalSpeed], fuses barometer (~1Hz) + vertical accel (50Hz)
+    private var altitudeKF = KalmanFilter(timeStep: 0.02, processNoiseIntensity: 2.0, measurementNoiseVariance: 0.5)
     private var accelerations: [DataPointAcceleration] = []
     /// Latest pitch angle in radians, used to project acceleration along flight path
     private var latestPitch: Double = 0.0
@@ -342,8 +342,8 @@ final class MachineStateService {
         self.currentInfo = .init(state: .waiting, stateTimestamp: .date(Date()))
         self.accelerations.removeAll()
         self.speeds.removeAll()
-        self.speedKF = KalmanFilter(timeStep: 0.1, processNoiseIntensity: 5.0, measurementNoiseVariance: 1.0)
-        self.altitudeKF = KalmanFilter(timeStep: 0.1, processNoiseIntensity: 2.0, measurementNoiseVariance: 0.5)
+        self.speedKF = KalmanFilter(timeStep: 0.02, processNoiseIntensity: 5.0, measurementNoiseVariance: 1.0)
+        self.altitudeKF = KalmanFilter(timeStep: 0.02, processNoiseIntensity: 2.0, measurementNoiseVariance: 0.5)
         self.latestPitch = 0.0
     }
 }

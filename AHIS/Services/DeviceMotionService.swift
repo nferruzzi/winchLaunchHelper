@@ -292,7 +292,7 @@ public final class DeviceMotionService: NSObject {
     public override init() {
         super.init()
         Constants.manager.showsDeviceMovementDisplay = true
-        Constants.manager.deviceMotionUpdateInterval = TimeInterval(1.0/10.0)
+        Constants.manager.deviceMotionUpdateInterval = TimeInterval(1.0/50.0)
 
         Constants.locationManager.desiredAccuracy = kCLLocationAccuracyBest
         Constants.locationManager.activityType = .airborne
