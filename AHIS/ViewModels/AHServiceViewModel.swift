@@ -81,10 +81,16 @@ final class AHServiceViewModel: ObservableObject {
     private var lastSayMinSpeedLost: Date?
     private var lastSayMaxSpeedReached: Date?
     private var lastSayQFE: Date?
-    
+    /// Wing drop: announced once per launch, reset on waiting
+    private var wingDropAnnounced: Bool = false
+    /// Roll threshold in degrees for wing drop detection
+    private static let wingDropThresholdDegrees: Double = 15.0
+    /// Wing drop is monitored only in these early launch phases
+    private static let wingDropMonitoredStates: Set<MachineState> = [.takingOff, .minSpeedReached, .minSpeedLost]
+
     private var zeroAltitude: Double?
     private var initialLocation: CLLocation?
-    
+
     private var recordTime: DataPointTimeInterval?
     
     init(ahService: DeviceMotionProtocol? = nil,
@@ -171,6 +177,20 @@ final class AHServiceViewModel: ObservableObject {
             .store(in: &subscriptions)
 
         
+        // Wing drop detection: monitor roll at full sensor rate during early launch phases
+        ahService
+            .roll
+            .receive(on: DispatchQueue.main)
+            .sink { [unowned self] rollDataPoint in
+                let rollDegrees = rollDataPoint.value.converted(to: .degrees).value
+                guard !self.wingDropAnnounced,
+                      Self.wingDropMonitoredStates.contains(self.state),
+                      abs(rollDegrees) > Self.wingDropThresholdDegrees else { return }
+                self.wingDropAnnounced = true
+                self.say("ala", speedMultiplier: 0.45)
+            }
+            .store(in: &subscriptions)
+
         Publishers.CombineLatest3(
             machineStateService.machineState.removeDuplicates(),
             machineStateService.speed.removeDuplicates(),
@@ -223,6 +243,7 @@ final class AHServiceViewModel: ObservableObject {
                 if info.value.state == .waiting {
                     self.zeroAltitude = altitude.value.value
                     self.initialLocation = CLLocation(latitude: location.value.latitude, longitude: location.value.longitude)
+                    self.wingDropAnnounced = false
                 }
             
                 switch info.value.state {
@@ -287,6 +308,7 @@ final class AHServiceViewModel: ObservableObject {
         altitudeHistory.removeAll()
         machineStateService?.reset()
         lastSayQFE = nil
+        wingDropAnnounced = false
     }
     
     func stop() {

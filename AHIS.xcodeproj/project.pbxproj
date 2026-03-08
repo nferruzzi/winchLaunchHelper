@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		308D3BD73EAB81467953FA30 /* MachineStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6C42839F3E35210C59BF84E /* MachineStateTests.swift */; };
 		650F61F3C1320AF4B2AE2E3E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BB4AB936CEB1B9ABCACAAFD /* Foundation.framework */; };
 		805D26D168CE508F3AAD4DCF /* KalmanFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E3631DDA6414B0B5EF3562 /* KalmanFilterTests.swift */; };
 		8A522DCB2A8CE9E00010E719 /* ExtendedKalmanFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A522DCA2A8CE9E00010E719 /* ExtendedKalmanFilter.swift */; };
@@ -95,6 +96,7 @@
 		8AFE554525A75D6C00EC5329 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		8AFE554725A75D6C00EC5329 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8AFE555925A86E5400EC5329 /* DeviceMotionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMotionService.swift; sourceTree = "<group>"; };
+		B6C42839F3E35210C59BF84E /* MachineStateTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MachineStateTests.swift; sourceTree = "<group>"; };
 		D72059AD9F3D2540CE97E036 /* Winch Launch Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Winch Launch Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -243,6 +245,7 @@
 			isa = PBXGroup;
 			children = (
 				45E3631DDA6414B0B5EF3562 /* KalmanFilterTests.swift */,
+				B6C42839F3E35210C59BF84E /* MachineStateTests.swift */,
 			);
 			name = "Winch Launch Tests";
 			path = "Winch Launch Tests";
@@ -392,6 +395,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				805D26D168CE508F3AAD4DCF /* KalmanFilterTests.swift in Sources */,
+				308D3BD73EAB81467953FA30 /* MachineStateTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -82,6 +82,8 @@ final class MachineStateService {
         static let accelerationThreshold = Measurement<UnitAcceleration>(value: 1.0, unit: .metersPerSecondSquared)
         static let speedThreshold = Measurement<UnitSpeed>(value: 10, unit: .kilometersPerHour)
         static let abortThreshold = Measurement<UnitLength>(value: 1, unit: .meters)
+        /// Hysteresis margin for speed transitions to avoid chatty callouts
+        static let speedHysteresis = Measurement<UnitSpeed>(value: 5, unit: .kilometersPerHour)
 
         // how long to wait before going back to landed/waiting
         static let landedSeconds: TimeInterval = 60
@@ -230,95 +232,14 @@ final class MachineStateService {
             smoothedAltitudePublisher
         )
         .map { [unowned self] speed, acceleration, altitude in
-            
-            let currentMaxAltitude = self.currentInfo.maxAltitude ?? .zero
-            let maxAltitude: DataPointAltitude = currentMaxAltitude.value > altitude.value ? currentMaxAltitude : altitude
-        
-            var def = DataPointMachineState(timestamp: speed.timestamp,
-                                            value: self.currentInfo.with(maxAltitude: maxAltitude))
-
-            
-            if self.currentInfo.isLaunching, let tof = self.currentInfo.takeOffAltitude {
-                let altitudeDiff = (altitude.value - tof.value)
-                let abortedTime = tof.timestamp.relativeTimeInterval + 10
-                let completedTime = tof.timestamp.relativeTimeInterval + 40
-                
-                if speed.value < Constants.speedThreshold && altitudeDiff < Constants.abortThreshold && speed.timestamp.relativeTimeInterval > abortedTime {
-                    def.value = def.value.with(state: .aborted, stateTimestamp: speed.timestamp, finalAltitude: altitude)
-                    return def
-                }
-                
-                
-                if speed.timestamp.relativeTimeInterval > completedTime {
-                    def.value = def.value.with(state: .completed, stateTimestamp: speed.timestamp, finalAltitude: altitude)
-                    return def
-                }
-            }
-            
-//                print("\(naturalScale: speed.value) \(naturalScale: ahService.minSpeed) \(naturalScale: ahService.maxSpeed)")
-            
-            switch self.currentInfo.state {
-            case .waiting:
-                if speed.value > Constants.speedThreshold {
-                    def.value = def.value.with(state: .takingOff, stateTimestamp: speed.timestamp, takeOffAltitude: altitude)
-                }
-                
-                return def
-
-            case .takingOff:
-                if speed.value > ahService.maxSpeed {
-                    def.value = def.value.with(state: .maxSpeedReached, stateTimestamp: speed.timestamp)
-                } else {
-                    if speed.value > ahService.minSpeed {
-                        def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
-                    }
-                }
-                
-                return def
-
-            case .minSpeedReached:
-                if speed.value < ahService.minSpeed {
-                    def.value = def.value.with(state: .minSpeedLost, stateTimestamp: speed.timestamp)
-                }
-                
-                if speed.value > ahService.maxSpeed {
-                    def.value = def.value.with(state: .maxSpeedReached, stateTimestamp: speed.timestamp)
-                }
-                
-                return def
-
-            case .minSpeedLost:
-                if speed.value > ahService.maxSpeed {
-                    def.value = def.value.with(state: .maxSpeedReached, stateTimestamp: speed.timestamp)
-                } else {
-                    if speed.value > ahService.minSpeed {
-                        def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
-                    }
-                }
-                
-                return def
-
-            case .maxSpeedReached:
-                if speed.value < ahService.minSpeed {
-                    def.value = def.value.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
-                }
-                
-                return def
-
-            case .aborted, .completed:
-                /// Move back to landed when the user is back to the ground level and x seconds are passed
-                if let tof = self.currentInfo.takeOffAltitude,
-                   speed.timestamp.relativeTimeInterval > self.currentInfo.stateTimestamp.relativeTimeInterval + Constants.landedSeconds && fabs(altitude.value.value - tof.value.value) < 10  {
-
-                    return DataPointMachineState(timestamp: speed.timestamp,
-                                                 value: .init(state: .waiting, stateTimestamp: speed.timestamp))
-                }
-                return DataPointMachineState(timestamp: speed.timestamp, value: self.currentInfo)
-                
-            case .landed:
-                return DataPointMachineState(timestamp: speed.timestamp,
-                                             value: .init(state: .waiting, stateTimestamp: speed.timestamp))
-            }
+            let newInfo = MachineStateService.transition(
+                currentInfo: self.currentInfo,
+                speed: speed,
+                altitude: altitude,
+                minSpeed: self.ahService.minSpeed,
+                maxSpeed: self.ahService.maxSpeed
+            )
+            return DataPointMachineState(timestamp: speed.timestamp, value: newInfo)
         }
         .handleEvents(receiveOutput: { [unowned self] state in
             self.currentInfo = state.value
@@ -326,6 +247,83 @@ final class MachineStateService {
         .share()
     }()
     
+    /// Pure function for state transitions — extracted for testability
+    static func transition(
+        currentInfo: MachineInfo,
+        speed: DataPointSpeed,
+        altitude: DataPointAltitude,
+        minSpeed: Measurement<UnitSpeed>,
+        maxSpeed: Measurement<UnitSpeed>
+    ) -> MachineInfo {
+        let currentMaxAltitude = currentInfo.maxAltitude ?? .zero
+        let maxAltitude: DataPointAltitude = currentMaxAltitude.value > altitude.value ? currentMaxAltitude : altitude
+        var info = currentInfo.with(maxAltitude: maxAltitude)
+
+        if currentInfo.isLaunching, let tof = currentInfo.takeOffAltitude {
+            let altitudeDiff = (altitude.value - tof.value)
+            let abortedTime = tof.timestamp.relativeTimeInterval + 10
+            let completedTime = tof.timestamp.relativeTimeInterval + 40
+
+            if speed.value < Constants.speedThreshold && altitudeDiff < Constants.abortThreshold && speed.timestamp.relativeTimeInterval > abortedTime {
+                return info.with(state: .aborted, stateTimestamp: speed.timestamp, finalAltitude: altitude)
+            }
+
+            if speed.timestamp.relativeTimeInterval > completedTime {
+                return info.with(state: .completed, stateTimestamp: speed.timestamp, finalAltitude: altitude)
+            }
+        }
+
+        let hysteresis = Constants.speedHysteresis
+
+        switch currentInfo.state {
+        case .waiting:
+            if speed.value > Constants.speedThreshold {
+                info = info.with(state: .takingOff, stateTimestamp: speed.timestamp, takeOffAltitude: altitude)
+            }
+            return info
+
+        case .takingOff:
+            if speed.value > minSpeed {
+                info = info.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
+            }
+            return info
+
+        case .minSpeedReached:
+            if speed.value > maxSpeed {
+                info = info.with(state: .maxSpeedReached, stateTimestamp: speed.timestamp)
+            } else if speed.value < minSpeed - hysteresis {
+                info = info.with(state: .minSpeedLost, stateTimestamp: speed.timestamp)
+            }
+            return info
+
+        case .minSpeedLost:
+            if speed.value > maxSpeed {
+                info = info.with(state: .maxSpeedReached, stateTimestamp: speed.timestamp)
+            } else if speed.value > minSpeed + hysteresis {
+                info = info.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
+            }
+            return info
+
+        case .maxSpeedReached:
+            if speed.value < minSpeed - hysteresis {
+                info = info.with(state: .minSpeedLost, stateTimestamp: speed.timestamp)
+            } else if speed.value < maxSpeed - hysteresis {
+                info = info.with(state: .minSpeedReached, stateTimestamp: speed.timestamp)
+            }
+            return info
+
+        case .aborted, .completed:
+            if let tof = currentInfo.takeOffAltitude,
+               speed.timestamp.relativeTimeInterval > currentInfo.stateTimestamp.relativeTimeInterval + Constants.landedSeconds && fabs(altitude.value.value - tof.value.value) < 10 {
+                return .init(state: .waiting, stateTimestamp: speed.timestamp)
+            }
+            return currentInfo
+
+        case .landed:
+            return .init(state: .waiting, stateTimestamp: speed.timestamp)
+        }
+    }
+
     init(ahService: DeviceMotionProtocol) {
         self.ahService = ahService
         self.pitchSubscription = ahService.pitch
