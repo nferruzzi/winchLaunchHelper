@@ -3,16 +3,16 @@
 # A list of devices you want to take the screenshots from
 devices([
    "iPhone 6.5",
-#   "iPhone 6.7",
-#   "iPad Pro 12.9 6gen",
-#   "iPad Pro 12.9 2gen"
+   "iPhone 6.7",
+   "iPad Pro 12.9 6gen",
+   "iPad Pro 12.9 2gen"
 ])
 
 languages([
-#  "en-US",
+ "en-US",
 #  "en-UK",
 #  "de-DE",
-  "it",
+#  "it",
 #   ["pt", "pt_BR"] # Portuguese with Brazilian locale
 ])
 

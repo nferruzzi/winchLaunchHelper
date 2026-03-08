@@ -294,6 +294,7 @@ final class MachineStateService {
         self.currentInfo = .init(state: .waiting, stateTimestamp: .date(Date()))
         self.accelerations.removeAll()
         self.speeds.removeAll()
+        self.ekf = ExtendedKalmanFilter()
     }
 }
 

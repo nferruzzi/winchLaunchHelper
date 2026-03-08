@@ -39,7 +39,11 @@ extension DeviceMotionProtocol {
     public var minSpeed: Measurement<UnitSpeed> {
         get {
             let minSpeedValue = UserDefaults.standard.double(forKey: DeviceMotionService.Constants.userSettingsMinSpeed)
-            return .init(value: minSpeedValue > 0 ? minSpeedValue : 70, unit: .kilometersPerHour)
+
+            if minSpeedValue > 0 {
+                return .init(value: minSpeedValue, unit: .kilometersPerHour).converted(to: UIUnitSpeed.unit)
+            }
+            return .init(value: 70, unit: .kilometersPerHour).converted(to: UIUnitSpeed.unit)
         }
         set {
             UserDefaults.standard.set(minSpeed.converted(to: .kilometersPerHour).value, forKey: DeviceMotionService.Constants.userSettingsMinSpeed)
@@ -50,7 +54,10 @@ extension DeviceMotionProtocol {
     public var maxSpeed: Measurement<UnitSpeed> {
         get {
             let maxSpeedValue = UserDefaults.standard.double(forKey: DeviceMotionService.Constants.userSettingsMaxSpeed)
-            return .init(value: maxSpeedValue > 0 ? maxSpeedValue : 110, unit: .kilometersPerHour)
+            if maxSpeedValue > 0 {
+                return .init(value: maxSpeedValue, unit: .kilometersPerHour).converted(to: UIUnitSpeed.unit)
+            }
+            return .init(value: 110, unit: .kilometersPerHour).converted(to: UIUnitSpeed.unit)
         }
         set {
             UserDefaults.standard.set(maxSpeed.converted(to: .kilometersPerHour).value, forKey: DeviceMotionService.Constants.userSettingsMaxSpeed)
@@ -60,8 +67,11 @@ extension DeviceMotionProtocol {
 
     public var winchLength: Measurement<UnitLength> {
         get {
-            let winchLengthValue = UserDefaults.standard.double(forKey: DeviceMotionService.Constants.userSettingsWinchLength)
-            return .init(value: winchLengthValue > 0 ? winchLengthValue : 800, unit: .meters)
+            let winchLengthValue = UserDefaults.standard.double(forKey: DeviceMotionService.Constants.userSettingsWinchLength)            
+            if winchLengthValue > 0 {
+                return .init(value: winchLengthValue, unit: .meters).converted(to: UIUnitAltitude.unit)
+            }
+            return .init(value: 800, unit: .meters).converted(to: UIUnitAltitude.unit)
         }
         set {
             UserDefaults.standard.set(winchLength.converted(to: .meters).value, forKey: DeviceMotionService.Constants.userSettingsWinchLength)

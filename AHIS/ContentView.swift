@@ -38,13 +38,20 @@ struct ContentView: View {
                 }
             }
             .overlay(alignment: .bottomTrailing) {
-                Button {
-                    self.showSettings.toggle()
-                } label: {
+                Toggle(isOn: $showSettings) {
+//                    Label("Settings", systemImage: "airplane.circle")
                     Image(systemName: "airplane.circle")
                         .imageScale(.large)
                 }
-                .padding()
+                .toggleStyle(.button)
+
+//                Button {
+//                    self.showSettings.toggle()
+//                } label: {
+//                    Image(systemName: "airplane.circle")
+//                        .imageScale(.large)
+//                }
+//                .padding()
             }
             
             if showSettings {
