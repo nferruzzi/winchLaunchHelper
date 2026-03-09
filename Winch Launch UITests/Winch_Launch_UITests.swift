@@ -8,55 +8,59 @@
 import XCTest
 
 
+@MainActor
 final class Winch_Launch_UITests: XCTestCase {
 
     let app = XCUIApplication()
 
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
         setupSnapshot(app)
-//        app.resetAuthorizationStatus(for: .location)
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
+        app.launchArguments += ["-replayTimeScale", "10", "-skipDisclaimer", "-autoReplay"]
         continueAfterFailure = false
     }
 
     override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-    func testExample() throws {
-        // UI tests must launch the application that they test.
+    func testScreenshots() throws {
         app.launch()
-                
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
+
         _ = addUIInterruptionMonitor(withDescription: "Location Permission Alert") { (alertElement) -> Bool in
             alertElement.buttons["Allow Once"].tap()
             return true
         }
 
-        // Accept disclaimer if shown
-        let acceptButton = app.buttons["I understand and accept"]
-        if acceptButton.waitForExistence(timeout: 2) {
-            acceptButton.tap()
-        }
+        // Tap to trigger any pending interruption monitor (e.g. location permission)
+        app.tap()
+        sleep(1)
+        app.tap()
 
+        // Open Settings
         let settingsButton = app.buttons["Settings"]
+        XCTAssertTrue(settingsButton.waitForExistence(timeout: 5), "Settings button not found")
         settingsButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        snapshot("Settings")
+        snapshot("01_Settings")
 
-        // Scroll down to find Replay button
-        let replayButton = app.buttons["Replay, Off"]
-        while !replayButton.isHittable {
-            app.swipeUp()
-        }
-        replayButton.tap()
-        app.staticTexts["k2_apollonia_strong_wind_1"].tap()
-        settingsButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        // Navigate to Alerts Settings
+        let alertsButton = app.buttons["AlertsNavLink"]
+        XCTAssertTrue(alertsButton.waitForExistence(timeout: 3), "Alerts button not found")
+        alertsButton.tap()
+        snapshot("02_AlertsSettings")
 
-        snapshot("Initial")
+        // Go back to Settings
+        app.navigationBars.buttons.firstMatch.tap()
+        sleep(1)
 
-        sleep(45)
-        snapshot("Simulation")
+        // Close Settings
+        let closeButton = app.navigationBars.firstMatch.buttons.firstMatch
+        XCTAssertTrue(closeButton.waitForExistence(timeout: 3), "Close settings button not found")
+        closeButton.tap()
+
+        // Replay is already running via -autoReplay, wait for mid-launch
+        sleep(4)
+        snapshot("03_Launch")
+
+        sleep(3)
+        snapshot("04_Simulation")
     }
 }

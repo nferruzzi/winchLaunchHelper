@@ -84,16 +84,16 @@ final class AHServiceViewModel: ObservableObject {
     @Published var speechRate: Float = UserDefaults.standard.float(forKey: "speechRate").nonZeroOrDefault(0.45) {
         didSet { UserDefaults.standard.set(speechRate, forKey: "speechRate") }
     }
-    @Published var wingDropMessage: String = UserDefaults.standard.string(forKey: "wingDropMessage") ?? "ala" {
+    @Published var wingDropMessage: String = UserDefaults.standard.string(forKey: "wingDropMessage") ?? String(localized: "wing", comment: "Default wing drop voice callout message") {
         didSet { UserDefaults.standard.set(wingDropMessage, forKey: "wingDropMessage") }
     }
-    @Published var minSpeedMessage: String = UserDefaults.standard.string(forKey: "minSpeedMessage") ?? "minima" {
+    @Published var minSpeedMessage: String = UserDefaults.standard.string(forKey: "minSpeedMessage") ?? String(localized: "minimum", comment: "Default min speed reached voice callout message") {
         didSet { UserDefaults.standard.set(minSpeedMessage, forKey: "minSpeedMessage") }
     }
-    @Published var minSpeedLostMessage: String = UserDefaults.standard.string(forKey: "minSpeedLostMessage") ?? "più" {
+    @Published var minSpeedLostMessage: String = UserDefaults.standard.string(forKey: "minSpeedLostMessage") ?? String(localized: "plus", comment: "Default min speed lost voice callout message") {
         didSet { UserDefaults.standard.set(minSpeedLostMessage, forKey: "minSpeedLostMessage") }
     }
-    @Published var maxSpeedMessage: String = UserDefaults.standard.string(forKey: "maxSpeedMessage") ?? "meno" {
+    @Published var maxSpeedMessage: String = UserDefaults.standard.string(forKey: "maxSpeedMessage") ?? String(localized: "minus", comment: "Default overspeed voice callout message") {
         didSet { UserDefaults.standard.set(maxSpeedMessage, forKey: "maxSpeedMessage") }
     }
     @Published var altitudeCalloutsEnabled: Bool = UserDefaults.standard.object(forKey: "altitudeCalloutsEnabled") as? Bool ?? true {
@@ -294,7 +294,8 @@ final class AHServiceViewModel: ObservableObject {
                     self.lastSayQFE = Date()
 
                     let relativeAltitude = maxAltitude.value - tof.value
-                    self.say("Max \(Int(relativeAltitude.converted(to: .meters).value))")
+                    let maxPrefix = String(localized: "Max ", comment: "Prefix for max altitude speech callout")
+                    self.say("\(maxPrefix)\(Int(relativeAltitude.converted(to: .meters).value))")
                 }
             }
             .store(in: &subscriptions)

@@ -17,12 +17,29 @@ final class Services: ObservableObject {
     @Published var viewModel: AHServiceViewModel
     
     init() {
-        let service = DeviceMotionService() // ReplayDeviceMotionService(bundle: "k2_apollonia_strong_wind_1.json")
-        self.ahService = service
-        self.msService = MachineStateService(ahService: service)
+        if ProcessInfo.processInfo.arguments.contains("-autoReplay"),
+           let url = Bundle.main.url(forResource: "k2_apollonia_strong_wind_1", withExtension: "json") {
+            let service = ReplayDeviceMotionService(fileURL: url, timeScale: Services.replayTimeScale)
+            self.ahService = service
+            self.msService = MachineStateService(ahService: service)
+            self.replayURL = url
+        } else {
+            let service = DeviceMotionService()
+            self.ahService = service
+            self.msService = MachineStateService(ahService: service)
+        }
         self.viewModel = AHServiceViewModel(ahService: ahService, machineStateService: msService)
     }
     
+    static var replayTimeScale: Double {
+        if let idx = ProcessInfo.processInfo.arguments.firstIndex(of: "-replayTimeScale"),
+           idx + 1 < ProcessInfo.processInfo.arguments.count,
+           let scale = Double(ProcessInfo.processInfo.arguments[idx + 1]) {
+            return scale
+        }
+        return 1.0
+    }
+
     func setup(replay: URL?) {
         guard replay != self.replayURL else { return }
         self.ahService.stop()
@@ -30,7 +47,7 @@ final class Services: ObservableObject {
 
         self.replayURL = replay
         if let replay = replay {
-            let service = ReplayDeviceMotionService(fileURL: replay)
+            let service = ReplayDeviceMotionService(fileURL: replay, timeScale: Services.replayTimeScale)
             self.ahService = service
             self.msService = MachineStateService(ahService: service)
         } else {
@@ -46,7 +63,7 @@ final class Services: ObservableObject {
 @main
 struct AHISApp: App {
     @ObservedObject var services = Services.shared
-    @AppStorage("disclaimerAccepted") private var disclaimerAccepted = false
+    @AppStorage("disclaimerAccepted") private var disclaimerAccepted = ProcessInfo.processInfo.arguments.contains("-skipDisclaimer")
 
     var body: some Scene {
         WindowGroup {

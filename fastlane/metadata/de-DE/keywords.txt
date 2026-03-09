@@ -1,0 +1,1 @@
+Segelflug,Winde,Windenstart,Pilot,Segelflieger,Höhe,QFE,Geschwindigkeit,Flug,Start

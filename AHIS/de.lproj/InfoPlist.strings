@@ -1,0 +1,6 @@
+/* Info.plist strings - German */
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "Zum Lesen der GPS-Geschwindigkeit muss die App autorisiert werden.";
+"NSLocationAlwaysUsageDescription" = "Zum Lesen der GPS-Geschwindigkeit muss die App autorisiert werden.";
+"NSLocationWhenInUseUsageDescription" = "Zum Lesen der GPS-Geschwindigkeit muss die App autorisiert werden.";
+"NSMotionUsageDescription" = "Bewegungssensoren werden für Lage- und Beschleunigungsdaten benötigt.";
+"CFBundleDisplayName" = "Winch Pilot";

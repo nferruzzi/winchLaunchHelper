@@ -1,0 +1,1 @@
+Initial release of Winch Pilot - your glider winch launch assistant.

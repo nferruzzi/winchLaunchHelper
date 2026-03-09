@@ -1,0 +1,38 @@
+Winch Pilot is a real-time voice assistant for glider pilots during winch launches. It monitors your speed, altitude, and attitude using your device's sensors and provides configurable voice callouts at critical moments.
+
+KEY FEATURES
+
+- Real-time speed monitoring with configurable min/max thresholds and voice alerts
+- QFE altitude display using barometer, with customizable altitude callouts
+- Artificial horizon showing pitch and roll attitude
+- Remaining runway distance indicator
+- Wing drop detection with automatic voice warning
+- Heading indicator (landscape mode)
+- Altitude history chart for post-launch review
+
+SMART SENSOR FUSION
+
+Winch Pilot combines GPS speed with accelerometer data through a Kalman filter for smooth, responsive speed readings. Barometer-based altitude (QFE) provides accurate height above field level, updated at high frequency.
+
+VOICE CALLOUTS
+
+Configure voice alerts for:
+- Minimum safe speed reached / lost
+- Overspeed warning
+- Altitude milestones (fully customizable)
+- Wing drop detection
+- Maximum altitude at launch completion
+
+Adjust speech rate and customize every callout message.
+
+FLIGHT LOGGING
+
+Record sensor data from each launch for later review and replay. Logs include accelerometer, GPS, barometer, and attitude data at up to 50Hz.
+
+UNITS & SETTINGS
+
+Choose between km/h, mph, or knots for speed, and meters or feet for altitude. Calibrate pitch and roll zero offsets for your specific mount.
+
+IMPORTANT DISCLAIMER
+
+This app is a supplementary aid only. The pilot in command remains solely responsible for all decisions during flight. Never rely on this app as a primary source of information.

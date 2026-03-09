@@ -217,6 +217,7 @@ struct SettingsView: View {
                         Label("Alerts", systemImage: "speaker.wave.2")
                             .labelStyle(RowLabelStyle(color: Color.purple))
                     }
+                    .accessibilityIdentifier("AlertsNavLink")
                 }
 
                 Section(header: Text("Logs")) {
@@ -231,8 +232,14 @@ struct SettingsView: View {
                     } label: {
                         Label("Replay", systemImage: "play")
                             .labelStyle(RowLabelStyle(color: Color.accentColor))
-                        Text(selectedReplay?.deletingPathExtension().lastPathComponent ?? "Off")
-                            .foregroundColor(.accentColor)
+                        Group {
+                            if let replay = selectedReplay {
+                                Text(replay.deletingPathExtension().lastPathComponent)
+                            } else {
+                                Text("Off")
+                            }
+                        }
+                        .foregroundColor(.accentColor)
                         
                     }
                 }

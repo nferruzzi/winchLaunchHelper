@@ -1,0 +1,38 @@
+Winch Pilot è un assistente vocale in tempo reale per piloti di aliante durante il lancio al verricello. Monitora velocità, quota e assetto usando i sensori del dispositivo e fornisce avvisi vocali configurabili nei momenti critici.
+
+FUNZIONALITÀ PRINCIPALI
+
+- Monitoraggio velocità in tempo reale con soglie min/max configurabili e avvisi vocali
+- Quota QFE tramite barometro, con callout di quota personalizzabili
+- Orizzonte artificiale con indicazione di beccheggio e rollio
+- Indicatore della distanza di pista rimanente
+- Rilevamento caduta d'ala con avviso vocale automatico
+- Indicatore di prua (modalità landscape)
+- Grafico storico della quota per revisione post-lancio
+
+FUSIONE SENSORI INTELLIGENTE
+
+Winch Pilot combina la velocità GPS con i dati dell'accelerometro tramite un filtro di Kalman per letture di velocità fluide e reattive. La quota barometrica (QFE) fornisce un'altezza accurata sul livello del campo, aggiornata ad alta frequenza.
+
+AVVISI VOCALI
+
+Configura avvisi vocali per:
+- Velocità minima di sicurezza raggiunta / persa
+- Avviso di velocità eccessiva
+- Traguardi di quota (completamente personalizzabili)
+- Rilevamento caduta d'ala
+- Quota massima al completamento del lancio
+
+Regola la velocità di sintesi vocale e personalizza ogni messaggio.
+
+REGISTRAZIONE VOLI
+
+Registra i dati dei sensori di ogni lancio per revisione e replay successivi. I log includono accelerometro, GPS, barometro e dati di assetto fino a 50Hz.
+
+UNITÀ E IMPOSTAZIONI
+
+Scegli tra km/h, mph o nodi per la velocità, e metri o piedi per la quota. Calibra gli offset zero di beccheggio e rollio per il tuo specifico supporto.
+
+AVVERTENZA IMPORTANTE
+
+Questa app è solo un ausilio supplementare. Il pilota responsabile rimane l'unico responsabile di tutte le decisioni durante il volo. Non fare mai affidamento su questa app come fonte primaria di informazioni.

@@ -1,0 +1,38 @@
+Winch Pilot ist ein Echtzeit-Sprachassistent für Segelflieger während des Windenstarts. Er überwacht Geschwindigkeit, Höhe und Fluglage mit den Gerätesensoren und liefert konfigurierbare Sprachmeldungen in kritischen Momenten.
+
+HAUPTFUNKTIONEN
+
+- Echtzeit-Geschwindigkeitsüberwachung mit konfigurierbaren Min/Max-Schwellenwerten und Sprachalarmen
+- QFE-Höhenanzeige per Barometer, mit anpassbaren Höhenmeldungen
+- Künstlicher Horizont mit Nick- und Rollwinkelanzeige
+- Anzeige der verbleibenden Pistenlänge
+- Erkennung von Flügelabsenkung mit automatischer Sprachwarnung
+- Kursanzeige (Querformat)
+- Höhenverlaufsdiagramm zur Nachbesprechung
+
+INTELLIGENTE SENSORFUSION
+
+Winch Pilot kombiniert GPS-Geschwindigkeit mit Beschleunigungsmesserdaten über einen Kalman-Filter für flüssige, reaktionsschnelle Geschwindigkeitsanzeigen. Die barometrische Höhe (QFE) liefert eine genaue Höhe über Platzniveau, hochfrequent aktualisiert.
+
+SPRACHMELDUNGEN
+
+Konfiguriere Sprachalarme für:
+- Mindestgeschwindigkeit erreicht / unterschritten
+- Überschreitungswarnung
+- Höhenmeilensteine (frei konfigurierbar)
+- Erkennung von Flügelabsenkung
+- Maximalhöhe bei Startabschluss
+
+Stelle die Sprechgeschwindigkeit ein und passe jede Meldung individuell an.
+
+FLUGAUFZEICHNUNG
+
+Zeichne Sensordaten jedes Starts für spätere Auswertung und Wiedergabe auf. Die Logs enthalten Beschleunigungsmesser-, GPS-, Barometer- und Lagelagendaten mit bis zu 50Hz.
+
+EINHEITEN & EINSTELLUNGEN
+
+Wähle zwischen km/h, mph oder Knoten für die Geschwindigkeit und Meter oder Fuß für die Höhe. Kalibriere die Nick- und Roll-Nullpunkte für deine spezifische Halterung.
+
+WICHTIGER HINWEIS
+
+Diese App ist nur ein ergänzendes Hilfsmittel. Der verantwortliche Pilot bleibt allein verantwortlich für alle Entscheidungen während des Fluges. Verlasse dich niemals auf diese App als primäre Informationsquelle.

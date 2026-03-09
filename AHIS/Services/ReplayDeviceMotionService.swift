@@ -20,6 +20,8 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
     enum Constants {
         static let frequency: Double = 10
     }
+
+    var timeScale: Double = 1.0
     
     @Published private var deviceMotionQuaternionSubject: DataPointCMQuaternion?
     @Published private var headingSubject: DataPointAngle? = .zero
@@ -129,12 +131,13 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
         return done
     }
     
-    public convenience init(bundle: String) {
+    public convenience init(bundle: String, timeScale: Double = 1.0) {
         let fileURL = Bundle.main.url(forResource: bundle, withExtension: nil)!
-        self.init(fileURL: fileURL)
+        self.init(fileURL: fileURL, timeScale: timeScale)
     }
-    
-    public init(fileURL: URL) {
+
+    public init(fileURL: URL, timeScale: Double = 1.0) {
+        self.timeScale = timeScale
         do {
             let data = try Data(contentsOf: fileURL)
             self.state = try JSONDecoder().decode(SensorState.self, from: data)
@@ -172,10 +175,9 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
 //                timestamp += 0.1
 //            }
             
-            Timer.publish(every: 1 / Constants.frequency, on: RunLoop.main, in: .default)
+            Timer.publish(every: 1 / (Constants.frequency * timeScale), on: RunLoop.main, in: .default)
                 .autoconnect()
                 .sink { [unowned self] timer in
-//                    print(self.timestamp, "sec")
                     while self.reduce(rounded: Int(self.timestamp * Constants.frequency)) == false {}
                     self.timestamp += 1 / Constants.frequency
                 }
