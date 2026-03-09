@@ -5,3 +5,6 @@ fastlane/Preview.html
 fastlane/report.xml
 server/*
 *.p8
+*.ipa
+*.dSYM.zip
+*.mobileprovision
