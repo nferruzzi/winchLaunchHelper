@@ -126,7 +126,12 @@ public final class MockedDeviceMotionService: DeviceMotionProtocol {
     public var pressure: AnyPublisher<DataPointPressure, Never> {
         Just(.zero).eraseToAnyPublisher()
     }
-    
+
+    public var gpsAccuracy: AnyPublisher<Double?, Never> {
+        Just(nil).eraseToAnyPublisher()
+    }
+
+    public func requestLocationPermission() {}
     public func reset() {}
 
     public func stop() {

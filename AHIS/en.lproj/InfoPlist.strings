@@ -1,6 +1,6 @@
 /* Info.plist strings - English */
-"NSLocationAlwaysAndWhenInUseUsageDescription" = "To read the GPS speed, it is necessary to authorize the app.";
-"NSLocationAlwaysUsageDescription" = "To read the GPS speed, it is necessary to authorize the app.";
-"NSLocationWhenInUseUsageDescription" = "To read the GPS speed, it is necessary to authorize the app.";
-"NSMotionUsageDescription" = "Motion sensors are required for attitude and acceleration data.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "Winch Pilot needs GPS to measure your ground speed and runway distance during winch launches.";
+"NSLocationAlwaysUsageDescription" = "Winch Pilot needs GPS to measure your ground speed and runway distance during winch launches.";
+"NSLocationWhenInUseUsageDescription" = "Winch Pilot needs GPS to measure your ground speed and runway distance during winch launches.";
+"NSMotionUsageDescription" = "Motion sensors power the artificial horizon and improve speed accuracy between GPS readings.";
 "CFBundleDisplayName" = "Winch Pilot";

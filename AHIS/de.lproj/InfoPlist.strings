@@ -1,6 +1,6 @@
 /* Info.plist strings - German */
-"NSLocationAlwaysAndWhenInUseUsageDescription" = "Zum Lesen der GPS-Geschwindigkeit muss die App autorisiert werden.";
-"NSLocationAlwaysUsageDescription" = "Zum Lesen der GPS-Geschwindigkeit muss die App autorisiert werden.";
-"NSLocationWhenInUseUsageDescription" = "Zum Lesen der GPS-Geschwindigkeit muss die App autorisiert werden.";
-"NSMotionUsageDescription" = "Bewegungssensoren werden für Lage- und Beschleunigungsdaten benötigt.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "Winch Pilot ben\U00F6tigt GPS, um die Geschwindigkeit und die Pistenentfernung beim Windenstart zu messen.";
+"NSLocationAlwaysUsageDescription" = "Winch Pilot ben\U00F6tigt GPS, um die Geschwindigkeit und die Pistenentfernung beim Windenstart zu messen.";
+"NSLocationWhenInUseUsageDescription" = "Winch Pilot ben\U00F6tigt GPS, um die Geschwindigkeit und die Pistenentfernung beim Windenstart zu messen.";
+"NSMotionUsageDescription" = "Bewegungssensoren werden f\U00FCr den k\U00FCnstlichen Horizont und die Geschwindigkeitsgenauigkeit zwischen GPS-Messungen ben\U00F6tigt.";
 "CFBundleDisplayName" = "Winch Pilot";

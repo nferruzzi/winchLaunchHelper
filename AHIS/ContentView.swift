@@ -50,9 +50,11 @@ struct ContentView: View {
                             .opacity(model.gpsBlinking ? 0.3 : 1.0)
                         Text(model.hasGPSFix ? "GPS" : "GPS")
                             .foregroundStyle(model.hasGPSFix ? .green : .red)
-                        // Debug: show raw GPS speed
-                        Text(String(format: "%.1f", model.gpsSpeed.converted(to: .kilometersPerHour).value))
-                            .foregroundStyle(.gray)
+                        // Debug: show horizontal accuracy in meters
+                        if let acc = model.gpsHorizontalAccuracy {
+                            Text(String(format: "%.0fm", acc))
+                                .foregroundStyle(.gray)
+                        }
                     }
                 }
                 .font(.caption2.bold())

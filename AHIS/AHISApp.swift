@@ -80,7 +80,11 @@ struct AHISApp: App {
             ContentView(model: services.viewModel)
                 .preferredColorScheme(.dark)
                 .fullScreenCover(isPresented: .constant(!disclaimerAccepted)) {
-                    DisclaimerView(accepted: $disclaimerAccepted)
+                    DisclaimerView(
+                        accepted: $disclaimerAccepted,
+                        ahService: services.ahService,
+                        gpsAccuracy: services.ahService.gpsAccuracy
+                    )
                 }
         }
     }

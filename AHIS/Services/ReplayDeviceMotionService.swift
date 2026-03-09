@@ -65,6 +65,11 @@ public final class ReplayDeviceMotionService: DeviceMotionProtocol {
         $pressureSubject.compactMap { $0 }.eraseToAnyPublisher()
     }
 
+    public var gpsAccuracy: AnyPublisher<Double?, Never> {
+        Just(5.0).eraseToAnyPublisher()
+    }
+
+    public func requestLocationPermission() {}
     public func reset() {}
 
     public func stop() {

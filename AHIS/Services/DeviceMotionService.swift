@@ -16,6 +16,7 @@ import simd
 public protocol DeviceMotionProtocol {
     func reset()
     func stop()
+    func requestLocationPermission()
     
     var roll: AnyPublisher<DataPointAngle, Never> { get }
     var pitch: AnyPublisher<DataPointAngle, Never> { get }
@@ -24,7 +25,9 @@ public protocol DeviceMotionProtocol {
     var altitude: AnyPublisher<DataPointAltitude, Never> { get }
     var userAcceleration: AnyPublisher<DataPointUserAcceleration, Never> { get }
     var location: AnyPublisher<DataPointLocation, Never> { get }
-    var pressure: AnyPublisher<DataPointPressure, Never> { get } 
+    var pressure: AnyPublisher<DataPointPressure, Never> { get }
+    /// GPS fix quality: horizontal accuracy in meters, nil = no fix
+    var gpsAccuracy: AnyPublisher<Double?, Never> { get }
 
     var minSpeed: Measurement<UnitSpeed> { get set }
     var maxSpeed: Measurement<UnitSpeed> { get set }
@@ -242,6 +245,8 @@ public final class DeviceMotionService: NSObject {
         }
     }
     
+    @Published private var gpsAccuracySubject: Double? = nil
+
     @Published private var pressureSubject: DataPointPressure? {
         didSet {
             guard record else { return }
@@ -313,9 +318,11 @@ public final class DeviceMotionService: NSObject {
         record = recordValue
 
         start(reference: .xMagneticNorthZVertical)
-        
-        if Constants.locationManager.authorizationStatus == .notDetermined {
-            Constants.locationManager.requestWhenInUseAuthorization()
+
+        // If permission already granted, start location updates immediately
+        // Otherwise, wait for requestLocationPermission() to be called from onboarding
+        if Constants.locationManager.authorizationStatus != .notDetermined {
+            locationManagerDidChangeAuthorization(Constants.locationManager)
         }
         
         $deviceMotionQuaternionSubject
@@ -424,7 +431,17 @@ extension DeviceMotionService: DeviceMotionProtocol {
     public var pressure: AnyPublisher<DataPointPressure, Never> {
         $pressureSubject.compactMap { $0 }.eraseToAnyPublisher()
     }
+
+    public var gpsAccuracy: AnyPublisher<Double?, Never> {
+        $gpsAccuracySubject.eraseToAnyPublisher()
+    }
     
+    public func requestLocationPermission() {
+        if Constants.locationManager.authorizationStatus == .notDetermined {
+            Constants.locationManager.requestWhenInUseAuthorization()
+        }
+    }
+
     public func reset() {
         defer {
             UserDefaults.standard.set(pitchZero, forKey: Constants.userSettingsPitch)
@@ -478,6 +495,11 @@ extension DeviceMotionService: CLLocationManagerDelegate {
     }
     
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let newest = locations.last else { return }
+        // Update GPS accuracy for UI (any location update counts)
+        gpsAccuracySubject = newest.horizontalAccuracy
+
+        // Only update speed/altitude/location when speed data is reliable
         guard let last = locations.last(where: { $0.speedAccuracy > 0 }) else { return }
         speedSubject = .init(timestamp: .date(last.timestamp),
                              value: .init(value: last.speed, unit: .metersPerSecond))

@@ -23,22 +23,22 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>To read the GPS speed, it is necessary to authorize the app.</string>
+	<string>Winch Pilot needs GPS to measure your ground speed and runway distance during winch launches.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>To read the GPS speed, it is necessary to authorize the app.</string>
+	<string>Winch Pilot needs GPS to measure your ground speed and runway distance during winch launches.</string>
 	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
 	<dict>
 		<key>AccurateSpeed</key>
-		<string>To read an accurate GPS speed, it is necessary to authorize the app.</string>
+		<string>Full accuracy GPS is needed to measure precise speed during the winch launch.</string>
 	</dict>
 	<key>NSLocationUsageDescription</key>
-	<string>To read the GPS speed, it is necessary to authorize the app.</string>
+	<string>Winch Pilot needs GPS to measure your ground speed and runway distance during winch launches.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>To read the GPS speed, it is necessary to authorize the app.</string>
+	<string>Winch Pilot needs GPS to measure your ground speed and runway distance during winch launches.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>AH required</string>
+	<string>Motion sensors power the artificial horizon and improve speed accuracy between GPS readings.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
