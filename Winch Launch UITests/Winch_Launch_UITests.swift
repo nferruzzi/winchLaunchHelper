@@ -35,6 +35,12 @@ final class Winch_Launch_UITests: XCTestCase {
             return true
         }
 
+        // Accept disclaimer if shown
+        let acceptButton = app.buttons["I understand and accept"]
+        if acceptButton.waitForExistence(timeout: 2) {
+            acceptButton.tap()
+        }
+
         let settingsButton = app.buttons["Settings"]
         settingsButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         snapshot("Settings")

@@ -46,11 +46,15 @@ final class Services: ObservableObject {
 @main
 struct AHISApp: App {
     @ObservedObject var services = Services.shared
-    
+    @AppStorage("disclaimerAccepted") private var disclaimerAccepted = false
+
     var body: some Scene {
         WindowGroup {
             ContentView(model: services.viewModel)
-            .preferredColorScheme(.dark)
+                .preferredColorScheme(.dark)
+                .fullScreenCover(isPresented: .constant(!disclaimerAccepted)) {
+                    DisclaimerView(accepted: $disclaimerAccepted)
+                }
         }
     }
 }

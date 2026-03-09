@@ -20,17 +20,7 @@ private extension Float {
 final class AHServiceViewModel: ObservableObject {
     enum Constants {
         static let synthesizer = AVSpeechSynthesizer()
-        static let importantAltitudes: [DataPointLength.ValueType] = [
-            .init(value: 1, unit: .meters),
-            .init(value: 20, unit: .meters),
-//            .init(value: 25, unit: .meters),
-            .init(value: 50, unit: .meters),
-//            .init(value: 75, unit: .meters),
-            .init(value: 100, unit: .meters),
-//            .init(value: 150, unit: .meters),
-            .init(value: 200, unit: .meters),
-            .init(value: 250, unit: .meters),
-        ]
+        static let defaultAltitudes: [Int] = [1, 20, 50, 100, 200, 250]
     }
     
     private var subscriptions = Set<AnyCancellable>()
@@ -79,8 +69,16 @@ final class AHServiceViewModel: ObservableObject {
         }
     }
     
-    @Published var importantAltitudes: [DataPointLength.ValueType] = Constants.importantAltitudes
-    
+    @Published var importantAltitudes: [DataPointLength.ValueType] = []
+
+    /// Configured altitude callouts in meters, persisted via UserDefaults
+    @Published var configuredAltitudes: [Int] = (UserDefaults.standard.array(forKey: "configuredAltitudes") as? [Int]) ?? Constants.defaultAltitudes {
+        didSet { UserDefaults.standard.set(configuredAltitudes, forKey: "configuredAltitudes") }
+    }
+
+    var altitudesAsMeasurements: [DataPointLength.ValueType] {
+        configuredAltitudes.sorted().map { .init(value: Double($0), unit: .meters) }
+    }
 
     // MARK: - Alert configuration
     @Published var speechRate: Float = UserDefaults.standard.float(forKey: "speechRate").nonZeroOrDefault(0.45) {
@@ -253,7 +251,7 @@ final class AHServiceViewModel: ObservableObject {
             .sink { [unowned self] (info, speed, altitude) in
                 guard info.value.isLaunching || info.value.state == .completed,
                       let tof = info.value.takeOffAltitude else {
-                    self.importantAltitudes = Constants.importantAltitudes
+                    self.importantAltitudes = self.altitudesAsMeasurements
                     return
                 }
                                 

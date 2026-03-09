@@ -11,6 +11,7 @@ import AVFoundation
 
 struct AlertsSettingsView: View {
     @ObservedObject var model: AHServiceViewModel
+    @State private var newAltitude: String = ""
 
     var body: some View {
         Form {
@@ -39,9 +40,31 @@ struct AlertsSettingsView: View {
                         .labelStyle(RowLabelStyle(color: .blue))
                 }
                 if model.altitudeCalloutsEnabled {
-                    Text("1m, 20m, 50m, 100m, 200m, 250m")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    ForEach(model.configuredAltitudes.sorted(), id: \.self) { alt in
+                        HStack {
+                            Text("\(alt) m")
+                            Spacer()
+                            Button(role: .destructive) {
+                                model.configuredAltitudes.removeAll { $0 == alt }
+                            } label: {
+                                Image(systemName: "minus.circle.fill")
+                                    .foregroundColor(.red)
+                            }
+                        }
+                    }
+                    HStack {
+                        TextField("meters", text: $newAltitude)
+                            .keyboardType(.numberPad)
+                        Button {
+                            if let value = Int(newAltitude), value > 0, !model.configuredAltitudes.contains(value) {
+                                model.configuredAltitudes.append(value)
+                                newAltitude = ""
+                            }
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundColor(.green)
+                        }
+                    }
                 }
             }
 
@@ -125,6 +148,11 @@ struct AlertsSettingsView: View {
                     Label("Max altitude at completion", systemImage: "flag.checkered")
                         .labelStyle(RowLabelStyle(color: .green))
                 }
+            }
+            Section {
+                Text("This app is provided as a supplementary aid only. Voice alerts are based on sensor data that may be inaccurate, delayed, or unavailable. The pilot in command remains solely responsible for all decisions during flight. Never rely on this app as a primary source of information. The developer assumes no liability for any damage, injury, or loss arising from the use of this app.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
         }
         .navigationTitle("Alerts")
