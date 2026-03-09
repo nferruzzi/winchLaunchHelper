@@ -35,16 +35,14 @@ final class Winch_Launch_UITests: XCTestCase {
             return true
         }
 
-        app.buttons["Airplane Mode"].tap()
-        app.buttons["Left"].tap()
-
-        snapshot("Initial")
-
-        app.buttons["Airplane Mode"].tap()
+        let settingsButton = app.buttons["Settings"]
+        settingsButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         snapshot("Settings")
         app.buttons["Replay, Off"].tap()
         app.staticTexts["k2_apollonia_strong_wind_1"].tap()
-        app.buttons["Left"].tap()
+        settingsButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+
+        snapshot("Initial")
 
         sleep(45)
         snapshot("Simulation")

@@ -40,6 +40,7 @@
 		8AFE554325A75D6C00EC5329 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8AFE554225A75D6C00EC5329 /* Assets.xcassets */; };
 		8AFE554625A75D6C00EC5329 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8AFE554525A75D6C00EC5329 /* Preview Assets.xcassets */; };
 		8AFE555A25A86E5400EC5329 /* DeviceMotionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFE555925A86E5400EC5329 /* DeviceMotionService.swift */; };
+		F9AD8AED5DE9A44253E0544C /* WingDropTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B78C5929F3FDFAEEEE36F97 /* WingDropTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +63,7 @@
 /* Begin PBXFileReference section */
 		0BB4AB936CEB1B9ABCACAAFD /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		45E3631DDA6414B0B5EF3562 /* KalmanFilterTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KalmanFilterTests.swift; sourceTree = "<group>"; };
+		4B78C5929F3FDFAEEEE36F97 /* WingDropTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WingDropTests.swift; sourceTree = "<group>"; };
 		8A522DCA2A8CE9E00010E719 /* ExtendedKalmanFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKalmanFilter.swift; sourceTree = "<group>"; };
 		8A522DD12A8E43390010E719 /* ReplayDeviceMotionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplayDeviceMotionService.swift; sourceTree = "<group>"; };
 		8A522DD32A9011030010E719 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -246,6 +248,7 @@
 			children = (
 				45E3631DDA6414B0B5EF3562 /* KalmanFilterTests.swift */,
 				B6C42839F3E35210C59BF84E /* MachineStateTests.swift */,
+				4B78C5929F3FDFAEEEE36F97 /* WingDropTests.swift */,
 			);
 			name = "Winch Launch Tests";
 			path = "Winch Launch Tests";
@@ -396,6 +399,7 @@
 			files = (
 				805D26D168CE508F3AAD4DCF /* KalmanFilterTests.swift in Sources */,
 				308D3BD73EAB81467953FA30 /* MachineStateTests.swift in Sources */,
+				F9AD8AED5DE9A44253E0544C /* WingDropTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

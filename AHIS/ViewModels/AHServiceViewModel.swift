@@ -84,9 +84,22 @@ final class AHServiceViewModel: ObservableObject {
     /// Wing drop: announced once per launch, reset on waiting
     private var wingDropAnnounced: Bool = false
     /// Roll threshold in degrees for wing drop detection
-    private static let wingDropThresholdDegrees: Double = 15.0
+    static let wingDropThresholdDegrees: Double = 15.0
     /// Wing drop is monitored only in these early launch phases
-    private static let wingDropMonitoredStates: Set<MachineState> = [.takingOff, .minSpeedReached, .minSpeedLost]
+    static let wingDropMonitoredStates: Set<MachineState> = [.takingOff, .minSpeedReached, .minSpeedLost]
+
+    /// Pure function for wing drop detection — extracted for testability
+    static func shouldAnnounceWingDrop(
+        rollDegrees: Double,
+        state: MachineState,
+        alreadyAnnounced: Bool,
+        thresholdDegrees: Double = wingDropThresholdDegrees,
+        monitoredStates: Set<MachineState> = wingDropMonitoredStates
+    ) -> Bool {
+        !alreadyAnnounced
+            && monitoredStates.contains(state)
+            && abs(rollDegrees) > thresholdDegrees
+    }
 
     private var zeroAltitude: Double?
     private var initialLocation: CLLocation?
@@ -183,9 +196,11 @@ final class AHServiceViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [unowned self] rollDataPoint in
                 let rollDegrees = rollDataPoint.value.converted(to: .degrees).value
-                guard !self.wingDropAnnounced,
-                      Self.wingDropMonitoredStates.contains(self.state),
-                      abs(rollDegrees) > Self.wingDropThresholdDegrees else { return }
+                guard Self.shouldAnnounceWingDrop(
+                    rollDegrees: rollDegrees,
+                    state: self.state,
+                    alreadyAnnounced: self.wingDropAnnounced
+                ) else { return }
                 self.wingDropAnnounced = true
                 self.say("ala", speedMultiplier: 0.45)
             }
