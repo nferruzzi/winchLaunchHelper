@@ -31,6 +31,22 @@ Generate new localized screenshots
 
 Upload screenshots to App Store Connect
 
+### ios upload_metadata
+
+```sh
+[bundle exec] fastlane ios upload_metadata
+```
+
+Upload metadata to App Store Connect
+
+### ios release
+
+```sh
+[bundle exec] fastlane ios release
+```
+
+Build and upload to TestFlight
+
 ### ios beta
 
 ```sh

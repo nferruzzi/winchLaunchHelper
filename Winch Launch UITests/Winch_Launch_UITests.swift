@@ -16,6 +16,12 @@ final class Winch_Launch_UITests: XCTestCase {
     override func setUpWithError() throws {
         setupSnapshot(app)
         app.launchArguments += ["-replayTimeScale", "10", "-skipDisclaimer", "-autoReplay"]
+
+        // Imperial units for English locale (mph + feet)
+        if Snapshot.deviceLanguage.hasPrefix("en") {
+            app.launchArguments += ["-unitSpeed", "mph", "-unitAltitude", "feets"]
+        }
+
         continueAfterFailure = false
     }
 
@@ -35,32 +41,24 @@ final class Winch_Launch_UITests: XCTestCase {
         sleep(1)
         app.tap()
 
+        // Take launch screenshots while climb is in progress
+        // At 10x speed: each real second ≈ 10 sec simulation
+        // Capture early to show mid-climb with altitude curve
+        snapshot("01_Launch")
+
+        sleep(1)
+        snapshot("02_Simulation")
+
         // Open Settings
         let settingsButton = app.buttons["Settings"]
         XCTAssertTrue(settingsButton.waitForExistence(timeout: 5), "Settings button not found")
         settingsButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        snapshot("01_Settings")
+        snapshot("03_Settings")
 
         // Navigate to Alerts Settings
         let alertsButton = app.buttons["AlertsNavLink"]
         XCTAssertTrue(alertsButton.waitForExistence(timeout: 3), "Alerts button not found")
         alertsButton.tap()
-        snapshot("02_AlertsSettings")
-
-        // Go back to Settings
-        app.navigationBars.buttons.firstMatch.tap()
-        sleep(1)
-
-        // Close Settings
-        let closeButton = app.navigationBars.firstMatch.buttons.firstMatch
-        XCTAssertTrue(closeButton.waitForExistence(timeout: 3), "Close settings button not found")
-        closeButton.tap()
-
-        // Replay is already running via -autoReplay, wait for mid-launch
-        sleep(4)
-        snapshot("03_Launch")
-
-        sleep(3)
-        snapshot("04_Simulation")
+        snapshot("04_AlertsSettings")
     }
 }

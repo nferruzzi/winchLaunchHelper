@@ -4,3 +4,4 @@ screenshots/*
 fastlane/Preview.html
 fastlane/report.xml
 server/*
+*.p8
