@@ -87,12 +87,11 @@ struct AHISApp: App {
                     )
                 }
                 .overlay {
-                    if disclaimerAccepted && !gpsFixDismissed && !services.viewModel.hasGPSFix {
+                    if disclaimerAccepted && !gpsFixDismissed {
                         GPSFixView(model: services.viewModel, dismissed: $gpsFixDismissed)
                             .transition(.opacity)
                     }
                 }
-                .animation(.easeInOut, value: services.viewModel.hasGPSFix)
                 .animation(.easeInOut, value: gpsFixDismissed)
         }
     }

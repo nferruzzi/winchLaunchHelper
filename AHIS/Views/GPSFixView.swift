@@ -8,6 +8,7 @@ import SwiftUI
 struct GPSFixView: View {
     @ObservedObject var model: AHServiceViewModel
     @Binding var dismissed: Bool
+    @State private var minTimeElapsed = false
 
     var body: some View {
         VStack(spacing: 24) {
@@ -69,11 +70,17 @@ struct GPSFixView: View {
         .background(Color(.systemBackground))
         .animation(.easeInOut, value: model.hasGPSFix)
         .preferredColorScheme(.dark)
-        .onChange(of: model.hasGPSFix) { hasFix in
-            if hasFix {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                minTimeElapsed = true
+                if model.hasGPSFix {
                     dismissed = true
                 }
+            }
+        }
+        .onChange(of: model.hasGPSFix) { hasFix in
+            if hasFix && minTimeElapsed {
+                dismissed = true
             }
         }
     }
