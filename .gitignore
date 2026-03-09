@@ -8,3 +8,8 @@ server/*
 *.ipa
 *.dSYM.zip
 *.mobileprovision
+.agents/
+.claude/
+.xcodebuildmcp/
+AGENTS.md
+skills-lock.json
