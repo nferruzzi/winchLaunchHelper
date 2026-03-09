@@ -138,6 +138,7 @@ final class AHServiceViewModel: ObservableObject {
     }
 
     @Published private(set) var hasGPSFix: Bool = false
+    @Published private(set) var gpsBlinking: Bool = false
     let isSimulation: Bool
 
     private var zeroAltitude: Double?
@@ -166,6 +167,10 @@ final class AHServiceViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .handleEvents(receiveOutput: { [unowned self] _ in
                 if !self.hasGPSFix { self.hasGPSFix = true }
+                self.gpsBlinking = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                    self?.gpsBlinking = false
+                }
             })
             .assign(to: \.gpsSpeed, on: self)
             .store(in: &subscriptions)

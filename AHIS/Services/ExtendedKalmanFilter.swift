@@ -60,6 +60,15 @@ struct KalmanFilter {
         estimateError = (F * estimateError * F.transpose) + processNoise
     }
 
+    /// Zero out velocity state and its covariance — used at low speed to prevent
+    /// residual drift from propagating between GPS corrections
+    mutating func resetVelocity() {
+        state[1] = 0
+        estimateError[0, 1] = 0
+        estimateError[1, 0] = 0
+        estimateError[1, 1] = 0.001
+    }
+
     /// Update step: correct state with a measurement of position (state[0])
     /// Uses scalar observation model H = [1, 0] with Joseph form for numerical stability
     mutating func update(measurement: Double, noiseVariance: Double? = nil) {

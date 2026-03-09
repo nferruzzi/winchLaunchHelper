@@ -104,6 +104,8 @@ final class MachineStateService {
     private var accelerations: [DataPointAcceleration] = []
     /// Latest pitch angle in radians, used to project acceleration along flight path
     private var latestPitch: Double = 0.0
+    /// Timestamp of last GPS speed update, used to detect stale GPS
+    private var lastGPSUpdate: Date = .distantPast
 
     private var currentInfo: MachineInfo = .init(state: .waiting, stateTimestamp: .date(Date()))
     private var pitchSubscription: AnyCancellable?
@@ -121,17 +123,25 @@ final class MachineStateService {
             } else {
                 correctedSpeed = dataPoint.value.value / 0.3
             }
-            // At low GPS speed (< 3 m/s ≈ 11 km/h), use very low measurement noise so
-            // GPS strongly anchors the filter to near-zero — prevents accelerometer drift
-            // from accumulating while stationary. At flight speed, use default R.
+            self.lastGPSUpdate = Date()
+            // At low GPS speed (< 3 m/s ≈ 11 km/h), strongly anchor filter to GPS:
+            // - Very low R so GPS dominates over accumulated accelerometer noise
+            // - Zero out velocity state to prevent residual drift between GPS updates
             let lowSpeedThreshold = 3.0 // m/s
-            let R: Double = dataPoint.value.value < lowSpeedThreshold ? 0.01 : self.speedKF.measurementNoiseVariance
-            self.speedKF.update(measurement: correctedSpeed, noiseVariance: R)
+            if dataPoint.value.value < lowSpeedThreshold {
+                self.speedKF.update(measurement: correctedSpeed, noiseVariance: 0.001)
+                self.speedKF.resetVelocity()
+            } else {
+                self.speedKF.update(measurement: correctedSpeed)
+            }
             return self.accelerationPublisher
         }
         .switchToLatest()
         .map { [unowned self] dataPoint in
-            self.speedKF.predict(controlInput: dataPoint.value.value)
+            // If GPS is stale (no update for >2s), ignore accelerometer to prevent drift
+            let gpsStaleness = Date().timeIntervalSince(self.lastGPSUpdate)
+            let controlInput = gpsStaleness > 2.0 ? 0.0 : dataPoint.value.value
+            self.speedKF.predict(controlInput: controlInput)
 
             // Clamp to non-negative: negative flight path speed is physically meaningless
             let speed = max(0, self.speedKF.position)
@@ -361,6 +371,7 @@ final class MachineStateService {
         self.speedKF.update(measurement: 0.0, noiseVariance: 0.001)
         self.altitudeKF.update(measurement: 0.0, noiseVariance: 0.001)
         self.latestPitch = 0.0
+        self.lastGPSUpdate = .distantPast
     }
 }
 

@@ -47,8 +47,12 @@ struct ContentView: View {
                     } else {
                         Image(systemName: model.hasGPSFix ? "location.fill" : "location.slash.fill")
                             .foregroundStyle(model.hasGPSFix ? .green : .red)
+                            .opacity(model.gpsBlinking ? 0.3 : 1.0)
                         Text(model.hasGPSFix ? "GPS" : "GPS")
                             .foregroundStyle(model.hasGPSFix ? .green : .red)
+                        // Debug: show raw GPS speed
+                        Text(String(format: "%.1f", model.gpsSpeed.converted(to: .kilometersPerHour).value))
+                            .foregroundStyle(.gray)
                     }
                 }
                 .font(.caption2.bold())
