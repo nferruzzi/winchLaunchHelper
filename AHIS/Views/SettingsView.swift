@@ -210,6 +210,15 @@ struct SettingsView: View {
                         .textFieldStyle(RowStyle(labelName: "Winch Length", systemImage: "arrow.left.and.right", color: .leafGreen, unitName: unitAltitude.localizedString))
                 }
 
+                Section(header: Text("Voice Alerts")) {
+                    NavigationLink {
+                        AlertsSettingsView(model: model)
+                    } label: {
+                        Label("Alerts", systemImage: "speaker.wave.2")
+                            .labelStyle(RowLabelStyle(color: Color.purple))
+                    }
+                }
+
                 Section(header: Text("Logs")) {
                     Toggle(isOn: $model.record) {
                         Label("Automatically log winch launches", systemImage: "recordingtape.circle")

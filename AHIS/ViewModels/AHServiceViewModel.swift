@@ -10,6 +10,12 @@ import Combine
 import CoreLocation
 import AVFoundation
 
+private extension Float {
+    func nonZeroOrDefault(_ defaultValue: Float) -> Float {
+        self == 0 ? defaultValue : self
+    }
+}
+
 
 final class AHServiceViewModel: ObservableObject {
     enum Constants {
@@ -75,6 +81,38 @@ final class AHServiceViewModel: ObservableObject {
     
     @Published var importantAltitudes: [DataPointLength.ValueType] = Constants.importantAltitudes
     
+
+    // MARK: - Alert configuration
+    @Published var speechRate: Float = UserDefaults.standard.float(forKey: "speechRate").nonZeroOrDefault(0.45) {
+        didSet { UserDefaults.standard.set(speechRate, forKey: "speechRate") }
+    }
+    @Published var wingDropMessage: String = UserDefaults.standard.string(forKey: "wingDropMessage") ?? "ala" {
+        didSet { UserDefaults.standard.set(wingDropMessage, forKey: "wingDropMessage") }
+    }
+    @Published var minSpeedMessage: String = UserDefaults.standard.string(forKey: "minSpeedMessage") ?? "minima" {
+        didSet { UserDefaults.standard.set(minSpeedMessage, forKey: "minSpeedMessage") }
+    }
+    @Published var minSpeedLostMessage: String = UserDefaults.standard.string(forKey: "minSpeedLostMessage") ?? "più" {
+        didSet { UserDefaults.standard.set(minSpeedLostMessage, forKey: "minSpeedLostMessage") }
+    }
+    @Published var maxSpeedMessage: String = UserDefaults.standard.string(forKey: "maxSpeedMessage") ?? "meno" {
+        didSet { UserDefaults.standard.set(maxSpeedMessage, forKey: "maxSpeedMessage") }
+    }
+    @Published var altitudeCalloutsEnabled: Bool = UserDefaults.standard.object(forKey: "altitudeCalloutsEnabled") as? Bool ?? true {
+        didSet { UserDefaults.standard.set(altitudeCalloutsEnabled, forKey: "altitudeCalloutsEnabled") }
+    }
+    @Published var minSpeedCalloutEnabled: Bool = UserDefaults.standard.object(forKey: "minSpeedCalloutEnabled") as? Bool ?? true {
+        didSet { UserDefaults.standard.set(minSpeedCalloutEnabled, forKey: "minSpeedCalloutEnabled") }
+    }
+    @Published var maxSpeedCalloutEnabled: Bool = UserDefaults.standard.object(forKey: "maxSpeedCalloutEnabled") as? Bool ?? true {
+        didSet { UserDefaults.standard.set(maxSpeedCalloutEnabled, forKey: "maxSpeedCalloutEnabled") }
+    }
+    @Published var wingDropCalloutEnabled: Bool = UserDefaults.standard.object(forKey: "wingDropCalloutEnabled") as? Bool ?? true {
+        didSet { UserDefaults.standard.set(wingDropCalloutEnabled, forKey: "wingDropCalloutEnabled") }
+    }
+    @Published var maxAltitudeCalloutEnabled: Bool = UserDefaults.standard.object(forKey: "maxAltitudeCalloutEnabled") as? Bool ?? true {
+        didSet { UserDefaults.standard.set(maxAltitudeCalloutEnabled, forKey: "maxAltitudeCalloutEnabled") }
+    }
 
     private var lastSayMin: Date?
     private var lastSayMinSpeed: Date?
@@ -196,13 +234,14 @@ final class AHServiceViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [unowned self] rollDataPoint in
                 let rollDegrees = rollDataPoint.value.converted(to: .degrees).value
-                guard Self.shouldAnnounceWingDrop(
-                    rollDegrees: rollDegrees,
-                    state: self.state,
-                    alreadyAnnounced: self.wingDropAnnounced
-                ) else { return }
+                guard self.wingDropCalloutEnabled,
+                      Self.shouldAnnounceWingDrop(
+                          rollDegrees: rollDegrees,
+                          state: self.state,
+                          alreadyAnnounced: self.wingDropAnnounced
+                      ) else { return }
                 self.wingDropAnnounced = true
-                self.say("ala", speedMultiplier: 0.45)
+                self.say(self.wingDropMessage)
             }
             .store(in: &subscriptions)
 
@@ -218,9 +257,9 @@ final class AHServiceViewModel: ObservableObject {
                     return
                 }
                                 
-                if let first = self.importantAltitudes.first {
+                if self.altitudeCalloutsEnabled, let first = self.importantAltitudes.first {
                     let relativeFirstAltitude = first + tof.value
-                    
+
                     if altitude.value > relativeFirstAltitude {
                         let relativeAltitude = altitude.value - tof.value
                         self.say("\(Int(relativeAltitude.converted(to: .meters).value))")
@@ -229,17 +268,31 @@ final class AHServiceViewModel: ObservableObject {
                     }
                 }
 
-                if info.value.state == .maxSpeedReached && self.lastSayMaxSpeedReached == nil {
-                    self.lastSayMaxSpeedReached = Date()
-                    self.say("meno")
+                if self.minSpeedCalloutEnabled, info.value.state == .minSpeedReached, self.lastSayMinSpeed == nil {
+                    self.lastSayMinSpeed = Date()
+                    self.say(self.minSpeedMessage)
                     return
                 }
-                
+
+                if self.minSpeedCalloutEnabled, info.value.state == .minSpeedLost, self.lastSayMinSpeedLost == nil {
+                    self.lastSayMinSpeedLost = Date()
+                    self.lastSayMaxSpeedReached = nil
+                    self.say(self.minSpeedLostMessage)
+                    return
+                }
+
                 if info.value.state == .minSpeedReached {
+                    self.lastSayMinSpeedLost = nil
                     self.lastSayMaxSpeedReached = nil
                 }
-                
-                if info.value.state == .completed, let maxAltitude = info.value.maxAltitude, self.lastSayQFE == nil {
+
+                if self.maxSpeedCalloutEnabled, info.value.state == .maxSpeedReached, self.lastSayMaxSpeedReached == nil {
+                    self.lastSayMaxSpeedReached = Date()
+                    self.say(self.maxSpeedMessage)
+                    return
+                }
+
+                if self.maxAltitudeCalloutEnabled, info.value.state == .completed, let maxAltitude = info.value.maxAltitude, self.lastSayQFE == nil {
                     self.lastSayQFE = Date()
 
                     let relativeAltitude = maxAltitude.value - tof.value
@@ -330,11 +383,9 @@ final class AHServiceViewModel: ObservableObject {
         subscriptions.removeAll()
     }
     
-    func say(_ string: String, speedMultiplier: Float? = 0.6) {
+    func say(_ string: String) {
         let speechUtterance = AVSpeechUtterance(string: string)
-        if let speedMultiplier = speedMultiplier {
-            speechUtterance.rate = (AVSpeechUtteranceMinimumSpeechRate + AVSpeechUtteranceMaximumSpeechRate) * speedMultiplier
-        }
+        speechUtterance.rate = speechRate
         speechUtterance.voice = AVSpeechSynthesisVoice()
         Constants.synthesizer.speak(speechUtterance)
         lasSayString = string

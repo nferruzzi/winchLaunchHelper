@@ -38,7 +38,13 @@ final class Winch_Launch_UITests: XCTestCase {
         let settingsButton = app.buttons["Settings"]
         settingsButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         snapshot("Settings")
-        app.buttons["Replay, Off"].tap()
+
+        // Scroll down to find Replay button
+        let replayButton = app.buttons["Replay, Off"]
+        while !replayButton.isHittable {
+            app.swipeUp()
+        }
+        replayButton.tap()
         app.staticTexts["k2_apollonia_strong_wind_1"].tap()
         settingsButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
 
