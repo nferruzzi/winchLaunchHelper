@@ -317,11 +317,11 @@ public final class DeviceMotionService: NSObject {
         winchLength = .init(value: winchLengthValue > 0 ? winchLengthValue : 800, unit: .meters)
         record = recordValue
 
-        start(reference: .xMagneticNorthZVertical)
-
-        // If permission already granted, start location updates immediately
-        // Otherwise, wait for requestLocationPermission() to be called from onboarding
+        // If permissions already granted (returning user), start sensors immediately.
+        // Otherwise, wait for requestLocationPermission() from onboarding to avoid
+        // triggering permission popups during the disclaimer screen.
         if Constants.locationManager.authorizationStatus != .notDetermined {
+            start(reference: .xMagneticNorthZVertical)
             locationManagerDidChangeAuthorization(Constants.locationManager)
         }
         
@@ -437,6 +437,10 @@ extension DeviceMotionService: DeviceMotionProtocol {
     }
     
     public func requestLocationPermission() {
+        // Start motion sensors now (triggers motion permission popup)
+        if !Constants.manager.isDeviceMotionActive {
+            start(reference: .xMagneticNorthZVertical)
+        }
         if Constants.locationManager.authorizationStatus == .notDetermined {
             Constants.locationManager.requestWhenInUseAuthorization()
         }
