@@ -2,7 +2,7 @@
 //  Winch_Launch_UITests.swift
 //  Winch Launch UITests
 //
-//  Created by Nicola Ferruzzi on 21/09/23.
+//  Created by Nicola Ferruzzi on 21/09/23.il resetokquan
 //
 
 import XCTest
