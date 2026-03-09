@@ -42,9 +42,10 @@
 		8AFE554625A75D6C00EC5329 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8AFE554525A75D6C00EC5329 /* Preview Assets.xcassets */; };
 		8AFE555A25A86E5400EC5329 /* DeviceMotionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFE555925A86E5400EC5329 /* DeviceMotionService.swift */; };
 		A3848B03A945B89297B38CF3 /* AlertsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A3DEF726E97081BE375B74 /* AlertsSettingsView.swift */; };
-		F9AD8AED5DE9A44253E0544C /* WingDropTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B78C5929F3FDFAEEEE36F97 /* WingDropTests.swift */; };
 		AA000001LOCALIZE000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AA000002LOCALIZE000002 /* Localizable.xcstrings */; };
 		AA000003LOCALIZE000003 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AA000004LOCALIZE000004 /* InfoPlist.strings */; };
+		F740DC3DCACE4E0BD03C4617 /* GPSFixView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 303557AFA19D477A9DC5EEA1 /* GPSFixView.swift */; };
+		F9AD8AED5DE9A44253E0544C /* WingDropTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B78C5929F3FDFAEEEE36F97 /* WingDropTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,6 +67,7 @@
 
 /* Begin PBXFileReference section */
 		0BB4AB936CEB1B9ABCACAAFD /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		303557AFA19D477A9DC5EEA1 /* GPSFixView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GPSFixView.swift; sourceTree = "<group>"; };
 		45E3631DDA6414B0B5EF3562 /* KalmanFilterTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KalmanFilterTests.swift; sourceTree = "<group>"; };
 		4B78C5929F3FDFAEEEE36F97 /* WingDropTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WingDropTests.swift; sourceTree = "<group>"; };
 		8A522DCA2A8CE9E00010E719 /* ExtendedKalmanFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKalmanFilter.swift; sourceTree = "<group>"; };
@@ -102,14 +104,14 @@
 		8AFE554525A75D6C00EC5329 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		8AFE554725A75D6C00EC5329 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8AFE555925A86E5400EC5329 /* DeviceMotionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMotionService.swift; sourceTree = "<group>"; };
-		B1A3DEF726E97081BE375B74 /* AlertsSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AlertsSettingsView.swift; sourceTree = "<group>"; };
-		B61E228100FCCF55CA103206 /* DisclaimerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DisclaimerView.swift; sourceTree = "<group>"; };
-		B6C42839F3E35210C59BF84E /* MachineStateTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MachineStateTests.swift; sourceTree = "<group>"; };
-		D72059AD9F3D2540CE97E036 /* Winch Launch Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Winch Launch Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA000002LOCALIZE000002 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		AA000005LOCALIZE000005 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		AA000006LOCALIZE000006 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		AA000007LOCALIZE000007 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B1A3DEF726E97081BE375B74 /* AlertsSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AlertsSettingsView.swift; sourceTree = "<group>"; };
+		B61E228100FCCF55CA103206 /* DisclaimerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DisclaimerView.swift; sourceTree = "<group>"; };
+		B6C42839F3E35210C59BF84E /* MachineStateTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MachineStateTests.swift; sourceTree = "<group>"; };
+		D72059AD9F3D2540CE97E036 /* Winch Launch Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Winch Launch Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -170,6 +172,7 @@
 				8A522DE12A94E4ED0010E719 /* WinchLengthShape.swift */,
 				B1A3DEF726E97081BE375B74 /* AlertsSettingsView.swift */,
 				B61E228100FCCF55CA103206 /* DisclaimerView.swift */,
+				303557AFA19D477A9DC5EEA1 /* GPSFixView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -285,19 +288,6 @@
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
-
-/* Begin PBXVariantGroup section */
-		AA000004LOCALIZE000004 /* InfoPlist.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				AA000005LOCALIZE000005 /* en */,
-				AA000006LOCALIZE000006 /* it */,
-				AA000007LOCALIZE000007 /* de */,
-			);
-			name = InfoPlist.strings;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin PBXNativeTarget section */
 		106C47BE1A832AD6EE2C4117 /* Winch Launch Tests */ = {
@@ -474,6 +464,7 @@
 				8AFCD6C02A84D3EA009F97FA /* CMLogItem+date.swift in Sources */,
 				A3848B03A945B89297B38CF3 /* AlertsSettingsView.swift in Sources */,
 				3FAC96D6F50669523ED2615D /* DisclaimerView.swift in Sources */,
+				F740DC3DCACE4E0BD03C4617 /* GPSFixView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -492,6 +483,19 @@
 			targetProxy = 8A52B8562ABC4A1D004C77D4 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		AA000004LOCALIZE000004 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AA000005LOCALIZE000005 /* en */,
+				AA000006LOCALIZE000006 /* it */,
+				AA000007LOCALIZE000007 /* de */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		8A52B8592ABC4A1D004C77D4 /* Debug */ = {

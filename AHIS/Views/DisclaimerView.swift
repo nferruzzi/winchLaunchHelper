@@ -7,24 +7,19 @@
 
 import SwiftUI
 import UIKit
-import Combine
 import CoreLocation
 
 
 struct DisclaimerView: View {
     @Binding var accepted: Bool
     var ahService: DeviceMotionProtocol?
-    var gpsAccuracy: AnyPublisher<Double?, Never>?
 
     @State private var step: OnboardingStep = .disclaimer
     @State private var locationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
-    @State private var currentAccuracy: Double?
-    @State private var hasGPSFix: Bool = false
 
     enum OnboardingStep {
         case disclaimer
         case permissions
-        case waitingGPS
     }
 
     var body: some View {
@@ -34,22 +29,10 @@ struct DisclaimerView: View {
                 disclaimerContent
             case .permissions:
                 permissionsContent
-            case .waitingGPS:
-                waitingGPSContent
             }
         }
         .preferredColorScheme(.dark)
         .interactiveDismissDisabled()
-        .onReceive(
-            gpsAccuracy ?? Just(nil).eraseToAnyPublisher()
-        ) { accuracy in
-            if let acc = accuracy {
-                currentAccuracy = acc
-                if acc <= 10.0 && !hasGPSFix {
-                    hasGPSFix = true
-                }
-            }
-        }
     }
 
     // MARK: - Step 1: Disclaimer
@@ -129,7 +112,7 @@ struct DisclaimerView: View {
                     // Check if already authorized (returning user)
                     let status = CLLocationManager().authorizationStatus
                     if status == .authorizedWhenInUse || status == .authorizedAlways {
-                        step = .waitingGPS
+                        accepted = true
                     } else {
                         // Will be updated via onChange
                         observeAuthorizationChange()
@@ -149,7 +132,7 @@ struct DisclaimerView: View {
         }
         .onChange(of: locationStatus) { newStatus in
             if newStatus == .authorizedWhenInUse || newStatus == .authorizedAlways {
-                step = .waitingGPS
+                accepted = true
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
@@ -198,67 +181,6 @@ struct DisclaimerView: View {
                     .foregroundStyle(.secondary)
             }
         }
-    }
-
-    // MARK: - Step 3: Waiting GPS
-
-    private var waitingGPSContent: some View {
-        VStack(spacing: 24) {
-            Spacer()
-
-            if hasGPSFix {
-                Image(systemName: "location.fill")
-                    .font(.system(size: 60))
-                    .foregroundColor(.green)
-
-                Text(String(localized: "onboarding.gps.ready.title", defaultValue: "GPS Ready"))
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-
-                if let acc = currentAccuracy {
-                    Text("\(Int(acc))m")
-                        .foregroundStyle(.secondary)
-                }
-            } else {
-                ProgressView()
-                    .scaleEffect(1.5)
-                    .padding(.bottom, 8)
-
-                Text(String(localized: "onboarding.gps.waiting.title", defaultValue: "Waiting for GPS Signal"))
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-
-                Text(String(localized: "onboarding.gps.waiting.body", defaultValue: "Make sure you are outdoors with a clear view of the sky."))
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal)
-
-                if let acc = currentAccuracy {
-                    Text("\(Int(acc))m")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-
-            Spacer()
-
-            Button {
-                accepted = true
-            } label: {
-                Text(hasGPSFix
-                     ? String(localized: "onboarding.gps.start", defaultValue: "Start")
-                     : String(localized: "onboarding.gps.skip", defaultValue: "Skip"))
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(hasGPSFix ? Color.accentColor : Color.gray)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-            }
-            .padding(.horizontal)
-            .padding(.bottom, 32)
-        }
-        .animation(.easeInOut, value: hasGPSFix)
     }
 
     private func observeAuthorizationChange() {

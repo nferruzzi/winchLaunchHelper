@@ -10,6 +10,9 @@
     "%@ sec" : {
 
     },
+    "%@m" : {
+
+    },
     "%lld m" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -177,6 +180,7 @@
       }
     },
     "Disclaimer" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -212,6 +216,7 @@
       }
     },
     "I understand and accept" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -463,6 +468,374 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Off"
+          }
+        }
+      }
+    },
+    "onboarding.disclaimer.accept" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ich verstehe und akzeptiere"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I understand and accept"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ho letto e accetto"
+          }
+        }
+      }
+    },
+    "onboarding.disclaimer.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App dient ausschließlich als ergänzendes Hilfsmittel. Sprachansagen basieren auf Sensordaten, die ungenau, verzögert oder nicht verfügbar sein können.\n\nDer verantwortliche Pilot trägt die alleinige Verantwortung für alle Entscheidungen während des Fluges. Verlassen Sie sich niemals auf diese App als primäre Informationsquelle.\n\nDer Entwickler übernimmt keine Haftung für Schäden, Verletzungen oder Verluste, die aus der Nutzung dieser App entstehen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app is provided as a supplementary aid only. Voice alerts are based on sensor data that may be inaccurate, delayed, or unavailable.\n\nThe pilot in command remains solely responsible for all decisions during flight. Never rely on this app as a primary source of information.\n\nThe developer assumes no liability for any damage, injury, or loss arising from the use of this app."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app è fornita esclusivamente come ausilio supplementare. Gli avvisi vocali si basano su dati dei sensori che possono essere imprecisi, in ritardo o non disponibili.\n\nIl pilota in comando resta l'unico responsabile di tutte le decisioni durante il volo. Non fare mai affidamento su questa app come fonte primaria di informazioni.\n\nLo sviluppatore non si assume alcuna responsabilità per danni, lesioni o perdite derivanti dall'uso di questa app."
+          }
+        }
+      }
+    },
+    "onboarding.disclaimer.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haftungsausschluss"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disclaimer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avvertenza"
+          }
+        }
+      }
+    },
+    "onboarding.gps.ready.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPS bereit"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPS Ready"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPS pronto"
+          }
+        }
+      }
+    },
+    "onboarding.gps.skip" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Überspringen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salta"
+          }
+        }
+      }
+    },
+    "onboarding.gps.start" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avvia"
+          }
+        }
+      }
+    },
+    "onboarding.gps.waiting.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stellen Sie sicher, dass Sie sich im Freien mit freier Sicht zum Himmel befinden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Make sure you are outdoors with a clear view of the sky."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assicurati di essere all'aperto con una visuale libera del cielo."
+          }
+        }
+      }
+    },
+    "onboarding.gps.waiting.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warte auf GPS-Signal"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for GPS Signal"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In attesa del segnale GPS"
+          }
+        }
+      }
+    },
+    "onboarding.permissions.continue" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erlauben und fortfahren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow and Continue"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consenti e continua"
+          }
+        }
+      }
+    },
+    "onboarding.permissions.denied" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Standortberechtigung wurde verweigert. Winch Pilot benötigt GPS um zu funktionieren. Bitte aktivieren Sie es in den Einstellungen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Location permission was denied. Winch Pilot needs GPS to work. Please enable it in Settings."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il permesso di localizzazione è stato negato. Winch Pilot ha bisogno del GPS per funzionare. Abilitalo nelle Impostazioni."
+          }
+        }
+      }
+    },
+    "onboarding.permissions.gps.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Misst die Bodengeschwindigkeit und die verbleibende Startbahnlänge während des Windenstarts. Ohne GPS kann die App nicht funktionieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Measures ground speed and runway distance during the winch launch. Without GPS the app cannot function."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Misura la velocità al suolo e la distanza dalla pista durante il lancio al verricello. Senza GPS l'app non può funzionare."
+          }
+        }
+      }
+    },
+    "onboarding.permissions.gps.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPS-Standort"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPS Location"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posizione GPS"
+          }
+        }
+      }
+    },
+    "onboarding.permissions.motion.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Betreibt den künstlichen Horizont und verbessert die Geschwindigkeitsgenauigkeit zwischen GPS-Messungen mittels Beschleunigungsmesser bei 50Hz."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powers the artificial horizon and improves speed accuracy between GPS readings using the accelerometer at 50Hz."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alimenta l'orizzonte artificiale e migliora la precisione della velocità tra le letture GPS usando l'accelerometro a 50Hz."
+          }
+        }
+      }
+    },
+    "onboarding.permissions.motion.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewegungssensoren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Motion Sensors"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensori di movimento"
+          }
+        }
+      }
+    },
+    "onboarding.permissions.openSettings" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Settings"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri Impostazioni"
+          }
+        }
+      }
+    },
+    "onboarding.permissions.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Berechtigungen erforderlich"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permissions Required"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permessi necessari"
           }
         }
       }
@@ -746,6 +1119,7 @@
       }
     },
     "This app is provided as a supplementary aid only. Voice alerts are based on sensor data that may be inaccurate, delayed, or unavailable.\n\nThe pilot in command remains solely responsible for all decisions during flight. Never rely on this app as a primary source of information.\n\nThe developer assumes no liability for any damage, injury, or loss arising from the use of this app." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

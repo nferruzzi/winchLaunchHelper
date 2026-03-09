@@ -74,6 +74,7 @@ final class Services: ObservableObject {
 struct AHISApp: App {
     @ObservedObject var services = Services.shared
     @AppStorage("disclaimerAccepted") private var disclaimerAccepted = ProcessInfo.processInfo.arguments.contains("-skipDisclaimer")
+    @State private var gpsFixDismissed = false
 
     var body: some Scene {
         WindowGroup {
@@ -82,10 +83,17 @@ struct AHISApp: App {
                 .fullScreenCover(isPresented: .constant(!disclaimerAccepted)) {
                     DisclaimerView(
                         accepted: $disclaimerAccepted,
-                        ahService: services.ahService,
-                        gpsAccuracy: services.ahService.gpsAccuracy
+                        ahService: services.ahService
                     )
                 }
+                .overlay {
+                    if disclaimerAccepted && !gpsFixDismissed && !services.viewModel.hasGPSFix {
+                        GPSFixView(model: services.viewModel, dismissed: $gpsFixDismissed)
+                            .transition(.opacity)
+                    }
+                }
+                .animation(.easeInOut, value: services.viewModel.hasGPSFix)
+                .animation(.easeInOut, value: gpsFixDismissed)
         }
     }
 }
