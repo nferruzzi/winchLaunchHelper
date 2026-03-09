@@ -121,14 +121,20 @@ final class MachineStateService {
             } else {
                 correctedSpeed = dataPoint.value.value / 0.3
             }
-            self.speedKF.update(measurement: correctedSpeed)
+            // At low GPS speed (< 3 m/s ≈ 11 km/h), use very low measurement noise so
+            // GPS strongly anchors the filter to near-zero — prevents accelerometer drift
+            // from accumulating while stationary. At flight speed, use default R.
+            let lowSpeedThreshold = 3.0 // m/s
+            let R: Double = dataPoint.value.value < lowSpeedThreshold ? 0.01 : self.speedKF.measurementNoiseVariance
+            self.speedKF.update(measurement: correctedSpeed, noiseVariance: R)
             return self.accelerationPublisher
         }
         .switchToLatest()
         .map { [unowned self] dataPoint in
             self.speedKF.predict(controlInput: dataPoint.value.value)
 
-            let speed = self.speedKF.position
+            // Clamp to non-negative: negative flight path speed is physically meaningless
+            let speed = max(0, self.speedKF.position)
             return DataPointSpeed(timestamp: dataPoint.timestamp, value: .init(value: speed, unit: .metersPerSecond))
         }
         .share()
@@ -196,7 +202,11 @@ final class MachineStateService {
             let ax = dataPoint.value.x // north component (g)
             let ay = dataPoint.value.y // east component (g)
             let az = dataPoint.value.z // vertical component (g)
-            let aHorizontal = sqrt(ax * ax + ay * ay) // horizontal magnitude
+            // Use signed horizontal acceleration: positive = forward along heading.
+            // sqrt() would always be positive, creating a systematic bias that accumulates
+            // in the Kalman filter even when stationary. Using the dominant axis with sign
+            // preserves directionality so noise cancels out over time.
+            let aHorizontal = (abs(ax) > abs(ay)) ? ax : ay
             let aFlightPath = aHorizontal * cos(pitch) + az * sin(pitch)
             let measure = Measurement<UnitAcceleration>(value: aFlightPath, unit: .gravity)
             return .init(timestamp: dataPoint.timestamp, value: measure.converted(to: .metersPerSecondSquared))
@@ -326,6 +336,10 @@ final class MachineStateService {
 
     init(ahService: DeviceMotionProtocol) {
         self.ahService = ahService
+        // Anchor KFs at zero with tight noise so accelerometer noise
+        // doesn't build up speed/altitude before first GPS/baro reading
+        self.speedKF.update(measurement: 0.0, noiseVariance: 0.001)
+        self.altitudeKF.update(measurement: 0.0, noiseVariance: 0.001)
         self.pitchSubscription = ahService.pitch
             .sink { [weak self] dataPoint in
                 self?.latestPitch = dataPoint.value.value
@@ -342,6 +356,10 @@ final class MachineStateService {
         self.speeds.removeAll()
         self.speedKF = KalmanFilter(timeStep: 0.02, processNoiseIntensity: 5.0, measurementNoiseVariance: 1.0)
         self.altitudeKF = KalmanFilter(timeStep: 0.02, processNoiseIntensity: 2.0, measurementNoiseVariance: 0.5)
+        // Anchor both KFs at zero with very tight noise so accelerometer noise
+        // doesn't immediately rebuild speed/altitude before the next GPS/baro update
+        self.speedKF.update(measurement: 0.0, noiseVariance: 0.001)
+        self.altitudeKF.update(measurement: 0.0, noiseVariance: 0.001)
         self.latestPitch = 0.0
     }
 }

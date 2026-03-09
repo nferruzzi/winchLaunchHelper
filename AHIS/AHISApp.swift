@@ -28,7 +28,7 @@ final class Services: ObservableObject {
             self.ahService = service
             self.msService = MachineStateService(ahService: service)
         }
-        self.viewModel = AHServiceViewModel(ahService: ahService, machineStateService: msService)
+        self.viewModel = AHServiceViewModel(ahService: ahService, machineStateService: msService, isSimulation: replayURL != nil)
     }
     
     static var replayTimeScale: Double {
@@ -42,8 +42,7 @@ final class Services: ObservableObject {
 
     func setup(replay: URL?) {
         guard replay != self.replayURL else { return }
-        self.ahService.stop()
-        self.viewModel.stop()
+        stopReplay()
 
         self.replayURL = replay
         if let replay = replay {
@@ -55,8 +54,19 @@ final class Services: ObservableObject {
             self.ahService = service
             self.msService = MachineStateService(ahService: service)
         }
-        
-        self.viewModel = AHServiceViewModel(ahService: ahService, machineStateService: msService)
+
+        self.viewModel = AHServiceViewModel(ahService: ahService, machineStateService: msService, isSimulation: replay != nil)
+    }
+
+    func stopReplay() {
+        self.ahService.stop()
+        self.viewModel.stop()
+        self.replayURL = nil
+
+        let service = DeviceMotionService()
+        self.ahService = service
+        self.msService = MachineStateService(ahService: service)
+        self.viewModel = AHServiceViewModel(ahService: ahService, machineStateService: msService, isSimulation: false)
     }
 }
 

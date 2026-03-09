@@ -37,6 +37,26 @@ struct ContentView: View {
                     }
                 }
             }
+            .overlay(alignment: .topLeading) {
+                HStack(spacing: 4) {
+                    if model.isSimulation {
+                        Image(systemName: "play.circle.fill")
+                            .foregroundStyle(.orange)
+                        Text("REPLAY")
+                            .foregroundStyle(.orange)
+                    } else {
+                        Image(systemName: model.hasGPSFix ? "location.fill" : "location.slash.fill")
+                            .foregroundStyle(model.hasGPSFix ? .green : .red)
+                        Text(model.hasGPSFix ? "GPS" : "GPS")
+                            .foregroundStyle(model.hasGPSFix ? .green : .red)
+                    }
+                }
+                .font(.caption2.bold())
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(.black.opacity(0.5), in: Capsule())
+                .padding(8)
+            }
             .overlay(alignment: .bottomTrailing) {
                 Button {
                     showSettings.toggle()
@@ -46,14 +66,6 @@ struct ContentView: View {
                 }
                 .padding()
                 .accessibilityIdentifier("Settings")
-
-//                Button {
-//                    self.showSettings.toggle()
-//                } label: {
-//                    Image(systemName: "airplane.circle")
-//                        .imageScale(.large)
-//                }
-//                .padding()
             }
             
             if showSettings {

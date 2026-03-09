@@ -137,16 +137,21 @@ final class AHServiceViewModel: ObservableObject {
             && abs(rollDegrees) > thresholdDegrees
     }
 
+    @Published private(set) var hasGPSFix: Bool = false
+    let isSimulation: Bool
+
     private var zeroAltitude: Double?
     private var initialLocation: CLLocation?
 
     private var recordTime: DataPointTimeInterval?
-    
+
     init(ahService: DeviceMotionProtocol? = nil,
-         machineStateService: MachineStateProtocol? = nil) {
-        
+         machineStateService: MachineStateProtocol? = nil,
+         isSimulation: Bool = false) {
+
         self.ahService = ahService
         self.machineStateService = machineStateService
+        self.isSimulation = isSimulation
         self.minSpeed = ahService?.minSpeed ?? .init(value: 0, unit: .kilometersPerHour)
         self.maxSpeed = ahService?.maxSpeed ?? .init(value: 0, unit: .kilometersPerHour)
         self.winchLength = ahService?.winchLength ?? .init(value: 0, unit: .meters)
@@ -159,7 +164,9 @@ final class AHServiceViewModel: ObservableObject {
             .speed
             .map { $0.value.converted(to: .metersPerSecond) }
             .receive(on: DispatchQueue.main)
-//            .print("GPS SPEED")
+            .handleEvents(receiveOutput: { [unowned self] _ in
+                if !self.hasGPSFix { self.hasGPSFix = true }
+            })
             .assign(to: \.gpsSpeed, on: self)
             .store(in: &subscriptions)
 
@@ -371,6 +378,10 @@ final class AHServiceViewModel: ObservableObject {
     }
     
     func resetMachineState() {
+        if isSimulation {
+            Services.shared.stopReplay()
+            return
+        }
         zeroAltitude = nil
         altitudeHistory.removeAll()
         machineStateService?.reset()

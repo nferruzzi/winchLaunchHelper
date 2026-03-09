@@ -62,8 +62,8 @@ struct KalmanFilter {
 
     /// Update step: correct state with a measurement of position (state[0])
     /// Uses scalar observation model H = [1, 0] with Joseph form for numerical stability
-    mutating func update(measurement: Double) {
-        let R = measurementNoiseVariance
+    mutating func update(measurement: Double, noiseVariance: Double? = nil) {
+        let R = noiseVariance ?? measurementNoiseVariance
 
         let innovation = measurement - state[0]
         let S = estimateError[0, 0] + R
