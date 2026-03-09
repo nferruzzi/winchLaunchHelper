@@ -213,7 +213,9 @@ final class AHServiceViewModel: ObservableObject {
             .map { [unowned self] value in
                 guard let initialLocation = self.initialLocation else { return .init(value: 0, unit: .meters) }
                 let distance = initialLocation.distance(from: .init(latitude: value.value.latitude, longitude: value.value.longitude))
-                return .init(value: distance, unit: .meters)
+                let maxDistance = self.winchLength.converted(to: .meters).value
+                let clamped = min(max(distance, 0), maxDistance)
+                return .init(value: clamped, unit: .meters)
             }
             .assign(to: \.distanceFromInitialLocation, on: self)
             .store(in: &subscriptions)
