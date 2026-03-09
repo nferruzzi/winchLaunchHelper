@@ -215,6 +215,9 @@
         }
       }
     },
+    "GPS" : {
+
+    },
     "I understand and accept" : {
       "extractionState" : "stale",
       "localizations" : {

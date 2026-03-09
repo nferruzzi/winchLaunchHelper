@@ -24,6 +24,7 @@ final class AHServiceViewModel: ObservableObject {
     }
     
     private var subscriptions = Set<AnyCancellable>()
+    private var gpsTimeoutWork: DispatchWorkItem?
     
     private var ahService: DeviceMotionProtocol?
     private let machineStateService: MachineStateProtocol?
@@ -182,6 +183,7 @@ final class AHServiceViewModel: ObservableObject {
                         self?.gpsBlinking = false
                     }
                 }
+                self.restartGPSTimeout()
             }
             .store(in: &subscriptions)
 
@@ -406,6 +408,19 @@ final class AHServiceViewModel: ObservableObject {
     
     func stop() {
         subscriptions.removeAll()
+        gpsTimeoutWork?.cancel()
+        gpsTimeoutWork = nil
+    }
+
+    private func restartGPSTimeout() {
+        gpsTimeoutWork?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            self.hasGPSFix = false
+            self.gpsHorizontalAccuracy = nil
+        }
+        gpsTimeoutWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0, execute: work)
     }
     
     func say(_ string: String) {

@@ -12,7 +12,7 @@ struct ContentView: View {
     @State private var isPortrait = true
     @State private var showSettings = false
     
-    var model: AHServiceViewModel
+    @ObservedObject var model: AHServiceViewModel
     
     var body: some View {
         ZStack {
@@ -45,16 +45,12 @@ struct ContentView: View {
                         Text("REPLAY")
                             .foregroundStyle(.orange)
                     } else {
-                        Image(systemName: model.hasGPSFix ? "location.fill" : "location.slash.fill")
-                            .foregroundStyle(model.hasGPSFix ? .green : .red)
+                        let color = gpsColor(accuracy: model.gpsHorizontalAccuracy)
+                        Image(systemName: model.gpsHorizontalAccuracy != nil ? "location.fill" : "location.slash.fill")
+                            .foregroundStyle(color)
                             .opacity(model.gpsBlinking ? 0.3 : 1.0)
-                        Text(model.hasGPSFix ? "GPS" : "GPS")
-                            .foregroundStyle(model.hasGPSFix ? .green : .red)
-                        // Debug: show horizontal accuracy in meters
-                        if let acc = model.gpsHorizontalAccuracy {
-                            Text(String(format: "%.0fm", acc))
-                                .foregroundStyle(.gray)
-                        }
+                        Text("GPS")
+                            .foregroundStyle(color)
                     }
                 }
                 .font(.caption2.bold())
@@ -82,6 +78,27 @@ struct ContentView: View {
             guard let scene = UIApplication.shared.windows.first?.windowScene else { return }
             self.isPortrait = scene.interfaceOrientation.isPortrait
         }
+    }
+}
+
+private func gpsColor(accuracy: Double?) -> Color {
+    guard let accuracy else { return .red }
+    if accuracy <= 10 { return .green }
+    if accuracy >= 100 { return .red }
+    // 100 → 10: red → orange → yellow → green
+    let t = (100 - accuracy) / 90  // 0 at 100m, 1 at 10m
+    if t < 0.33 {
+        // red → orange
+        let p = t / 0.33
+        return Color(red: 1.0, green: 0.5 * p, blue: 0)
+    } else if t < 0.66 {
+        // orange → yellow
+        let p = (t - 0.33) / 0.33
+        return Color(red: 1.0, green: 0.5 + 0.5 * p, blue: 0)
+    } else {
+        // yellow → green
+        let p = (t - 0.66) / 0.34
+        return Color(red: 1.0 - p, green: 1.0, blue: 0)
     }
 }
 
