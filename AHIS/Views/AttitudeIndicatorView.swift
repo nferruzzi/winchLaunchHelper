@@ -156,6 +156,7 @@ struct AttitudeIndicatorView: View {
                 .imageScale(.large)
                 .padding(8)
                 .background(.black.opacity(0.5), in: Circle())
+                .overlay(Circle().strokeBorder(.white.opacity(0.5), lineWidth: 1))
         }
 
     }

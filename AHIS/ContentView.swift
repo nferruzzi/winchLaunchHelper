@@ -25,14 +25,14 @@ struct ContentView: View {
 
                             LaunchProfileView(model: model)
                             
-                            WinchLaunchView(model: model)
+                            WinchLaunchView(model: model, showSettings: $showSettings)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
                 } else {
                     HStack {
                         AttitudeIndicatorView(model: model)
-                        WinchLaunchView(model: model)
+                        WinchLaunchView(model: model, showSettings: $showSettings)
                         HeadingIndicatorView(model: model)
                     }
                 }
@@ -58,18 +58,6 @@ struct ContentView: View {
                 .padding(.vertical, 4)
                 .background(.black.opacity(0.5), in: Capsule())
                 .padding(8)
-            }
-            .overlay(alignment: .bottomTrailing) {
-                Button {
-                    showSettings.toggle()
-                } label: {
-                    Image(systemName: "airplane.circle")
-                        .imageScale(.large)
-                        .padding(8)
-                        .background(.black.opacity(0.5), in: Circle())
-                }
-                .padding()
-                .accessibilityIdentifier("Settings")
             }
             
             if showSettings {
