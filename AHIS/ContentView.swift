@@ -65,6 +65,8 @@ struct ContentView: View {
                 } label: {
                     Image(systemName: "airplane.circle")
                         .imageScale(.large)
+                        .padding(8)
+                        .background(.black.opacity(0.5), in: Circle())
                 }
                 .padding()
                 .accessibilityIdentifier("Settings")
