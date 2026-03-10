@@ -83,42 +83,32 @@ struct TextAltitude: View {
 struct LaunchProfileView: View {
     enum Constants {
         static let maxHeight: Double = 500
-        static let referenceHeights: [Measurement<UnitLength>] = [
-            .init(value: 60, unit: .meters),
-            .init(value: 120, unit: .meters),
-            .init(value: 240, unit: .meters),
-        ]
     }
-    
+
     @ObservedObject var model: AHServiceViewModel
-            
+
+    private var calloutHeights: [Measurement<UnitLength>] {
+        model.configuredAltitudes.sorted().map { .init(value: Double($0), unit: .meters) }
+    }
+
     var info: some View {
         ZStack(alignment: .bottom) {
-            GridShape(value: Constants.referenceHeights[0].value, max: Constants.maxHeight)
-                .stroke(style: StrokeStyle(lineWidth: 3, dash: [10, 5]))
-
-            GridShape(value: Constants.referenceHeights[1].value, max: Constants.maxHeight)
-                .stroke(style: StrokeStyle(lineWidth: 1, dash: [10, 5]))
-
-            GridShape(value: Constants.referenceHeights[2].value, max: Constants.maxHeight)
-                .stroke(style: StrokeStyle(lineWidth: 1, dash: [10, 5]))
+            ForEach(calloutHeights, id: \.value) { height in
+                GridShape(value: height.value, max: Constants.maxHeight)
+                    .stroke(style: StrokeStyle(lineWidth: 1, dash: [10, 5]))
+            }
         }
     }
 
     var labels: some View {
         GeometryReader { geometry in
             ZStack(alignment: .bottom) {
-                TextAltitude(value: Constants.referenceHeights[0])
-                    .position(.init(x: geometry.size.width - 20, y: geometry.size.height - geometry.size.height / Constants.maxHeight * Constants.referenceHeights[0].value - 15))
-                    .font(.subheadline)
-
-                TextAltitude(value: Constants.referenceHeights[1])
-                    .position(.init(x: geometry.size.width - 20, y: geometry.size.height - geometry.size.height / Constants.maxHeight * Constants.referenceHeights[1].value - 15))
-                    .font(.subheadline)
-
-                TextAltitude(value: Constants.referenceHeights[2])
-                    .position(.init(x: geometry.size.width - 20, y: geometry.size.height - geometry.size.height / Constants.maxHeight * Constants.referenceHeights[2].value - 15))
-                    .font(.subheadline)
+                ForEach(calloutHeights, id: \.value) { height in
+                    TextAltitude(value: height)
+                        .position(.init(x: geometry.size.width - 20,
+                                        y: geometry.size.height - geometry.size.height / Constants.maxHeight * height.value - 15))
+                        .font(.subheadline)
+                }
             }
         }
     }

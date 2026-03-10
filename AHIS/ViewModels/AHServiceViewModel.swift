@@ -20,7 +20,7 @@ private extension Float {
 final class AHServiceViewModel: ObservableObject {
     enum Constants {
         static let synthesizer = AVSpeechSynthesizer()
-        static let defaultAltitudes: [Int] = [1, 20, 50, 100, 200, 250]
+        static let defaultAltitudes: [Int] = [1, 50, 100, 200]
     }
     
     private var subscriptions = Set<AnyCancellable>()
